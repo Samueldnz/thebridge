@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+enum UserRole {
+  USER
+  RESEARCHER
+  INSTITUTION_ADMIN
+  COMPANY
+  ADMIN
+}
+
+enum UserStatus {
+  PENDING_VERIFICATION
+  ACTIVE
+  SUSPENDED
+  DEACTIVATED
+}
+
+model User {
+  id           String @id @default(uuid()) @db.VarChar(36)
+  email        String @unique @db.VarChar(320)
+  passwordHash String @db.VarChar(255)
+
+  role   UserRole   @default(USER)
+  status UserStatus @default(PENDING_VERIFICATION)
+
+  emailVerifiedAt DateTime?
+
+  profile  Profile?
+  sessions Session[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([role])
+  @@map("users")
+}
+
+model Profile {
+  id     String @id @default(uuid()) @db.VarChar(36)
+  userId String @unique @db.VarChar(36)
+
+  firstName   String  @db.VarChar(100)
+  lastName    String  @db.VarChar(100)
+  displayName String? @db.VarChar(200)
+
+  avatarUrl String? @db.Text
+  bio       String? @db.Text
+
+  city    String? @db.VarChar(100)
+  country String? @db.VarChar(100)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("profiles")
+}
+
+model Session {
+  id     String @id @default(uuid()) @db.VarChar(36)
+  userId String @db.VarChar(36)
+
+  refreshTokenHash String @unique @db.VarChar(64)
+
+  userAgent String? @db.Text
+  ipAddress String? @db.VarChar(45)
+
+  expiresAt  DateTime
+  lastUsedAt DateTime?
+  revokedAt  DateTime?
+
+  replacedById String? @db.VarChar(36)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([revokedAt])
+  @@map("sessions")
+}
