@@ -1,91 +1,562 @@
 generator client {
   provider = "prisma-client"
-  output   = "../generated/prisma"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "mysql"
 }
 
-enum UserRole {
-  USER
-  RESEARCHER
-  INSTITUTION_ADMIN
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum ProfileType {
   COMPANY
+  RESEARCHER
+}
+
+enum SystemRole {
+  USER
   ADMIN
 }
 
 enum UserStatus {
-  PENDING_VERIFICATION
   ACTIVE
+  INACTIVE
   SUSPENDED
-  DEACTIVATED
 }
+
+enum OrganizationType {
+  COMPANY
+  UNIVERSITY
+  RESEARCH_INSTITUTE
+  LABORATORY
+  RESEARCH_CENTER
+  OTHER
+}
+
+enum OrganizationMemberRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum AffiliationRole {
+  PROFESSOR
+  RESEARCHER
+  STUDENT
+  TECHNICIAN
+  COORDINATOR
+  OTHER
+}
+
+enum TrustBadge {
+  NONE
+  BRONZE
+  SILVER
+  GOLD
+}
+
+enum PatentStatus {
+  NONE
+  PENDING
+  GRANTED
+}
+
+enum PatentRequirement {
+  NOT_REQUIRED
+  REQUIRED
+  PENDING_ACCEPTED
+}
+
+enum ProjectStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum OpportunityStatus {
+  DRAFT
+  OPEN
+  CLOSED
+  ARCHIVED
+}
+
+enum MatchStatus {
+  GENERATED
+  VIEWED
+  CONTACTED
+  DISMISSED
+}
+
+enum LinkType {
+  ARTICLE
+  PATENT
+  OTHER
+}
+
+enum DataSource {
+  PLATFORM
+  BVFAPESP
+  IMPORT
+  OTHER
+}
+
+// ============================================================
+// USER
+// ============================================================
 
 model User {
-  id           String @id @default(uuid()) @db.VarChar(36)
-  email        String @unique @db.VarChar(320)
-  passwordHash String @db.VarChar(255)
+  id String @id @default(uuid()) @db.Char(36)
 
-  role   UserRole   @default(USER)
-  status UserStatus @default(PENDING_VERIFICATION)
-
+  // Authentication
+  email           String    @unique @db.VarChar(191)
+  passwordHash    String    @db.VarChar(255)
   emailVerifiedAt DateTime?
 
-  profile  Profile?
-  sessions Session[]
+  // Personal data
+  name      String  @db.VarChar(150)
+  phone     String? @db.VarChar(30)
+  avatarUrl String? @db.VarChar(500)
+
+  // Product identity
+  //
+  // IMPORTANT:
+  // profileType must be immutable after profile completion.
+  profileType ProfileType
+
+  // Authorization inside the platform
+  systemRole SystemRole @default(USER)
+  status     UserStatus @default(ACTIVE)
+
+  profileCompleted Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Company relationship
+  organizationMemberships OrganizationMember[]
+
+  // Researcher profile
+  researcherProfile ResearcherProfile?
+
+  // Content created by the user
+  projects      Project[]     @relation("ProjectOwner")
+  opportunities Opportunity[] @relation("OpportunityOwner")
+
+  @@index([profileType])
   @@index([status])
-  @@index([role])
-  @@map("users")
 }
 
-model Profile {
-  id     String @id @default(uuid()) @db.VarChar(36)
-  userId String @unique @db.VarChar(36)
+// ============================================================
+// ORGANIZATION
+// ============================================================
 
-  firstName   String  @db.VarChar(100)
-  lastName    String  @db.VarChar(100)
-  displayName String? @db.VarChar(200)
+model Organization {
+  id String @id @default(uuid()) @db.Char(36)
 
-  avatarUrl String? @db.Text
-  bio       String? @db.Text
+  type OrganizationType
 
-  city    String? @db.VarChar(100)
-  country String? @db.VarChar(100)
+  // Legal identity
+  legalName String? @db.VarChar(255)
+  tradeName String? @db.VarChar(255)
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // CNPJ
+  //
+  // Nullable because not every organization type necessarily
+  // needs a CNPJ during the initial platform flow.
+  cnpj String? @unique @db.VarChar(18)
+
+  description String? @db.Text
+
+  website String? @db.VarChar(500)
+  email   String? @db.VarChar(191)
+  phone   String? @db.VarChar(30)
+
+  logoUrl String? @db.VarChar(500)
+
+  // Address
+  addressLine       String? @db.VarChar(255)
+  addressNumber     String? @db.VarChar(30)
+  addressComplement String? @db.VarChar(150)
+  neighborhood      String? @db.VarChar(150)
+  city              String? @db.VarChar(150)
+  state             String? @db.VarChar(100)
+  postalCode        String? @db.VarChar(20)
+  country           String? @db.VarChar(100)
+
+  // External/imported data
+  source           DataSource @default(PLATFORM)
+  sourceExternalId String?    @db.VarChar(191)
+  sourceUrl        String?    @db.VarChar(1000)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@map("profiles")
+  members       OrganizationMember[]
+  affiliations  ResearcherAffiliation[]
+  projects      Project[]
+  opportunities Opportunity[]
+
+  @@index([type])
+  @@index([city])
+  @@index([state])
 }
 
-model Session {
-  id     String @id @default(uuid()) @db.VarChar(36)
-  userId String @db.VarChar(36)
+// ============================================================
+// ORGANIZATION MEMBERS
+// ============================================================
 
-  refreshTokenHash String @unique @db.VarChar(64)
+model OrganizationMember {
+  id String @id @default(uuid()) @db.Char(36)
 
-  userAgent String? @db.Text
-  ipAddress String? @db.VarChar(45)
+  userId         String
+  organizationId String
 
-  expiresAt  DateTime
-  lastUsedAt DateTime?
-  revokedAt  DateTime?
+  role OrganizationMemberRole @default(MEMBER)
 
-  replacedById String? @db.VarChar(36)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, organizationId])
+  @@index([organizationId])
+  @@index([userId])
+}
+
+// ============================================================
+// RESEARCHER PROFILE
+// ============================================================
+
+model ResearcherProfile {
+  id String @id @default(uuid()) @db.Char(36)
+
+  userId String @unique
+
+  // Researcher identification
+  cpf String? @unique @db.VarChar(14)
+
+  bio String? @db.Text
+
+  academicTitle String? @db.VarChar(150)
+  researchField String? @db.VarChar(255)
+
+  // Scientific profiles
+  lattesUrl   String? @db.VarChar(500)
+  orcidUrl    String? @db.VarChar(500)
+  linkedinUrl String? @db.VarChar(500)
+
+  trustBadge TrustBadge @default(NONE)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  affiliations ResearcherAffiliation[]
+  links        ResearcherLink[]
+  competences  ResearcherCompetence[]
+
+  @@index([researchField])
+}
+
+// ============================================================
+// RESEARCHER AFFILIATIONS
+// ============================================================
+
+model ResearcherAffiliation {
+  id String @id @default(uuid()) @db.Char(36)
+
+  researcherId   String
+  organizationId String
+
+  role AffiliationRole
+
+  title String? @db.VarChar(150)
+
+  isPrimary Boolean @default(false)
+
+  startedAt DateTime?
+  endedAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  researcher   ResearcherProfile @relation(fields: [researcherId], references: [id], onDelete: Cascade)
+  organization Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([researcherId])
+  @@index([organizationId])
+  @@index([isPrimary])
+}
+
+// ============================================================
+// RESEARCHER LINKS
+// ============================================================
+
+model ResearcherLink {
+  id String @id @default(uuid()) @db.Char(36)
+
+  researcherId String
+
+  type LinkType
+
+  label String? @db.VarChar(255)
+  url   String  @db.VarChar(1000)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  researcher ResearcherProfile @relation(fields: [researcherId], references: [id], onDelete: Cascade)
+
+  @@index([researcherId])
+  @@index([type])
+}
+
+// ============================================================
+// COMPETENCE TAXONOMY
+// ============================================================
+
+model Competence {
+  id String @id @default(uuid()) @db.Char(36)
+
+  name String @db.VarChar(255)
+  slug String @unique @db.VarChar(191)
+
+  description String? @db.Text
+
+  parentId String?
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  parent   Competence?  @relation("CompetenceHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children Competence[] @relation("CompetenceHierarchy")
+
+  researchers   ResearcherCompetence[]
+  projects      ProjectCompetence[]
+  opportunities OpportunityCompetence[]
+
+  @@index([parentId])
+  @@index([isActive])
+}
+
+// ============================================================
+// RESEARCHER COMPETENCES
+// ============================================================
+
+model ResearcherCompetence {
+  id String @id @default(uuid()) @db.Char(36)
+
+  researcherId String
+  competenceId String
+
+  // 1-5.
+  // Validation will be handled by the application layer.
+  level Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  researcher ResearcherProfile @relation(fields: [researcherId], references: [id], onDelete: Cascade)
+  competence Competence        @relation(fields: [competenceId], references: [id], onDelete: Cascade)
+
+  @@unique([researcherId, competenceId])
+  @@index([competenceId])
+}
+
+// ============================================================
+// PROJECT
+// ============================================================
+
+model Project {
+  id String @id @default(uuid()) @db.Char(36)
+
+  // Owner can be null for externally imported projects.
+  //
+  // Platform-created researcher projects must have an owner.
+  ownerId String?
+
+  // Optional organization associated with the project.
+  organizationId String?
+
+  title String @db.VarChar(255)
+
+  description String @db.Text
+
+  keywords String? @db.Text
+
+  researchField String? @db.VarChar(255)
+
+  // Technology maturity
+  trl Int?
+  crl Int?
+
+  patentStatus PatentStatus @default(NONE)
+
+  status ProjectStatus @default(DRAFT)
+
+  // Imported/public projects
+  source           DataSource @default(PLATFORM)
+  sourceExternalId String?    @db.VarChar(191)
+  sourceUrl        String?    @db.VarChar(1000)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  owner        User?         @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+
+  competences ProjectCompetence[]
+  matches     Match[]             @relation("ProjectMatches")
+
+  @@index([ownerId])
+  @@index([organizationId])
+  @@index([status])
+  @@index([researchField])
+  @@index([source])
+}
+
+// ============================================================
+// PROJECT COMPETENCES
+// ============================================================
+
+model ProjectCompetence {
+  id String @id @default(uuid()) @db.Char(36)
+
+  projectId    String
+  competenceId String
+
   createdAt DateTime @default(now())
 
-  @@index([userId])
-  @@index([expiresAt])
-  @@index([revokedAt])
-  @@map("sessions")
+  project    Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  competence Competence @relation(fields: [competenceId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, competenceId])
+  @@index([competenceId])
+}
+
+// ============================================================
+// OPPORTUNITY
+// ============================================================
+
+model Opportunity {
+  id String @id @default(uuid()) @db.Char(36)
+
+  // Company user who created the opportunity
+  ownerId String
+
+  // Company represented by the user
+  organizationId String
+
+  title String @db.VarChar(255)
+
+  description String @db.Text
+
+  keywords String? @db.Text
+
+  industrySector String? @db.VarChar(255)
+
+  desiredTechnology String? @db.VarChar(255)
+
+  // Minimum technology maturity required
+  minTrl Int?
+
+  // Desired commercial maturity
+  desiredCrl Int?
+
+  patentRequirement PatentRequirement @default(NOT_REQUIRED)
+
+  // Budget
+  budgetMin Decimal? @db.Decimal(15, 2)
+  budgetMax Decimal? @db.Decimal(15, 2)
+  currency  String   @default("BRL") @db.VarChar(3)
+
+  timeline String? @db.VarChar(255)
+
+  status OpportunityStatus @default(DRAFT)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  owner        User         @relation("OpportunityOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+
+  competences OpportunityCompetence[]
+  matches     Match[]                 @relation("OpportunityMatches")
+
+  @@index([ownerId])
+  @@index([organizationId])
+  @@index([status])
+  @@index([industrySector])
+}
+
+// ============================================================
+// OPPORTUNITY COMPETENCES
+// ============================================================
+
+model OpportunityCompetence {
+  id String @id @default(uuid()) @db.Char(36)
+
+  opportunityId String
+  competenceId  String
+
+  // Useful for future structured matching.
+  weight Int @default(1)
+
+  createdAt DateTime @default(now())
+
+  opportunity Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  competence  Competence  @relation(fields: [competenceId], references: [id], onDelete: Cascade)
+
+  @@unique([opportunityId, competenceId])
+  @@index([competenceId])
+}
+
+// ============================================================
+// MATCH
+// ============================================================
+
+model Match {
+  id String @id @default(uuid()) @db.Char(36)
+
+  opportunityId String
+  projectId     String
+
+  // Compatibility score.
+  // Expected range: 0.0 - 1.0.
+  score Decimal @db.Decimal(8, 6)
+
+  // Future embedding/matching infrastructure
+  modelName    String? @db.VarChar(100)
+  modelVersion String  @default("v1") @db.VarChar(50)
+
+  status MatchStatus @default(GENERATED)
+
+  // Future explainability layer.
+  //
+  // Example:
+  // {
+  //   "semanticScore": 0.91,
+  //   "trlScore": 0.80,
+  //   "competenceScore": 0.87
+  // }
+  explanation Json?
+
+  viewedAt  DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  opportunity Opportunity @relation("OpportunityMatches", fields: [opportunityId], references: [id], onDelete: Cascade)
+  project     Project     @relation("ProjectMatches", fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([opportunityId, projectId, modelVersion])
+  @@index([opportunityId, score])
+  @@index([projectId, score])
+  @@index([status])
 }
