@@ -8,6 +8,8 @@ import { PrismaModule } from './database/prisma/prisma.module.js';
 import { HealthModule } from './health/health.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { OnboardingModule } from './onboarding/onboarding.module.js';
+import { ProfilesModule } from './profiles/profiles.module.js';
+import { CompetencesModule } from './competences/competences.module.js';
 
 @Module({
   imports: [
@@ -20,6 +22,8 @@ import { OnboardingModule } from './onboarding/onboarding.module.js';
     HealthModule,
     AuthModule,
     OnboardingModule,
+    ProfilesModule,
+    CompetencesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

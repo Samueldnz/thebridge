@@ -6,6 +6,8 @@ import { AuthController } from './auth.controller.js';
 import { AuthGuard } from './auth.guard.js';
 import { AuthService } from './auth.service.js';
 
+import { SystemRoleGuard } from './system-role.guard.js';
+
 @Module({
   imports: [
     ConfigModule,
@@ -23,10 +25,11 @@ import { AuthService } from './auth.service.js';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, AuthGuard],
+  providers: [AuthService, AuthGuard, SystemRoleGuard],
   exports: [
     AuthService,
     AuthGuard,
+    SystemRoleGuard,
     JwtModule,
   ],
 })
