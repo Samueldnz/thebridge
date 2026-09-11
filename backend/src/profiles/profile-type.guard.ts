@@ -18,9 +18,9 @@ export class ProfileTypeGuard implements CanActivate {
 
   canActivate(context: ExecutionContext): boolean {
     const requiredProfileType =
-      this.reflector.get<AllowedProfileType>(
+      this.reflector.getAllAndOverride<AllowedProfileType>(
         PROFILE_TYPE_KEY,
-        context.getHandler(),
+        [context.getHandler(), context.getClass()],
       );
 
     if (!requiredProfileType) {

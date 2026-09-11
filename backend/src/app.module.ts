@@ -10,6 +10,7 @@ import { AuthModule } from './auth/auth.module.js';
 import { OnboardingModule } from './onboarding/onboarding.module.js';
 import { ProfilesModule } from './profiles/profiles.module.js';
 import { CompetencesModule } from './competences/competences.module.js';
+import { ProjectsModule } from './projects/projects.module.js';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { CompetencesModule } from './competences/competences.module.js';
     OnboardingModule,
     ProfilesModule,
     CompetencesModule,
+    ProjectsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
