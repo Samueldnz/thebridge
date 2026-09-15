@@ -12,6 +12,7 @@ import { ProfilesModule } from './profiles/profiles.module.js';
 import { CompetencesModule } from './competences/competences.module.js';
 import { ProjectsModule } from './projects/projects.module.js';
 import { OpportunitiesModule } from './opportunities/opportunities.module.js';
+import { ResearcherAffiliationsModule } from './researcher-affiliations/researcher-affiliations.module.js';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { OpportunitiesModule } from './opportunities/opportunities.module.js';
     CompetencesModule,
     ProjectsModule,
     OpportunitiesModule,
+    ResearcherAffiliationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

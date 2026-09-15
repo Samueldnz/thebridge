@@ -288,6 +288,7 @@ model ResearcherAffiliation {
   researcher   ResearcherProfile @relation(fields: [researcherId], references: [id], onDelete: Cascade)
   organization Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
+  @@unique([researcherId, organizationId])
   @@index([researcherId])
   @@index([organizationId])
   @@index([isPrimary])

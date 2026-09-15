@@ -244,6 +244,7 @@ export type ResearcherAffiliationOrderByWithRelationInput = {
 
 export type ResearcherAffiliationWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  researcherId_organizationId?: Prisma.ResearcherAffiliationResearcherIdOrganizationIdCompoundUniqueInput
   AND?: Prisma.ResearcherAffiliationWhereInput | Prisma.ResearcherAffiliationWhereInput[]
   OR?: Prisma.ResearcherAffiliationWhereInput[]
   NOT?: Prisma.ResearcherAffiliationWhereInput | Prisma.ResearcherAffiliationWhereInput[]
@@ -258,7 +259,7 @@ export type ResearcherAffiliationWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"ResearcherAffiliation"> | Date | string
   researcher?: Prisma.XOR<Prisma.ResearcherProfileScalarRelationFilter, Prisma.ResearcherProfileWhereInput>
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
-}, "id">
+}, "id" | "researcherId_organizationId">
 
 export type ResearcherAffiliationOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -395,6 +396,11 @@ export type ResearcherAffiliationOrderByRelevanceInput = {
   fields: Prisma.ResearcherAffiliationOrderByRelevanceFieldEnum | Prisma.ResearcherAffiliationOrderByRelevanceFieldEnum[]
   sort: Prisma.SortOrder
   search: string
+}
+
+export type ResearcherAffiliationResearcherIdOrganizationIdCompoundUniqueInput = {
+  researcherId: string
+  organizationId: string
 }
 
 export type ResearcherAffiliationCountOrderByAggregateInput = {
