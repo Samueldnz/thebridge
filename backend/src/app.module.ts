@@ -11,6 +11,7 @@ import { OnboardingModule } from './onboarding/onboarding.module.js';
 import { ProfilesModule } from './profiles/profiles.module.js';
 import { CompetencesModule } from './competences/competences.module.js';
 import { ProjectsModule } from './projects/projects.module.js';
+import { OpportunitiesModule } from './opportunities/opportunities.module.js';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { ProjectsModule } from './projects/projects.module.js';
     ProfilesModule,
     CompetencesModule,
     ProjectsModule,
+    OpportunitiesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
