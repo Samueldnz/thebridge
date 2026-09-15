@@ -8,6 +8,7 @@ import {
 import { PrismaService } from '../database/prisma/prisma.service.js';
 import { CreateProjectDto } from './dto/create-project.dto.js';
 import { UpdateProjectDto } from './dto/update-project.dto.js';
+import { ListProjectsQueryDto } from './dto/list-projects-query.dto.js';
 
 @Injectable()
 export class ProjectsService {
@@ -204,6 +205,68 @@ export class ProjectsService {
 
     return {
       success: true,
+    };
+  }
+
+  async listProjects(query: ListProjectsQueryDto) {
+    const page = query.page;
+    const limit = query.limit;
+    const skip = (page - 1) * limit;
+
+    const where = {
+      status: 'PUBLISHED' as const,
+      ...(query.ownerId
+        ? {
+            ownerId: query.ownerId,
+          }
+        : {}),
+    };
+
+    const [projects, total] = await this.prisma.$transaction([
+      this.prisma.project.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: {
+          createdAt: 'desc',
+        },
+        select: {
+          id: true,
+          ownerId: true,
+          organizationId: true,
+          title: true,
+          description: true,
+          keywords: true,
+          researchField: true,
+          trl: true,
+          crl: true,
+          patentStatus: true,
+          status: true,
+          createdAt: true,
+          updatedAt: true,
+          owner: {
+            select: {
+              id: true,
+              name: true,
+              profileType: true,
+            },
+          },
+        },
+      }),
+
+      this.prisma.project.count({
+        where,
+      }),
+    ]);
+
+    return {
+      data: projects,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
     };
   }
 }

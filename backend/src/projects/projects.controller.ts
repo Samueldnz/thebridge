@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   Req,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 
@@ -16,17 +17,20 @@ import { ProfileType } from '../profiles/profile-type.decorator.js';
 import { ProfileTypeGuard } from '../profiles/profile-type.guard.js';
 import { CreateProjectDto } from './dto/create-project.dto.js';
 import { UpdateProjectDto } from './dto/update-project.dto.js';
+import { ListProjectsQueryDto } from './dto/list-projects-query.dto.js';
 import { ProjectsService } from './projects.service.js';
+import { ProjectCompetencesService } from './project-competences.service.js';
 
 @Controller('projects')
-@UseGuards(AuthGuard, ProfileTypeGuard)
-@ProfileType('RESEARCHER')
 export class ProjectsController {
   constructor(
     private readonly projectsService: ProjectsService,
+    private readonly projectCompetencesService: ProjectCompetencesService,
   ) {}
 
   @Post()
+  @UseGuards(AuthGuard, ProfileTypeGuard)
+  @ProfileType('RESEARCHER')
   createProject(
     @Req() request: AuthenticatedRequest,
     @Body() dto: CreateProjectDto,
@@ -37,7 +41,16 @@ export class ProjectsController {
     );
   }
 
+  @Get()
+  listProjects(
+    @Query() query: ListProjectsQueryDto,
+  ) {
+    return this.projectsService.listProjects(query);
+  }
+
   @Get(':id')
+  @UseGuards(AuthGuard, ProfileTypeGuard)
+  @ProfileType('RESEARCHER')
   getProject(
     @Req() request: AuthenticatedRequest,
     @Param('id') id: string,
@@ -49,6 +62,8 @@ export class ProjectsController {
   }
 
   @Patch(':id')
+  @UseGuards(AuthGuard, ProfileTypeGuard)
+  @ProfileType('RESEARCHER')
   updateProject(
     @Req() request: AuthenticatedRequest,
     @Param('id') id: string,
@@ -62,6 +77,8 @@ export class ProjectsController {
   }
 
   @Delete(':id')
+  @UseGuards(AuthGuard, ProfileTypeGuard)
+  @ProfileType('RESEARCHER')
   removeProject(
     @Req() request: AuthenticatedRequest,
     @Param('id') id: string,
@@ -69,6 +86,49 @@ export class ProjectsController {
     return this.projectsService.removeProject(
       request.user.sub,
       id,
+    );
+  }
+
+  @Get(':id/competences')
+  @UseGuards(AuthGuard, ProfileTypeGuard)
+  @ProfileType('RESEARCHER')
+  listProjectCompetences(
+    @Req() request: AuthenticatedRequest,
+    @Param('id') id: string,
+  ) {
+    return this.projectCompetencesService.listProjectCompetences(
+      request.user.sub,
+      id,
+    );
+  }
+
+  @Post(':id/competences/:competenceId')
+  @UseGuards(AuthGuard, ProfileTypeGuard)
+  @ProfileType('RESEARCHER')
+  addProjectCompetence(
+    @Req() request: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Param('competenceId') competenceId: string,
+  ) {
+    return this.projectCompetencesService.addProjectCompetence(
+      request.user.sub,
+      id,
+      competenceId,
+    );
+  }
+
+  @Delete(':id/competences/:competenceId')
+  @UseGuards(AuthGuard, ProfileTypeGuard)
+  @ProfileType('RESEARCHER')
+  removeProjectCompetence(
+    @Req() request: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Param('competenceId') competenceId: string,
+  ) {
+    return this.projectCompetencesService.removeProjectCompetence(
+      request.user.sub,
+      id,
+      competenceId,
     );
   }
 }
