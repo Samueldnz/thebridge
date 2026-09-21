@@ -6,19 +6,47 @@ import {
 } from '@nestjs/common';
 
 import { PrismaService } from '../database/prisma/prisma.service.js';
+import { MatchingService } from '../matching/matching.service.js';
 import { CreateProjectDto } from './dto/create-project.dto.js';
 import { UpdateProjectDto } from './dto/update-project.dto.js';
 import { ListProjectsQueryDto } from './dto/list-projects-query.dto.js';
 
+
 @Injectable()
 export class ProjectsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly matchingService: MatchingService,
+  ) {}
+
+  private async recalculateProjectMatches(
+    projectId: string,
+  ): Promise<void> {
+    const opportunities =
+      await this.prisma.opportunity.findMany({
+        where: {
+          status: 'OPEN',
+        },
+        select: {
+          id: true,
+        },
+      });
+
+    await Promise.all(
+      opportunities.map((opportunity) =>
+        this.matchingService.calculateAndPersist(
+          opportunity.id,
+          projectId,
+        ),
+      ),
+    );
+  }
 
   async createProject(
     userId: string,
     dto: CreateProjectDto,
   ) {
-    return this.prisma.project.create({
+    const project = await this.prisma.project.create({
       data: {
         ownerId: userId,
         title: dto.title,
@@ -48,6 +76,12 @@ export class ProjectsService {
         updatedAt: true,
       },
     });
+
+    if (project.status === 'PUBLISHED') {
+      await this.recalculateProjectMatches(project.id);
+    }
+
+    return project;
   }
 
   async getProject(
@@ -108,6 +142,9 @@ export class ProjectsService {
         id: true,
         ownerId: true,
         status: true,
+        trl: true,
+        crl: true,
+        patentStatus: true,
       },
     });
 
@@ -127,7 +164,7 @@ export class ProjectsService {
       );
     }
 
-    return this.prisma.project.update({
+    const updatedProject = await this.prisma.project.update({
       where: {
         id: projectId,
       },
@@ -160,6 +197,26 @@ export class ProjectsService {
         updatedAt: true,
       },
     });
+
+    const becamePublished =
+      project.status !== 'PUBLISHED' &&
+      updatedProject.status === 'PUBLISHED';
+
+    const relevantFieldChanged =
+      dto.trl !== undefined ||
+      dto.crl !== undefined ||
+      dto.patentStatus !== undefined;
+
+    if (
+      updatedProject.status === 'PUBLISHED' &&
+      (becamePublished || relevantFieldChanged)
+    ) {
+      await this.recalculateProjectMatches(
+        updatedProject.id,
+      );
+    }
+
+    return updatedProject;
   }
 
   async removeProject(

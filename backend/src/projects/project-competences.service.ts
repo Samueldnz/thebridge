@@ -6,10 +6,14 @@ import {
 } from '@nestjs/common';
 
 import { PrismaService } from '../database/prisma/prisma.service.js';
+import { MatchingService } from '../matching/matching.service.js';
 
 @Injectable()
 export class ProjectCompetencesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly matchingService: MatchingService,
+  ) {}
 
   private async getOwnedActiveProject(
     userId: string,
@@ -43,6 +47,29 @@ export class ProjectCompetencesService {
     }
 
     return project;
+  }
+
+  private async recalculateProjectMatches(
+    projectId: string,
+  ): Promise<void> {
+    const opportunities =
+      await this.prisma.opportunity.findMany({
+        where: {
+          status: 'OPEN',
+        },
+        select: {
+          id: true,
+        },
+      });
+
+    await Promise.all(
+      opportunities.map((opportunity) =>
+        this.matchingService.calculateAndPersist(
+          opportunity.id,
+          projectId,
+        ),
+      ),
+    );
   }
 
   async listProjectCompetences(
@@ -80,7 +107,11 @@ export class ProjectCompetencesService {
     projectId: string,
     competenceId: string,
   ) {
-    await this.getOwnedActiveProject(userId, projectId);
+    const project =
+    await this.getOwnedActiveProject(
+      userId,
+      projectId,
+    );
 
     const competence =
       await this.prisma.competence.findUnique({
@@ -132,6 +163,12 @@ export class ProjectCompetencesService {
       },
     });
 
+    if (project.status === 'PUBLISHED') {
+      await this.recalculateProjectMatches(
+        projectId,
+      );
+    }
+
     return competence;
   }
 
@@ -140,7 +177,11 @@ export class ProjectCompetencesService {
     projectId: string,
     competenceId: string,
   ) {
-    await this.getOwnedActiveProject(userId, projectId);
+    const project =
+    await this.getOwnedActiveProject(
+      userId,
+      projectId,
+    );
 
     const existing =
       await this.prisma.projectCompetence.findUnique({
@@ -166,6 +207,12 @@ export class ProjectCompetencesService {
         },
       },
     });
+
+    if (project.status === 'PUBLISHED') {
+      await this.recalculateProjectMatches(
+        projectId,
+      );
+    }
 
     return {
       success: true,
