@@ -25,7 +25,7 @@ export class MatchingService {
   async calculateForPair(
     opportunityId: string,
     projectId: string,
-  ): Promise<MatchingResult> {
+  ): Promise<MatchingResult | null> {
     const [opportunity, project] = await Promise.all([
       this.prisma.opportunity.findUnique({
         where: {
@@ -74,6 +74,14 @@ export class MatchingService {
       throw new NotFoundException('Project not found');
     }
 
+    const patentEligible =
+      opportunity.patentRequirement !== 'REQUIRED' ||
+      project.patentStatus !== 'NONE';
+
+    if (!patentEligible) {
+      return null;
+    }
+
     const input: MatchingInput = {
       opportunity: {
         competences: opportunity.competences.map((competence) => ({
@@ -98,44 +106,48 @@ export class MatchingService {
   }
 
   async calculateAndPersist(
-  opportunityId: string,
-  projectId: string,
-) {
-  const result = await this.calculateForPair(
-    opportunityId,
-    projectId,
-  );
-
-  return this.prisma.match.upsert({
-    where: {
-      opportunityId_projectId_modelVersion: {
-        opportunityId,
-        projectId,
-        modelVersion: MODEL_VERSION,
-      },
-    },
-
-    create: {
+    opportunityId: string,
+    projectId: string,
+  ) {
+    const result = await this.calculateForPair(
       opportunityId,
       projectId,
-      score: result.score,
-      modelName: MODEL_NAME,
-      modelVersion: MODEL_VERSION,
-      status: 'GENERATED',
-      explanation: this.toJsonValue(
-        result.explanation,
-      ),
-    },
+    );
 
-    update: {
-      score: result.score,
-      modelName: MODEL_NAME,
-      explanation: this.toJsonValue(
-        result.explanation,
-      ),
-    },
-  });
-}
+    if (result === null) {
+      return null;
+    }
+
+    return this.prisma.match.upsert({
+      where: {
+        opportunityId_projectId_modelVersion: {
+          opportunityId,
+          projectId,
+          modelVersion: MODEL_VERSION,
+        },
+      },
+
+      create: {
+        opportunityId,
+        projectId,
+        score: result.score,
+        modelName: MODEL_NAME,
+        modelVersion: MODEL_VERSION,
+        status: 'GENERATED',
+        explanation: this.toJsonValue(
+          result.explanation,
+        ),
+      },
+
+      update: {
+        score: result.score,
+        modelName: MODEL_NAME,
+        explanation: this.toJsonValue(
+          result.explanation,
+        ),
+      },
+    });
+  }
 
   calculate(input: MatchingInput): MatchingResult {
     const competenceRequired =
