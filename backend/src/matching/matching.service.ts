@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma/prisma.service.js';
+import type { Prisma } from '../generated/prisma/client.js';
 
 import type {
   MatchingInput,
@@ -12,6 +13,9 @@ const WEIGHTS = {
   trl: 0.2,
   crl: 0.2,
 } as const;
+
+const MODEL_VERSION = 'v1';
+const MODEL_NAME = 'deterministic';
 
 @Injectable()
 export class MatchingService {
@@ -93,8 +97,45 @@ export class MatchingService {
     return this.calculate(input);
   }
 
+  async calculateAndPersist(
+  opportunityId: string,
+  projectId: string,
+) {
+  const result = await this.calculateForPair(
+    opportunityId,
+    projectId,
+  );
 
+  return this.prisma.match.upsert({
+    where: {
+      opportunityId_projectId_modelVersion: {
+        opportunityId,
+        projectId,
+        modelVersion: MODEL_VERSION,
+      },
+    },
 
+    create: {
+      opportunityId,
+      projectId,
+      score: result.score,
+      modelName: MODEL_NAME,
+      modelVersion: MODEL_VERSION,
+      status: 'GENERATED',
+      explanation: this.toJsonValue(
+        result.explanation,
+      ),
+    },
+
+    update: {
+      score: result.score,
+      modelName: MODEL_NAME,
+      explanation: this.toJsonValue(
+        result.explanation,
+      ),
+    },
+  });
+}
 
   calculate(input: MatchingInput): MatchingResult {
     const competenceRequired =
@@ -272,5 +313,11 @@ export class MatchingService {
 
   private round(value: number): number {
     return Math.round(value * 1_000_000) / 1_000_000;
+  }
+  
+  private toJsonValue(
+    explanation: MatchingResult['explanation'],
+  ): Prisma.InputJsonValue {
+    return explanation as unknown as Prisma.InputJsonValue;
   }
 }

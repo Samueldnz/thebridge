@@ -1,4 +1,10 @@
-import { describe, expect, it, vi } from 'vitest';
+import {
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest';
 import { MatchingService } from './matching.service.js';
 
 describe('MatchingService', () => {
@@ -9,11 +15,18 @@ describe('MatchingService', () => {
     project: {
       findUnique: vi.fn(),
     },
+    match: {
+      upsert: vi.fn(),
+    },
   };
 
   const service = new MatchingService(
     prismaMock as never,
   );
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
 
   it('calculates all components using 60/20/20 weights', () => {
     const result = service.calculate({
@@ -414,4 +427,267 @@ describe('MatchingService', () => {
       'Project not found',
     );
   });
+
+  it('calculates and creates a new match', async () => {
+    prismaMock.opportunity.findUnique.mockResolvedValue({
+      id: 'opportunity-1',
+      status: 'OPEN',
+      minTrl: 7,
+      desiredCrl: 6,
+      patentRequirement: 'NOT_REQUIRED',
+      competences: [
+        {
+          competenceId: 'ml',
+          weight: 5,
+        },
+      ],
+    });
+
+    prismaMock.project.findUnique.mockResolvedValue({
+      id: 'project-1',
+      status: 'PUBLISHED',
+      trl: 7,
+      crl: 6,
+      patentStatus: 'NONE',
+      competences: [
+        {
+          competenceId: 'ml',
+          level: 5,
+        },
+      ],
+    });
+
+    prismaMock.match.upsert.mockResolvedValue({
+      id: 'match-1',
+      opportunityId: 'opportunity-1',
+      projectId: 'project-1',
+      score: 1,
+      modelName: 'deterministic',
+      modelVersion: 'v1',
+      status: 'GENERATED',
+      explanation: {
+        version: 'v1',
+        score: 1,
+        percentage: 100,
+        components: {
+          competence: {
+            score: 1,
+            originalWeight: 0.6,
+            effectiveWeight: 0.6,
+          },
+          trl: {
+            score: 1,
+            originalWeight: 0.2,
+            effectiveWeight: 0.2,
+          },
+          crl: {
+            score: 1,
+            originalWeight: 0.2,
+            effectiveWeight: 0.2,
+          },
+        },
+      },
+    });
+
+    const result = await service.calculateAndPersist(
+      'opportunity-1',
+      'project-1',
+    );
+
+    expect(result.id).toBe('match-1');
+
+    expect(
+      prismaMock.match.upsert,
+    ).toHaveBeenCalledWith({
+      where: {
+        opportunityId_projectId_modelVersion: {
+          opportunityId: 'opportunity-1',
+          projectId: 'project-1',
+          modelVersion: 'v1',
+        },
+      },
+
+      create: {
+        opportunityId: 'opportunity-1',
+        projectId: 'project-1',
+        score: 1,
+        modelName: 'deterministic',
+        modelVersion: 'v1',
+        status: 'GENERATED',
+        explanation: {
+          version: 'v1',
+          score: 1,
+          percentage: 100,
+          components: {
+            competence: {
+              score: 1,
+              originalWeight: 0.6,
+              effectiveWeight: 0.6,
+            },
+            trl: {
+              score: 1,
+              originalWeight: 0.2,
+              effectiveWeight: 0.2,
+            },
+            crl: {
+              score: 1,
+              originalWeight: 0.2,
+              effectiveWeight: 0.2,
+            },
+          },
+        },
+      },
+
+      update: {
+        score: 1,
+        modelName: 'deterministic',
+        explanation: {
+          version: 'v1',
+          score: 1,
+          percentage: 100,
+          components: {
+            competence: {
+              score: 1,
+              originalWeight: 0.6,
+              effectiveWeight: 0.6,
+            },
+            trl: {
+              score: 1,
+              originalWeight: 0.2,
+              effectiveWeight: 0.2,
+            },
+            crl: {
+              score: 1,
+              originalWeight: 0.2,
+              effectiveWeight: 0.2,
+            },
+          },
+        },
+      },
+    });
+  });
+
+  it('updates an existing v1 match instead of creating another one', async () => {
+    prismaMock.opportunity.findUnique.mockResolvedValue({
+      id: 'opportunity-1',
+      status: 'OPEN',
+      minTrl: 7,
+      desiredCrl: 6,
+      patentRequirement: 'NOT_REQUIRED',
+      competences: [
+        {
+          competenceId: 'ml',
+          weight: 5,
+        },
+      ],
+    });
+
+    prismaMock.project.findUnique.mockResolvedValue({
+      id: 'project-1',
+      status: 'PUBLISHED',
+      trl: 5,
+      crl: 4,
+      patentStatus: 'NONE',
+      competences: [
+        {
+          competenceId: 'ml',
+          level: 4,
+        },
+      ],
+    });
+
+    prismaMock.match.upsert.mockResolvedValue({
+      id: 'existing-match',
+      opportunityId: 'opportunity-1',
+      projectId: 'project-1',
+      score: 0.809524,
+      modelName: 'deterministic',
+      modelVersion: 'v1',
+      status: 'VIEWED',
+    });
+
+    const result = await service.calculateAndPersist(
+      'opportunity-1',
+      'project-1',
+    );
+
+    expect(result.id).toBe('existing-match');
+
+    expect(
+      prismaMock.match.upsert,
+    ).toHaveBeenCalledTimes(1);
+
+    const call =
+      prismaMock.match.upsert.mock.calls[0][0];
+
+    expect(call.where).toEqual({
+      opportunityId_projectId_modelVersion: {
+        opportunityId: 'opportunity-1',
+        projectId: 'project-1',
+        modelVersion: 'v1',
+      },
+    });
+
+    expect(call.update).not.toHaveProperty(
+      'status',
+    );
+  });
+
+  it('does not persist when opportunity does not exist', async () => {
+    prismaMock.opportunity.findUnique.mockResolvedValue(
+      null,
+    );
+
+    prismaMock.project.findUnique.mockResolvedValue({
+      id: 'project-1',
+      status: 'PUBLISHED',
+      trl: 7,
+      crl: 6,
+      patentStatus: 'NONE',
+      competences: [],
+    });
+
+    await expect(
+      service.calculateAndPersist(
+        'invalid-opportunity',
+        'project-1',
+      ),
+    ).rejects.toThrow(
+      'Opportunity not found',
+    );
+
+    expect(
+      prismaMock.match.upsert,
+    ).not.toHaveBeenCalled();
+  });
+
+  it('does not persist when project does not exist', async () => {
+    prismaMock.opportunity.findUnique.mockResolvedValue({
+      id: 'opportunity-1',
+      status: 'OPEN',
+      minTrl: 7,
+      desiredCrl: 6,
+      patentRequirement: 'NOT_REQUIRED',
+      competences: [],
+    });
+
+    prismaMock.project.findUnique.mockResolvedValue(
+      null,
+    );
+
+    await expect(
+      service.calculateAndPersist(
+        'opportunity-1',
+        'invalid-project',
+      ),
+    ).rejects.toThrow(
+      'Project not found',
+    );
+
+    expect(
+      prismaMock.match.upsert,
+    ).not.toHaveBeenCalled();
+  });
+
+
 });
