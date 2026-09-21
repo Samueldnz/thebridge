@@ -5,12 +5,40 @@ import {
 } from '@nestjs/common';
 
 import { PrismaService } from '../database/prisma/prisma.service.js';
+import { MatchingService } from '../matching/matching.service.js';
+
 import { OpportunityStatus } from '../generated/prisma/enums.js';
 import { UpdateOpportunityCompetenceDto } from './dto/update-opportunity-competence.dto.js';
 
 @Injectable()
 export class OpportunityCompetencesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly matchingService: MatchingService,
+  ) {}
+
+  private async recalculateOpportunityMatches(
+    opportunityId: string,
+  ): Promise<void> {
+    const projects =
+      await this.prisma.project.findMany({
+        where: {
+          status: 'PUBLISHED',
+        },
+        select: {
+          id: true,
+        },
+      });
+
+    await Promise.all(
+      projects.map((project) =>
+        this.matchingService.calculateAndPersist(
+          opportunityId,
+          project.id,
+        ),
+      ),
+    );
+  }
 
   private async getOwnedOpportunity(
     opportunityId: string,
@@ -76,7 +104,11 @@ export class OpportunityCompetencesService {
     userId: string,
     weight: number,
   ) {
-    await this.getOwnedOpportunity(opportunityId, userId);
+    const opportunity =
+    await this.getOwnedOpportunity(
+      opportunityId,
+      userId,
+    );
 
     const competence = await this.prisma.competence.findUnique({
       where: {
@@ -114,7 +146,7 @@ export class OpportunityCompetencesService {
       );
     }
 
-    return this.prisma.opportunityCompetence.create({
+    const relation = await this.prisma.opportunityCompetence.create({
       data: {
         opportunityId,
         competenceId,
@@ -135,6 +167,14 @@ export class OpportunityCompetencesService {
         },
       },
     });
+
+    if (opportunity.status === 'OPEN') {
+      await this.recalculateOpportunityMatches(
+        opportunity.id,
+      );
+    }
+
+    return relation;
   }
 
   async updateCompetence(
@@ -143,7 +183,11 @@ export class OpportunityCompetencesService {
     userId: string,
     dto: UpdateOpportunityCompetenceDto,
   ) {
-    await this.getOwnedOpportunity(opportunityId, userId);
+    const opportunity =
+    await this.getOwnedOpportunity(
+      opportunityId,
+      userId,
+    );
 
     const relation =
       await this.prisma.opportunityCompetence.findUnique({
@@ -161,7 +205,7 @@ export class OpportunityCompetencesService {
       );
     }
 
-    return this.prisma.opportunityCompetence.update({
+    const relationUp = await this.prisma.opportunityCompetence.update({
       where: {
         opportunityId_competenceId: {
           opportunityId,
@@ -186,6 +230,14 @@ export class OpportunityCompetencesService {
         },
       },
     });
+
+    if (opportunity.status === 'OPEN') {
+      await this.recalculateOpportunityMatches(
+        opportunity.id,
+      );
+    }
+
+    return relationUp;
   }
 
   async removeCompetence(
@@ -193,7 +245,11 @@ export class OpportunityCompetencesService {
     competenceId: string,
     userId: string,
   ) {
-    await this.getOwnedOpportunity(opportunityId, userId);
+    const opportunity =
+    await this.getOwnedOpportunity(
+      opportunityId,
+      userId,
+    );
 
     const relation =
       await this.prisma.opportunityCompetence.findUnique({
@@ -219,6 +275,12 @@ export class OpportunityCompetencesService {
         },
       },
     });
+
+    if (opportunity.status === 'OPEN') {
+      await this.recalculateOpportunityMatches(
+        opportunity.id,
+      );
+    }
 
     return {
       success: true,

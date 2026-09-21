@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 
 import { PrismaService } from '../database/prisma/prisma.service.js';
+import { MatchingService } from '../matching/matching.service.js';
 import { CreateOpportunityDto } from './dto/create-opportunity.dto.js';
 import { UpdateOpportunityDto } from './dto/update-opportunity.dto.js';
 import { ListOpportunitiesQueryDto } from './dto/list-opportunities-query.dto.js';
@@ -14,7 +15,31 @@ import { ListOpportunitiesQueryDto } from './dto/list-opportunities-query.dto.js
 export class OpportunitiesService {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly matchingService: MatchingService,
   ) {}
+
+  private async recalculateOpportunityMatches(
+    opportunityId: string,
+  ): Promise<void> {
+    const projects =
+      await this.prisma.project.findMany({
+        where: {
+          status: 'PUBLISHED',
+        },
+        select: {
+          id: true,
+        },
+      });
+
+    await Promise.all(
+      projects.map((project) =>
+        this.matchingService.calculateAndPersist(
+          opportunityId,
+          project.id,
+        ),
+      ),
+    );
+  }
 
   async listOpportunities(
     query: ListOpportunitiesQueryDto,
@@ -142,7 +167,7 @@ export class OpportunitiesService {
       );
     }
 
-    return this.prisma.opportunity.create({
+    const opportunity = await this.prisma.opportunity.create({
       data: {
         ownerId: userId,
         organizationId,
@@ -180,6 +205,14 @@ export class OpportunitiesService {
         updatedAt: true,
       },
     });
+
+    if (opportunity.status === 'OPEN') {
+      await this.recalculateOpportunityMatches(
+        opportunity.id,
+      );
+    }
+
+    return opportunity;
   }
 
   async getOpportunity(
@@ -279,7 +312,7 @@ export class OpportunitiesService {
       );
     }
 
-    return this.prisma.opportunity.update({
+    const updatedOpportunity = await this.prisma.opportunity.update({
       where: {
         id: opportunityId,
       },
@@ -319,6 +352,26 @@ export class OpportunitiesService {
         updatedAt: true,
       },
     });
+
+    const becameOpen =
+      opportunity.status !== 'OPEN' &&
+      updatedOpportunity.status === 'OPEN';
+
+    const relevantFieldChanged =
+      dto.minTrl !== undefined ||
+      dto.desiredCrl !== undefined ||
+      dto.patentRequirement !== undefined;
+
+    if (
+      updatedOpportunity.status === 'OPEN' &&
+      (becameOpen || relevantFieldChanged)
+    ) {
+      await this.recalculateOpportunityMatches(
+        updatedOpportunity.id,
+      );
+    }
+
+    return updatedOpportunity;
   }
 
   async removeOpportunity(
