@@ -1,4 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '../database/prisma/prisma.service.js';
+
 import type {
   MatchingInput,
   MatchingResult,
@@ -13,6 +15,87 @@ const WEIGHTS = {
 
 @Injectable()
 export class MatchingService {
+
+  constructor(private readonly prisma: PrismaService) {}
+
+  async calculateForPair(
+    opportunityId: string,
+    projectId: string,
+  ): Promise<MatchingResult> {
+    const [opportunity, project] = await Promise.all([
+      this.prisma.opportunity.findUnique({
+        where: {
+          id: opportunityId,
+        },
+        select: {
+          id: true,
+          status: true,
+          minTrl: true,
+          desiredCrl: true,
+          patentRequirement: true,
+          competences: {
+            select: {
+              competenceId: true,
+              weight: true,
+            },
+          },
+        },
+      }),
+
+      this.prisma.project.findUnique({
+        where: {
+          id: projectId,
+        },
+        select: {
+          id: true,
+          status: true,
+          trl: true,
+          crl: true,
+          patentStatus: true,
+          competences: {
+            select: {
+              competenceId: true,
+              level: true,
+            },
+          },
+        },
+      }),
+    ]);
+
+    if (!opportunity) {
+      throw new NotFoundException('Opportunity not found');
+    }
+
+    if (!project) {
+      throw new NotFoundException('Project not found');
+    }
+
+    const input: MatchingInput = {
+      opportunity: {
+        competences: opportunity.competences.map((competence) => ({
+          competenceId: competence.competenceId,
+          weight: competence.weight,
+        })),
+        minTrl: opportunity.minTrl,
+        desiredCrl: opportunity.desiredCrl,
+      },
+
+      project: {
+        competences: project.competences.map((competence) => ({
+          competenceId: competence.competenceId,
+          level: competence.level,
+        })),
+        trl: project.trl,
+        crl: project.crl,
+      },
+    };
+
+    return this.calculate(input);
+  }
+
+
+
+
   calculate(input: MatchingInput): MatchingResult {
     const competenceRequired =
       input.opportunity.competences.length > 0;
