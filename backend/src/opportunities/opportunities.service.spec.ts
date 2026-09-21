@@ -193,6 +193,112 @@ describe('OpportunitiesService - matching triggers', () => {
     );
   });
 
+  it('calculates matches when desired CRL changes on an open opportunity', async () => {
+    prismaMock.opportunity.findUnique.mockResolvedValue({
+      id: 'opportunity-1',
+      ownerId: 'user-1',
+      status: 'OPEN',
+    });
+
+    prismaMock.opportunity.update.mockResolvedValue({
+      id: 'opportunity-1',
+      ownerId: 'user-1',
+      organizationId: 'organization-1',
+      title: 'Opportunity',
+      description: 'Opportunity description',
+      keywords: 'technology',
+      industrySector: 'Technology',
+      desiredTechnology: 'AI',
+      minTrl: 5,
+      desiredCrl: 5,
+      patentRequirement: 'NOT_REQUIRED',
+      budgetMin: null,
+      budgetMax: null,
+      currency: null,
+      timeline: null,
+      status: 'OPEN',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    prismaMock.project.findMany.mockResolvedValue([
+      { id: 'project-1' },
+    ]);
+
+    await service.updateOpportunity(
+      'user-1',
+      'opportunity-1',
+      {
+        desiredCrl: 5,
+      } as never,
+    );
+
+    expect(
+      matchingServiceMock.calculateAndPersist,
+    ).toHaveBeenCalledTimes(1);
+
+    expect(
+      matchingServiceMock.calculateAndPersist,
+    ).toHaveBeenCalledWith(
+      'opportunity-1',
+      'project-1',
+    );
+  });
+
+  it('calculates matches when patent requirement changes on an open opportunity', async () => {
+    prismaMock.opportunity.findUnique.mockResolvedValue({
+      id: 'opportunity-1',
+      ownerId: 'user-1',
+      status: 'OPEN',
+    });
+
+    prismaMock.opportunity.update.mockResolvedValue({
+      id: 'opportunity-1',
+      ownerId: 'user-1',
+      organizationId: 'organization-1',
+      title: 'Opportunity',
+      description: 'Opportunity description',
+      keywords: 'technology',
+      industrySector: 'Technology',
+      desiredTechnology: 'AI',
+      minTrl: 5,
+      desiredCrl: 4,
+      patentRequirement: 'REQUIRED',
+      budgetMin: null,
+      budgetMax: null,
+      currency: null,
+      timeline: null,
+      status: 'OPEN',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    prismaMock.project.findMany.mockResolvedValue([
+      { id: 'project-1' },
+    ]);
+
+    await service.updateOpportunity(
+      'user-1',
+      'opportunity-1',
+      {
+        patentRequirement: 'REQUIRED',
+      } as never,
+    );
+
+    expect(
+      matchingServiceMock.calculateAndPersist,
+    ).toHaveBeenCalledTimes(1);
+
+    expect(
+      matchingServiceMock.calculateAndPersist,
+    ).toHaveBeenCalledWith(
+      'opportunity-1',
+      'project-1',
+    );
+  });
+
+
+
   it('does not calculate matches when only the title changes', async () => {
     prismaMock.opportunity.findUnique.mockResolvedValue({
       id: 'opportunity-1',
@@ -288,5 +394,50 @@ describe('OpportunitiesService - matching triggers', () => {
       'opportunity-1',
       'project-1',
     );
+  });
+
+  it('does not calculate matches when an opportunity becomes CLOSED', async () => {
+    prismaMock.opportunity.findUnique.mockResolvedValue({
+      id: 'opportunity-1',
+      ownerId: 'user-1',
+      status: 'OPEN',
+    });
+
+    prismaMock.opportunity.update.mockResolvedValue({
+      id: 'opportunity-1',
+      ownerId: 'user-1',
+      organizationId: 'organization-1',
+      title: 'Opportunity',
+      description: 'Opportunity description',
+      keywords: 'technology',
+      industrySector: 'Technology',
+      desiredTechnology: 'AI',
+      minTrl: 5,
+      desiredCrl: 4,
+      patentRequirement: 'NOT_REQUIRED',
+      budgetMin: null,
+      budgetMax: null,
+      currency: null,
+      timeline: null,
+      status: 'CLOSED',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    await service.updateOpportunity(
+      'user-1',
+      'opportunity-1',
+      {
+        status: 'CLOSED',
+      } as never,
+    );
+
+    expect(
+      matchingServiceMock.calculateAndPersist,
+    ).not.toHaveBeenCalled();
+
+    expect(
+      prismaMock.project.findMany,
+    ).not.toHaveBeenCalled();
   });
 });

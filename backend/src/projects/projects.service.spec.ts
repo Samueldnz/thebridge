@@ -178,6 +178,112 @@ describe('ProjectsService - matching triggers', () => {
     );
     });
 
+    it('calculates matches when CRL changes on a published project', async () => {
+      prismaMock.project.findUnique.mockResolvedValue({
+        id: 'project-1',
+        ownerId: 'user-1',
+        status: 'PUBLISHED',
+        trl: 5,
+        crl: 3,
+        patentStatus: 'NONE',
+      });
+
+      prismaMock.project.update.mockResolvedValue({
+        id: 'project-1',
+        ownerId: 'user-1',
+        organizationId: null,
+        title: 'Project',
+        description: null,
+        keywords: null,
+        researchField: null,
+        trl: 5,
+        crl: 4,
+        patentStatus: 'NONE',
+        status: 'PUBLISHED',
+        source: 'PLATFORM',
+        sourceExternalId: null,
+        sourceUrl: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      prismaMock.opportunity.findMany.mockResolvedValue([
+        { id: 'opportunity-1' },
+      ]);
+
+      await service.updateProject(
+        'user-1',
+        'project-1',
+        {
+          crl: 4,
+        } as never,
+      );
+
+      expect(
+        matchingServiceMock.calculateAndPersist,
+      ).toHaveBeenCalledTimes(1);
+
+      expect(
+        matchingServiceMock.calculateAndPersist,
+      ).toHaveBeenCalledWith(
+        'opportunity-1',
+        'project-1',
+      );
+    });
+
+    it('calculates matches when patent status changes on a published project', async () => {
+      prismaMock.project.findUnique.mockResolvedValue({
+        id: 'project-1',
+        ownerId: 'user-1',
+        status: 'PUBLISHED',
+        trl: 5,
+        crl: 4,
+        patentStatus: 'NONE',
+      });
+
+      prismaMock.project.update.mockResolvedValue({
+        id: 'project-1',
+        ownerId: 'user-1',
+        organizationId: null,
+        title: 'Project',
+        description: null,
+        keywords: null,
+        researchField: null,
+        trl: 5,
+        crl: 4,
+        patentStatus: 'PENDING',
+        status: 'PUBLISHED',
+        source: 'PLATFORM',
+        sourceExternalId: null,
+        sourceUrl: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      prismaMock.opportunity.findMany.mockResolvedValue([
+        { id: 'opportunity-1' },
+      ]);
+
+      await service.updateProject(
+        'user-1',
+        'project-1',
+        {
+          patentStatus: 'PENDING',
+        } as never,
+      );
+
+      expect(
+        matchingServiceMock.calculateAndPersist,
+      ).toHaveBeenCalledTimes(1);
+
+      expect(
+        matchingServiceMock.calculateAndPersist,
+      ).toHaveBeenCalledWith(
+        'opportunity-1',
+        'project-1',
+      );
+    });
+
     it('does not calculate matches when only the title changes', async () => {
         prismaMock.project.findUnique.mockResolvedValue({
             id: 'project-1',

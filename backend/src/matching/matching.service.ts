@@ -74,6 +74,14 @@ export class MatchingService {
       throw new NotFoundException('Project not found');
     }
 
+    const statusEligible =
+      opportunity.status === 'OPEN' &&
+      project.status === 'PUBLISHED';
+
+    if (!statusEligible) {
+      return null;
+    }
+
     const patentEligible =
       opportunity.patentRequirement !== 'REQUIRED' ||
       project.patentStatus !== 'NONE';

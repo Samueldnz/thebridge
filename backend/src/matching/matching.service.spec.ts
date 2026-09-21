@@ -692,6 +692,153 @@ describe('MatchingService', () => {
     ).not.toHaveBeenCalled();
   });
 
+  it('does not persist when opportunity is not OPEN', async () => {
+    prismaMock.opportunity.findUnique.mockResolvedValue({
+      id: 'opportunity-1',
+      status: 'CLOSED',
+      minTrl: 7,
+      desiredCrl: 6,
+      patentRequirement: 'NOT_REQUIRED',
+      competences: [],
+    });
+
+    prismaMock.project.findUnique.mockResolvedValue({
+      id: 'project-1',
+      status: 'PUBLISHED',
+      trl: 7,
+      crl: 6,
+      patentStatus: 'NONE',
+      competences: [],
+    });
+
+    const result = await service.calculateAndPersist(
+      'opportunity-1',
+      'project-1',
+    );
+
+    expect(result).toBeNull();
+
+    expect(
+      prismaMock.match.upsert,
+    ).not.toHaveBeenCalled();
+  });
+
+  it('does not persist when project is not PUBLISHED', async () => {
+    prismaMock.opportunity.findUnique.mockResolvedValue({
+      id: 'opportunity-1',
+      status: 'OPEN',
+      minTrl: 7,
+      desiredCrl: 6,
+      patentRequirement: 'NOT_REQUIRED',
+      competences: [],
+    });
+
+    prismaMock.project.findUnique.mockResolvedValue({
+      id: 'project-1',
+      status: 'DRAFT',
+      trl: 7,
+      crl: 6,
+      patentStatus: 'NONE',
+      competences: [],
+    });
+
+    const result = await service.calculateAndPersist(
+      'opportunity-1',
+      'project-1',
+    );
+
+    expect(result).toBeNull();
+
+    expect(
+      prismaMock.match.upsert,
+    ).not.toHaveBeenCalled();
+  });
+
+  it('does not persist when opportunity is closed and project is not published', async () => {
+    prismaMock.opportunity.findUnique.mockResolvedValue({
+      id: 'opportunity-1',
+      status: 'CLOSED',
+      minTrl: 7,
+      desiredCrl: 6,
+      patentRequirement: 'NOT_REQUIRED',
+      competences: [],
+    });
+
+    prismaMock.project.findUnique.mockResolvedValue({
+      id: 'project-1',
+      status: 'DRAFT',
+      trl: 7,
+      crl: 6,
+      patentStatus: 'NONE',
+      competences: [],
+    });
+
+    const result = await service.calculateAndPersist(
+      'opportunity-1',
+      'project-1',
+    );
+
+    expect(result).toBeNull();
+
+    expect(
+      prismaMock.match.upsert,
+    ).not.toHaveBeenCalled();
+  });
+
+  it('returns null when opportunity is not OPEN', async () => {
+    prismaMock.opportunity.findUnique.mockResolvedValue({
+      id: 'opportunity-1',
+      status: 'CLOSED',
+      minTrl: 7,
+      desiredCrl: 6,
+      patentRequirement: 'NOT_REQUIRED',
+      competences: [],
+    });
+
+    prismaMock.project.findUnique.mockResolvedValue({
+      id: 'project-1',
+      status: 'PUBLISHED',
+      trl: 7,
+      crl: 6,
+      patentStatus: 'NONE',
+      competences: [],
+    });
+
+    const result = await service.calculateForPair(
+      'opportunity-1',
+      'project-1',
+    );
+
+    expect(result).toBeNull();
+  });
+
+  it('returns null when project is not PUBLISHED', async () => {
+    prismaMock.opportunity.findUnique.mockResolvedValue({
+      id: 'opportunity-1',
+      status: 'OPEN',
+      minTrl: 7,
+      desiredCrl: 6,
+      patentRequirement: 'NOT_REQUIRED',
+      competences: [],
+    });
+
+    prismaMock.project.findUnique.mockResolvedValue({
+      id: 'project-1',
+      status: 'DRAFT',
+      trl: 7,
+      crl: 6,
+      patentStatus: 'NONE',
+      competences: [],
+    });
+
+    const result = await service.calculateForPair(
+      'opportunity-1',
+      'project-1',
+    );
+
+    expect(result).toBeNull();
+  });
+  
   it('does not persist a match when patent is required and project has no patent', async () => {
     prismaMock.opportunity.findUnique.mockResolvedValue({
       id: 'opportunity-1',
