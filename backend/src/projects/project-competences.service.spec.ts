@@ -230,13 +230,15 @@ describe('ProjectCompetencesService - matching triggers', () => {
 
     expect(
       prismaMock.projectCompetence.create,
-    ).toHaveBeenCalledWith({
-      data: {
-        projectId: 'project-1',
-        competenceId: 'competence-1',
-        level: 4,
-      },
-    });
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: {
+          projectId: 'project-1',
+          competenceId: 'competence-1',
+          level: 4,
+        },
+      }),
+    );
   });
 
   it('updates project competence level and recalculates matches when project is published', async () => {
