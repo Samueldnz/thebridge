@@ -20,6 +20,8 @@ import { UpdateProjectDto } from './dto/update-project.dto.js';
 import { ListProjectsQueryDto } from './dto/list-projects-query.dto.js';
 import { ProjectsService } from './projects.service.js';
 import { ProjectCompetencesService } from './project-competences.service.js';
+import { AddProjectCompetenceDto } from './dto/add-project-competence.dto.js';
+import { UpdateProjectCompetenceDto } from './dto/update-project-competence.dto.js';
 
 @Controller('projects')
 export class ProjectsController {
@@ -109,11 +111,30 @@ export class ProjectsController {
     @Req() request: AuthenticatedRequest,
     @Param('id') id: string,
     @Param('competenceId') competenceId: string,
+    @Body() dto: AddProjectCompetenceDto,
   ) {
     return this.projectCompetencesService.addProjectCompetence(
       request.user.sub,
       id,
       competenceId,
+      dto.level,
+    );
+  }
+
+  @Patch(':id/competences/:competenceId')
+  @UseGuards(AuthGuard, ProfileTypeGuard)
+  @ProfileType('RESEARCHER')
+  updateProjectCompetence(
+    @Req() request: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Param('competenceId') competenceId: string,
+    @Body() dto: UpdateProjectCompetenceDto,
+  ) {
+    return this.projectCompetencesService.updateProjectCompetence(
+      request.user.sub,
+      id,
+      competenceId,
+      dto.level,
     );
   }
 

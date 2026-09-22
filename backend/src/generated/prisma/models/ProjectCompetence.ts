@@ -20,14 +20,25 @@ export type ProjectCompetenceModel = runtime.Types.Result.DefaultSelection<Prism
 
 export type AggregateProjectCompetence = {
   _count: ProjectCompetenceCountAggregateOutputType | null
+  _avg: ProjectCompetenceAvgAggregateOutputType | null
+  _sum: ProjectCompetenceSumAggregateOutputType | null
   _min: ProjectCompetenceMinAggregateOutputType | null
   _max: ProjectCompetenceMaxAggregateOutputType | null
+}
+
+export type ProjectCompetenceAvgAggregateOutputType = {
+  level: number | null
+}
+
+export type ProjectCompetenceSumAggregateOutputType = {
+  level: number | null
 }
 
 export type ProjectCompetenceMinAggregateOutputType = {
   id: string | null
   projectId: string | null
   competenceId: string | null
+  level: number | null
   createdAt: Date | null
 }
 
@@ -35,6 +46,7 @@ export type ProjectCompetenceMaxAggregateOutputType = {
   id: string | null
   projectId: string | null
   competenceId: string | null
+  level: number | null
   createdAt: Date | null
 }
 
@@ -42,15 +54,25 @@ export type ProjectCompetenceCountAggregateOutputType = {
   id: number
   projectId: number
   competenceId: number
+  level: number
   createdAt: number
   _all: number
 }
 
 
+export type ProjectCompetenceAvgAggregateInputType = {
+  level?: true
+}
+
+export type ProjectCompetenceSumAggregateInputType = {
+  level?: true
+}
+
 export type ProjectCompetenceMinAggregateInputType = {
   id?: true
   projectId?: true
   competenceId?: true
+  level?: true
   createdAt?: true
 }
 
@@ -58,6 +80,7 @@ export type ProjectCompetenceMaxAggregateInputType = {
   id?: true
   projectId?: true
   competenceId?: true
+  level?: true
   createdAt?: true
 }
 
@@ -65,6 +88,7 @@ export type ProjectCompetenceCountAggregateInputType = {
   id?: true
   projectId?: true
   competenceId?: true
+  level?: true
   createdAt?: true
   _all?: true
 }
@@ -107,6 +131,18 @@ export type ProjectCompetenceAggregateArgs<ExtArgs extends runtime.Types.Extensi
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: ProjectCompetenceAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: ProjectCompetenceSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: ProjectCompetenceMinAggregateInputType
@@ -137,6 +173,8 @@ export type ProjectCompetenceGroupByArgs<ExtArgs extends runtime.Types.Extension
   take?: number
   skip?: number
   _count?: ProjectCompetenceCountAggregateInputType | true
+  _avg?: ProjectCompetenceAvgAggregateInputType
+  _sum?: ProjectCompetenceSumAggregateInputType
   _min?: ProjectCompetenceMinAggregateInputType
   _max?: ProjectCompetenceMaxAggregateInputType
 }
@@ -145,8 +183,11 @@ export type ProjectCompetenceGroupByOutputType = {
   id: string
   projectId: string
   competenceId: string
+  level: number
   createdAt: Date
   _count: ProjectCompetenceCountAggregateOutputType | null
+  _avg: ProjectCompetenceAvgAggregateOutputType | null
+  _sum: ProjectCompetenceSumAggregateOutputType | null
   _min: ProjectCompetenceMinAggregateOutputType | null
   _max: ProjectCompetenceMaxAggregateOutputType | null
 }
@@ -173,6 +214,7 @@ export type ProjectCompetenceWhereInput = {
   id?: Prisma.StringFilter<"ProjectCompetence"> | string
   projectId?: Prisma.StringFilter<"ProjectCompetence"> | string
   competenceId?: Prisma.StringFilter<"ProjectCompetence"> | string
+  level?: Prisma.IntFilter<"ProjectCompetence"> | number
   createdAt?: Prisma.DateTimeFilter<"ProjectCompetence"> | Date | string
   project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>
   competence?: Prisma.XOR<Prisma.CompetenceScalarRelationFilter, Prisma.CompetenceWhereInput>
@@ -182,6 +224,7 @@ export type ProjectCompetenceOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   projectId?: Prisma.SortOrder
   competenceId?: Prisma.SortOrder
+  level?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   project?: Prisma.ProjectOrderByWithRelationInput
   competence?: Prisma.CompetenceOrderByWithRelationInput
@@ -196,6 +239,7 @@ export type ProjectCompetenceWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.ProjectCompetenceWhereInput | Prisma.ProjectCompetenceWhereInput[]
   projectId?: Prisma.StringFilter<"ProjectCompetence"> | string
   competenceId?: Prisma.StringFilter<"ProjectCompetence"> | string
+  level?: Prisma.IntFilter<"ProjectCompetence"> | number
   createdAt?: Prisma.DateTimeFilter<"ProjectCompetence"> | Date | string
   project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>
   competence?: Prisma.XOR<Prisma.CompetenceScalarRelationFilter, Prisma.CompetenceWhereInput>
@@ -205,10 +249,13 @@ export type ProjectCompetenceOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   projectId?: Prisma.SortOrder
   competenceId?: Prisma.SortOrder
+  level?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.ProjectCompetenceCountOrderByAggregateInput
+  _avg?: Prisma.ProjectCompetenceAvgOrderByAggregateInput
   _max?: Prisma.ProjectCompetenceMaxOrderByAggregateInput
   _min?: Prisma.ProjectCompetenceMinOrderByAggregateInput
+  _sum?: Prisma.ProjectCompetenceSumOrderByAggregateInput
 }
 
 export type ProjectCompetenceScalarWhereWithAggregatesInput = {
@@ -218,11 +265,13 @@ export type ProjectCompetenceScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"ProjectCompetence"> | string
   projectId?: Prisma.StringWithAggregatesFilter<"ProjectCompetence"> | string
   competenceId?: Prisma.StringWithAggregatesFilter<"ProjectCompetence"> | string
+  level?: Prisma.IntWithAggregatesFilter<"ProjectCompetence"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"ProjectCompetence"> | Date | string
 }
 
 export type ProjectCompetenceCreateInput = {
   id?: string
+  level?: number
   createdAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutCompetencesInput
   competence: Prisma.CompetenceCreateNestedOneWithoutProjectsInput
@@ -232,11 +281,13 @@ export type ProjectCompetenceUncheckedCreateInput = {
   id?: string
   projectId: string
   competenceId: string
+  level?: number
   createdAt?: Date | string
 }
 
 export type ProjectCompetenceUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  level?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutCompetencesNestedInput
   competence?: Prisma.CompetenceUpdateOneRequiredWithoutProjectsNestedInput
@@ -246,6 +297,7 @@ export type ProjectCompetenceUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   projectId?: Prisma.StringFieldUpdateOperationsInput | string
   competenceId?: Prisma.StringFieldUpdateOperationsInput | string
+  level?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -253,11 +305,13 @@ export type ProjectCompetenceCreateManyInput = {
   id?: string
   projectId: string
   competenceId: string
+  level?: number
   createdAt?: Date | string
 }
 
 export type ProjectCompetenceUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  level?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -265,6 +319,7 @@ export type ProjectCompetenceUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   projectId?: Prisma.StringFieldUpdateOperationsInput | string
   competenceId?: Prisma.StringFieldUpdateOperationsInput | string
+  level?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -293,13 +348,19 @@ export type ProjectCompetenceCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   projectId?: Prisma.SortOrder
   competenceId?: Prisma.SortOrder
+  level?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+}
+
+export type ProjectCompetenceAvgOrderByAggregateInput = {
+  level?: Prisma.SortOrder
 }
 
 export type ProjectCompetenceMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   projectId?: Prisma.SortOrder
   competenceId?: Prisma.SortOrder
+  level?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -307,7 +368,12 @@ export type ProjectCompetenceMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   projectId?: Prisma.SortOrder
   competenceId?: Prisma.SortOrder
+  level?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+}
+
+export type ProjectCompetenceSumOrderByAggregateInput = {
+  level?: Prisma.SortOrder
 }
 
 export type ProjectCompetenceCreateNestedManyWithoutCompetenceInput = {
@@ -396,6 +462,7 @@ export type ProjectCompetenceUncheckedUpdateManyWithoutProjectNestedInput = {
 
 export type ProjectCompetenceCreateWithoutCompetenceInput = {
   id?: string
+  level?: number
   createdAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutCompetencesInput
 }
@@ -403,6 +470,7 @@ export type ProjectCompetenceCreateWithoutCompetenceInput = {
 export type ProjectCompetenceUncheckedCreateWithoutCompetenceInput = {
   id?: string
   projectId: string
+  level?: number
   createdAt?: Date | string
 }
 
@@ -439,11 +507,13 @@ export type ProjectCompetenceScalarWhereInput = {
   id?: Prisma.StringFilter<"ProjectCompetence"> | string
   projectId?: Prisma.StringFilter<"ProjectCompetence"> | string
   competenceId?: Prisma.StringFilter<"ProjectCompetence"> | string
+  level?: Prisma.IntFilter<"ProjectCompetence"> | number
   createdAt?: Prisma.DateTimeFilter<"ProjectCompetence"> | Date | string
 }
 
 export type ProjectCompetenceCreateWithoutProjectInput = {
   id?: string
+  level?: number
   createdAt?: Date | string
   competence: Prisma.CompetenceCreateNestedOneWithoutProjectsInput
 }
@@ -451,6 +521,7 @@ export type ProjectCompetenceCreateWithoutProjectInput = {
 export type ProjectCompetenceUncheckedCreateWithoutProjectInput = {
   id?: string
   competenceId: string
+  level?: number
   createdAt?: Date | string
 }
 
@@ -483,11 +554,13 @@ export type ProjectCompetenceUpdateManyWithWhereWithoutProjectInput = {
 export type ProjectCompetenceCreateManyCompetenceInput = {
   id?: string
   projectId: string
+  level?: number
   createdAt?: Date | string
 }
 
 export type ProjectCompetenceUpdateWithoutCompetenceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  level?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutCompetencesNestedInput
 }
@@ -495,23 +568,27 @@ export type ProjectCompetenceUpdateWithoutCompetenceInput = {
 export type ProjectCompetenceUncheckedUpdateWithoutCompetenceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   projectId?: Prisma.StringFieldUpdateOperationsInput | string
+  level?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type ProjectCompetenceUncheckedUpdateManyWithoutCompetenceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   projectId?: Prisma.StringFieldUpdateOperationsInput | string
+  level?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type ProjectCompetenceCreateManyProjectInput = {
   id?: string
   competenceId: string
+  level?: number
   createdAt?: Date | string
 }
 
 export type ProjectCompetenceUpdateWithoutProjectInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  level?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   competence?: Prisma.CompetenceUpdateOneRequiredWithoutProjectsNestedInput
 }
@@ -519,12 +596,14 @@ export type ProjectCompetenceUpdateWithoutProjectInput = {
 export type ProjectCompetenceUncheckedUpdateWithoutProjectInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   competenceId?: Prisma.StringFieldUpdateOperationsInput | string
+  level?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type ProjectCompetenceUncheckedUpdateManyWithoutProjectInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   competenceId?: Prisma.StringFieldUpdateOperationsInput | string
+  level?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -534,6 +613,7 @@ export type ProjectCompetenceSelect<ExtArgs extends runtime.Types.Extensions.Int
   id?: boolean
   projectId?: boolean
   competenceId?: boolean
+  level?: boolean
   createdAt?: boolean
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   competence?: boolean | Prisma.CompetenceDefaultArgs<ExtArgs>
@@ -545,10 +625,11 @@ export type ProjectCompetenceSelectScalar = {
   id?: boolean
   projectId?: boolean
   competenceId?: boolean
+  level?: boolean
   createdAt?: boolean
 }
 
-export type ProjectCompetenceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "projectId" | "competenceId" | "createdAt", ExtArgs["result"]["projectCompetence"]>
+export type ProjectCompetenceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "projectId" | "competenceId" | "level" | "createdAt", ExtArgs["result"]["projectCompetence"]>
 export type ProjectCompetenceInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   competence?: boolean | Prisma.CompetenceDefaultArgs<ExtArgs>
@@ -564,6 +645,7 @@ export type $ProjectCompetencePayload<ExtArgs extends runtime.Types.Extensions.I
     id: string
     projectId: string
     competenceId: string
+    level: number
     createdAt: Date
   }, ExtArgs["result"]["projectCompetence"]>
   composites: {}
@@ -939,6 +1021,7 @@ export interface ProjectCompetenceFieldRefs {
   readonly id: Prisma.FieldRef<"ProjectCompetence", 'String'>
   readonly projectId: Prisma.FieldRef<"ProjectCompetence", 'String'>
   readonly competenceId: Prisma.FieldRef<"ProjectCompetence", 'String'>
+  readonly level: Prisma.FieldRef<"ProjectCompetence", 'Int'>
   readonly createdAt: Prisma.FieldRef<"ProjectCompetence", 'DateTime'>
 }
     

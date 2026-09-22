@@ -433,6 +433,10 @@ model ProjectCompetence {
   projectId    String
   competenceId String
 
+  // Nível da competência no projeto: 1-5.
+  // A validação do intervalo será feita na camada de aplicação.
+  level Int @default(1)
+
   createdAt DateTime @default(now())
 
   project    Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)

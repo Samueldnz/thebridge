@@ -83,6 +83,7 @@ export class ProjectCompetencesService {
         projectId,
       },
       select: {
+        level: true,
         competence: {
           select: {
             id: true,
@@ -106,7 +107,14 @@ export class ProjectCompetencesService {
     userId: string,
     projectId: string,
     competenceId: string,
+    level: number,
   ) {
+
+    if (!Number.isInteger(level) || level < 1 || level > 5) {
+      throw new ConflictException(
+        'Project competence level must be between 1 and 5',
+      );
+    }
     const project =
     await this.getOwnedActiveProject(
       userId,
@@ -156,10 +164,25 @@ export class ProjectCompetencesService {
       );
     }
 
+    const created =
     await this.prisma.projectCompetence.create({
       data: {
         projectId,
         competenceId,
+        level,
+      },
+      select: {
+        level: true,
+        competence: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            description: true,
+            parentId: true,
+            isActive: true,
+          },
+        },
       },
     });
 
@@ -169,7 +192,73 @@ export class ProjectCompetencesService {
       );
     }
 
-    return competence;
+    return created;
+  }
+
+  async updateProjectCompetence(
+    userId: string,
+    projectId: string,
+    competenceId: string,
+    level: number,
+  ) {
+    if (!Number.isInteger(level) || level < 1 || level > 5) {
+      throw new ConflictException(
+        'Project competence level must be between 1 and 5',
+      );
+    }
+
+    const project = await this.getOwnedActiveProject(
+      userId,
+      projectId,
+    );
+
+    const existing =
+      await this.prisma.projectCompetence.findUnique({
+        where: {
+          projectId_competenceId: {
+            projectId,
+            competenceId,
+          },
+        },
+      });
+
+    if (!existing) {
+      throw new NotFoundException(
+        'Project competence association not found',
+      );
+    }
+
+    const updated =
+      await this.prisma.projectCompetence.update({
+        where: {
+          projectId_competenceId: {
+            projectId,
+            competenceId,
+          },
+        },
+        data: {
+          level,
+        },
+        select: {
+          level: true,
+          competence: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              description: true,
+              parentId: true,
+              isActive: true,
+            },
+          },
+        },
+      });
+
+    if (project.status === 'PUBLISHED') {
+      await this.recalculateProjectMatches(projectId);
+    }
+
+    return updated;
   }
 
   async removeProjectCompetence(

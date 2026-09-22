@@ -241,6 +241,7 @@ export const ProjectCompetenceScalarFieldEnum = {
   id: 'id',
   projectId: 'projectId',
   competenceId: 'competenceId',
+  level: 'level',
   createdAt: 'createdAt'
 } as const
 

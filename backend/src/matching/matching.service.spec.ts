@@ -980,4 +980,58 @@ describe('MatchingService', () => {
       prismaMock.match.upsert,
     ).toHaveBeenCalledTimes(1);
   });
+
+  it('uses project competence level in the competence score', () => {
+    const levelOne = service.calculate({
+      opportunity: {
+        competences: [
+          {
+            competenceId: 'ml',
+            weight: 5,
+          },
+        ],
+        minTrl: null,
+        desiredCrl: null,
+      },
+      project: {
+        competences: [
+          {
+            competenceId: 'ml',
+            level: 1,
+          },
+        ],
+        trl: null,
+        crl: null,
+      },
+    });
+
+    const levelFive = service.calculate({
+      opportunity: {
+        competences: [
+          {
+            competenceId: 'ml',
+            weight: 5,
+          },
+        ],
+        minTrl: null,
+        desiredCrl: null,
+      },
+      project: {
+        competences: [
+          {
+            competenceId: 'ml',
+            level: 5,
+          },
+        ],
+        trl: null,
+        crl: null,
+      },
+    });
+
+    expect(levelOne.score).toBe(0.2);
+    expect(levelOne.percentage).toBe(20);
+
+    expect(levelFive.score).toBe(1);
+    expect(levelFive.percentage).toBe(100);
+  });
 });
