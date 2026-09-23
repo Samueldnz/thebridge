@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 
 
 import { ArrowRight, Menu, X } from "lucide-react";
@@ -24,10 +24,33 @@ const navigationItems = [
 
 export function PublicHeader() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const closeMenu = () => {
     setIsMenuOpen(false);
+  };
+
+  const handleNavClick = (href: string, e: React.MouseEvent) => {
+    closeMenu();
+    if (href.startsWith("/#") || href.startsWith("#")) {
+      e.preventDefault();
+      const targetId = href.replace(/^\/?#/, "");
+      if (location.pathname === "/") {
+        const el = document.getElementById(targetId);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth" });
+        }
+      } else {
+        navigate(`/#${targetId}`);
+        setTimeout(() => {
+          const el = document.getElementById(targetId);
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth" });
+          }
+        }, 150);
+      }
+    }
   };
 
 
@@ -47,8 +70,8 @@ export function PublicHeader() {
         className="relative flex min-h-[72px] items-center gap-6 lg:min-h-[76px]"
       >
         {/* Logo */}
-        <a
-          href="/"
+        <Link
+          to="/"
           aria-label="The Bridge — início"
           className="flex shrink-0 items-center"
           onClick={closeMenu}
@@ -58,7 +81,7 @@ export function PublicHeader() {
             alt="The Bridge"
             className="h-auto w-[145px] lg:w-[158px]"
           />
-        </a>
+        </Link>
 
         {/* Desktop navigation */}
         <nav
@@ -70,9 +93,10 @@ export function PublicHeader() {
           ].join(" ")}
         >
           {navigationItems.map((item) => (
-            <a
+            <Link
               key={item.href}
-              href={item.href}
+              to={item.href}
+              onClick={(e) => handleNavClick(item.href, e)}
               className={[
                 "whitespace-nowrap",
                 "font-heading text-sm font-medium",
@@ -85,7 +109,7 @@ export function PublicHeader() {
               ].join(" ")}
             >
               {item.label}
-            </a>
+            </Link>
           ))}
         </nav>
 
@@ -177,10 +201,10 @@ export function PublicHeader() {
             className="flex flex-col px-5 py-6 md:px-8"
           >
             {navigationItems.map((item) => (
-              <a
+              <Link
                 key={item.href}
-                href={item.href}
-                onClick={closeMenu}
+                to={item.href}
+                onClick={(e) => handleNavClick(item.href, e)}
                 className={[
                   "border-b border-border-subtle",
                   "py-4",
@@ -193,7 +217,7 @@ export function PublicHeader() {
                 ].join(" ")}
               >
                 {item.label}
-              </a>
+              </Link>
             ))}
 
             <div className="flex flex-col gap-3 pt-6">

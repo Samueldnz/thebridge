@@ -1,3 +1,4 @@
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import {
   FaInstagram,
@@ -49,6 +50,30 @@ const socialLinks = [
 ];
 
 export function PublicFooter() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleNavClick = (href: string, e: React.MouseEvent) => {
+    if (href.startsWith("/#") || href.startsWith("#")) {
+      e.preventDefault();
+      const targetId = href.replace(/^\/?#/, "");
+      if (location.pathname === "/") {
+        const el = document.getElementById(targetId);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth" });
+        }
+      } else {
+        navigate(`/#${targetId}`);
+        setTimeout(() => {
+          const el = document.getElementById(targetId);
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth" });
+          }
+        }, 150);
+      }
+    }
+  };
+
   return (
     <footer className="border-t border-border-subtle bg-surface-primary">
       <Container size="wide">
@@ -56,8 +81,8 @@ export function PublicFooter() {
         <div className="grid gap-12 py-16 md:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1.6fr] lg:gap-10 lg:py-20">
           {/* Brand */}
           <div className="max-w-sm">
-            <a
-              href="/"
+            <Link
+              to="/"
               aria-label="The Bridge — início"
               className="inline-flex"
             >
@@ -66,7 +91,7 @@ export function PublicFooter() {
                 alt="The Bridge"
                 className="h-auto w-[175px]"
               />
-            </a>
+            </Link>
 
             <p className="mt-7 max-w-sm font-body text-sm leading-6 text-text-secondary">
               Conectando conhecimento, inovação e oportunidades para
@@ -88,8 +113,9 @@ export function PublicFooter() {
                 <ul className="space-y-3">
                   {group.links.map((link) => (
                     <li key={link.href}>
-                      <a
-                        href={link.href}
+                      <Link
+                        to={link.href}
+                        onClick={(e) => handleNavClick(link.href, e)}
                         className={[
                           "font-body text-sm",
                           "text-text-secondary",
@@ -98,7 +124,7 @@ export function PublicFooter() {
                         ].join(" ")}
                       >
                         {link.label}
-                      </a>
+                      </Link>
                     </li>
                   ))}
                 </ul>
@@ -179,19 +205,19 @@ export function PublicFooter() {
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:gap-8">
             {/* Legal */}
             <div className="flex flex-wrap gap-x-6 gap-y-2">
-              <a
-                href="/privacidade"
+              <Link
+                to="/privacidade"
                 className="font-body text-xs text-text-secondary transition-colors hover:text-brand-green-moss"
               >
                 Política de privacidade
-              </a>
+              </Link>
 
-              <a
-                href="/termos"
+              <Link
+                to="/termos"
                 className="font-body text-xs text-text-secondary transition-colors hover:text-brand-green-moss"
               >
                 Termos de uso
-              </a>
+              </Link>
             </div>
 
             {/* Social */}

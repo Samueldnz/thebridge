@@ -1,4 +1,5 @@
-import { createBrowserRouter } from "react-router-dom";
+import { useEffect } from "react";
+import { createBrowserRouter, Outlet, useLocation } from "react-router-dom";
 
 import { LoginPage } from "../pages/LoginPage";
 import { RegisterPage } from "../pages/RegisterPage";
@@ -17,11 +18,31 @@ import FoundationDemo from "../pages/FoundationDemo";
 import { HomePage } from "../pages/HomePage";
 import { PreviewLayoutPage } from "../pages/PreviewLayoutPage";
 
+function RootLayout() {
+  const { pathname, hash } = useLocation();
+
+  useEffect(() => {
+    if (hash) {
+      const el = document.getElementById(hash.replace(/^#/, ""));
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth" });
+        return;
+      }
+    }
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [pathname, hash]);
+
+  return <Outlet />;
+}
+
 export const router = createBrowserRouter([
   {
-    path: "/",
-    element: <HomePage />,
-  },
+    element: <RootLayout />,
+    children: [
+      {
+        path: "/",
+        element: <HomePage />,
+      },
   {
     path: "/login",
     element: <LoginPage />,
@@ -106,8 +127,22 @@ export const router = createBrowserRouter([
     path: "/foundation",
     element: <FoundationDemo />,
   },
-  {
-    path: "/preview",
-    element: <PreviewLayoutPage />,
+      {
+        path: "/preview",
+        element: <PreviewLayoutPage />,
+      },
+      {
+        path: "/privacidade",
+        element: <OurHistoryPage />,
+      },
+      {
+        path: "/termos",
+        element: <OurHistoryPage />,
+      },
+      {
+        path: "*",
+        element: <HomePage />,
+      },
+    ],
   },
 ]);
