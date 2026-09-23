@@ -22,6 +22,8 @@ async function bootstrap() {
   const defaultOrigins = [
     'https://thebridge.app.br',
     'https://www.thebridge.app.br',
+    'https://api.thebridge.app.br',
+    'https://darkviolet-baboon-478084.hostingersite.com',
     'http://localhost:5173',
     'http://127.0.0.1:5173',
   ];

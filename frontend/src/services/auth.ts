@@ -358,8 +358,21 @@ export const authService = {
       }
 
       const data: AuthResponse = await response.json();
-      this.setSession(data.accessToken, data.user, remember);
-      return data;
+      let user = data.user;
+      if (!user && data.accessToken) {
+        try {
+          const meRes = await fetch(`${env.apiUrl}/auth/me`, {
+            headers: { Authorization: `Bearer ${data.accessToken}` },
+          });
+          if (meRes.ok) {
+            user = await meRes.json();
+          }
+        } catch {
+          // ignore
+        }
+      }
+      this.setSession(data.accessToken, user, remember);
+      return { accessToken: data.accessToken, user };
     } catch (err: unknown) {
       if (err instanceof Error && (err.name === "TypeError" || err.message.includes("fetch") || err.message.includes("offline"))) {
         // Backend offline demonstration fallback: check known accounts
@@ -419,8 +432,21 @@ export const authService = {
       }
 
       const data: AuthResponse = await response.json();
-      this.setSession(data.accessToken, data.user, remember);
-      return data;
+      let user = data.user;
+      if (!user && data.accessToken) {
+        try {
+          const meRes = await fetch(`${env.apiUrl}/auth/me`, {
+            headers: { Authorization: `Bearer ${data.accessToken}` },
+          });
+          if (meRes.ok) {
+            user = await meRes.json();
+          }
+        } catch {
+          // ignore
+        }
+      }
+      this.setSession(data.accessToken, user, remember);
+      return { accessToken: data.accessToken, user };
     } catch (err: unknown) {
       if (err instanceof Error && (err.name === "TypeError" || err.message.includes("fetch") || err.message.includes("offline"))) {
         // Backend offline demonstration fallback
