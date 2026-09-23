@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 
 import logo from "../../assets/brand/logo/TheBridge_Logo_Verde_2.svg";
-import { authService, calculateProfileTier, type ProfileType } from "../../services/auth";
+import { authService, calculateProfileTier } from "../../services/auth";
 import { Container } from "../ui/Container";
 import { Icon } from "../ui/Icon";
 
@@ -40,22 +40,12 @@ export function DashboardLayout({
 
   useEffect(() => {
     const current = authService.getStoredUser();
-    if (!current && !authService.isAuthenticated()) {
-      // In demo mode, if not authenticated, default to researcher
-      const demoUser = {
-        id: "demo-researcher-1",
-        name: "Dra. Carolina Fontes",
-        email: "carolina.fontes@usp.br",
-        profileType: "RESEARCHER" as ProfileType,
-        status: "ACTIVE",
-        profileCompleted: true,
-      };
-      authService.setSession("demo-token", demoUser);
-      setUser(demoUser);
-    } else if (current) {
+    if (!current || !authService.isAuthenticated()) {
+      navigate("/login");
+    } else {
       setUser(current);
     }
-  }, []);
+  }, [navigate]);
 
   // Strict role guard: Researcher cannot access Company pages, Company cannot access Researcher pages
   useEffect(() => {

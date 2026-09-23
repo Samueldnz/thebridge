@@ -147,8 +147,9 @@ export const projectsService = {
   async getMyProjects(userId?: string): Promise<Project[]> {
     const all = await this.getProjects();
     const currentUser = authService.getStoredUser();
-    const targetOwnerId = userId || currentUser?.id || "demo-researcher-1";
-    return all.filter((p) => (p.ownerId === targetOwnerId) || (!p.ownerId && targetOwnerId === "demo-researcher-1"));
+    const targetOwnerId = userId || currentUser?.id;
+    if (!targetOwnerId) return [];
+    return all.filter((p) => p.ownerId === targetOwnerId);
   },
 
   async getProject(id: string): Promise<Project | null> {
@@ -159,7 +160,10 @@ export const projectsService = {
   async createProject(payload: CreateProjectPayload): Promise<Project> {
     const token = authService.getStoredToken();
     const currentUser = authService.getStoredUser();
-    const ownerId = currentUser?.id || "demo-researcher-1";
+    const ownerId = currentUser?.id;
+    if (!ownerId) {
+      throw new Error("Usuário não autenticado. Faça login para cadastrar projetos.");
+    }
 
     // Enforce 5 projects maximum quota
     const myProjects = await this.getMyProjects(ownerId);
@@ -222,7 +226,7 @@ export const projectsService = {
       status: payload.status || "PUBLISHED",
       competences: payload.competences,
       createdAt: new Date().toISOString(),
-      ownerName: currentUser?.name || "Dra. Carolina Fontes (Lab. Nanomedicina USP)",
+      ownerName: currentUser?.name || "Pesquisador",
     };
 
     const currentList = this.getStoredProjects();

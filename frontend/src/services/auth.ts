@@ -273,6 +273,16 @@ export const authService = {
       const data = localStorage.getItem(USER_KEY) || sessionStorage.getItem(USER_KEY);
       if (!data) return null;
       const user: User = JSON.parse(data);
+      // Clean up legacy mock sessions if found so the user is never stuck in a demo session
+      if (
+        user.id === "demo-researcher-1" ||
+        user.id === "demo-company-1" ||
+        user.name === "Dra. Carolina Fontes" ||
+        user.name === "Eurofarma Inovação & P&D"
+      ) {
+        this.clearSession();
+        return null;
+      }
       const { tier, score } = calculateProfileTier(user);
       user.tier = tier;
       user.tierScore = score;
@@ -324,7 +334,7 @@ export const authService = {
   },
 
   isAuthenticated(): boolean {
-    return Boolean(this.getStoredToken());
+    return Boolean(this.getStoredToken() && this.getStoredUser());
   },
 
   async login(payload: LoginPayload, remember: boolean = true): Promise<AuthResponse> {
@@ -335,6 +345,7 @@ export const authService = {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Accept: "application/json",
         },
         body: JSON.stringify({
           email: cleanEmail,
@@ -342,27 +353,30 @@ export const authService = {
         }),
       });
 
-      const isJson = response.headers.get("content-type")?.includes("application/json");
-      if (!isJson) {
-        throw new TypeError("Backend returned non-JSON response (offline/proxy fallback)");
-      }
+      const data = await response.json().catch(() => null);
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        const errorMessage =
-          errorData?.message ||
-          (response.status === 401
-            ? "Credenciais inválidas. Verifique seu e-mail e senha."
-            : "Ocorreu um erro ao entrar. Tente novamente.");
-        throw new Error(Array.isArray(errorMessage) ? errorMessage.join(", ") : errorMessage);
+        let errorMessage = "Ocorreu um erro ao entrar. Tente novamente.";
+        if (response.status === 401) {
+          errorMessage = "Credenciais inválidas. Verifique seu e-mail e senha ou cadastre-se.";
+        } else if (data?.message) {
+          errorMessage = Array.isArray(data.message) ? data.message.join(", ") : data.message;
+        }
+        throw new Error(errorMessage);
       }
 
-      const data: AuthResponse = await response.json();
+      if (!data || !data.accessToken) {
+        throw new Error("Resposta inválida do servidor de autenticação.");
+      }
+
       let user = data.user;
       if (!user && data.accessToken) {
         try {
           const meRes = await fetch(`${env.apiUrl}/auth/me`, {
-            headers: { Authorization: `Bearer ${data.accessToken}` },
+            headers: {
+              Authorization: `Bearer ${data.accessToken}`,
+              Accept: "application/json",
+            },
           });
           if (meRes.ok) {
             user = await meRes.json();
@@ -371,31 +385,28 @@ export const authService = {
           // ignore
         }
       }
+
+      if (!user) {
+        user = {
+          id: `usr-${Date.now()}`,
+          name: cleanEmail.split("@")[0],
+          email: cleanEmail,
+          profileType: "RESEARCHER",
+          status: "ACTIVE",
+          profileCompleted: false,
+        };
+      }
+
       this.setSession(data.accessToken, user, remember);
       return { accessToken: data.accessToken, user };
     } catch (err: unknown) {
-      if (err instanceof Error && (err.name === "TypeError" || err.message.includes("fetch") || err.message.includes("offline"))) {
-        // Backend offline demonstration fallback: check known accounts
-        const known = this.getKnownAccounts()[cleanEmail];
-        const isCompanyEmail = cleanEmail.includes("empresa") || cleanEmail.includes("company") || cleanEmail.includes("eurofarma");
-
-        const mockUser: User = known || {
-          id: isCompanyEmail ? "demo-company-1" : "demo-researcher-1",
-          name: isCompanyEmail ? "Eurofarma Inovação & P&D" : "Dra. Carolina Fontes",
-          email: cleanEmail,
-          profileType: isCompanyEmail ? "COMPANY" : "RESEARCHER",
-          status: "ACTIVE",
-          profileCompleted: true,
-        };
-
-        const mockResponse: AuthResponse = {
-          accessToken: "mock-jwt-token-preview",
-          user: mockUser,
-        };
-        this.setSession(mockResponse.accessToken, mockUser, remember);
-        return mockResponse;
+      if (err instanceof Error) {
+        if (err.name === "TypeError" || err.message.toLowerCase().includes("fetch")) {
+          throw new Error("Não foi possível conectar ao servidor da API. Verifique sua conexão com a internet.");
+        }
+        throw err;
       }
-      throw err;
+      throw new Error("Erro desconhecido ao realizar login.");
     }
   },
 
@@ -407,6 +418,7 @@ export const authService = {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Accept: "application/json",
         },
         body: JSON.stringify({
           name: payload.name.trim(),
@@ -416,27 +428,30 @@ export const authService = {
         }),
       });
 
-      const isJson = response.headers.get("content-type")?.includes("application/json");
-      if (!isJson) {
-        throw new TypeError("Backend returned non-JSON response (offline/proxy fallback)");
-      }
+      const data = await response.json().catch(() => null);
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        const errorMessage =
-          errorData?.message ||
-          (response.status === 409
-            ? "Este e-mail já está cadastrado na plataforma."
-            : "Ocorreu um erro ao criar a conta. Tente novamente.");
-        throw new Error(Array.isArray(errorMessage) ? errorMessage.join(", ") : errorMessage);
+        let errorMessage = "Ocorreu um erro ao criar a conta. Tente novamente.";
+        if (response.status === 409) {
+          errorMessage = "Este e-mail já está cadastrado na plataforma.";
+        } else if (data?.message) {
+          errorMessage = Array.isArray(data.message) ? data.message.join(", ") : data.message;
+        }
+        throw new Error(errorMessage);
       }
 
-      const data: AuthResponse = await response.json();
+      if (!data || !data.accessToken) {
+        throw new Error("Resposta inválida do servidor ao criar a conta.");
+      }
+
       let user = data.user;
       if (!user && data.accessToken) {
         try {
           const meRes = await fetch(`${env.apiUrl}/auth/me`, {
-            headers: { Authorization: `Bearer ${data.accessToken}` },
+            headers: {
+              Authorization: `Bearer ${data.accessToken}`,
+              Accept: "application/json",
+            },
           });
           if (meRes.ok) {
             user = await meRes.json();
@@ -445,27 +460,28 @@ export const authService = {
           // ignore
         }
       }
-      this.setSession(data.accessToken, user, remember);
-      return { accessToken: data.accessToken, user };
-    } catch (err: unknown) {
-      if (err instanceof Error && (err.name === "TypeError" || err.message.includes("fetch") || err.message.includes("offline"))) {
-        // Backend offline demonstration fallback
-        const mockUser: User = {
-          id: `user-${Date.now()}`,
+
+      if (!user) {
+        user = {
+          id: `usr-${Date.now()}`,
           name: payload.name.trim(),
           email: cleanEmail,
           profileType: payload.profileType,
           status: "ACTIVE",
           profileCompleted: true,
         };
-        const mockResponse: AuthResponse = {
-          accessToken: "mock-jwt-token-preview",
-          user: mockUser,
-        };
-        this.setSession(mockResponse.accessToken, mockUser, remember);
-        return mockResponse;
       }
-      throw err;
+
+      this.setSession(data.accessToken, user, remember);
+      return { accessToken: data.accessToken, user };
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        if (err.name === "TypeError" || err.message.toLowerCase().includes("fetch")) {
+          throw new Error("Não foi possível conectar ao servidor da API. Verifique sua conexão com a internet.");
+        }
+        throw err;
+      }
+      throw new Error("Erro desconhecido ao criar conta.");
     }
   },
 

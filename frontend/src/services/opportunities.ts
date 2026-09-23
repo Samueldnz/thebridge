@@ -172,8 +172,9 @@ export const opportunitiesService = {
   async getMyOpportunities(userId?: string): Promise<Opportunity[]> {
     const all = await this.getOpportunities();
     const currentUser = authService.getStoredUser();
-    const targetOwnerId = userId || currentUser?.id || "demo-company-1";
-    return all.filter((o) => (o.ownerId === targetOwnerId) || (!o.ownerId && targetOwnerId === "demo-company-1"));
+    const targetOwnerId = userId || currentUser?.id;
+    if (!targetOwnerId) return [];
+    return all.filter((o) => o.ownerId === targetOwnerId);
   },
 
   async getOpportunity(id: string): Promise<Opportunity | null> {
@@ -184,7 +185,10 @@ export const opportunitiesService = {
   async createOpportunity(payload: CreateOpportunityPayload): Promise<Opportunity> {
     const token = authService.getStoredToken();
     const currentUser = authService.getStoredUser();
-    const ownerId = currentUser?.id || "demo-company-1";
+    const ownerId = currentUser?.id;
+    if (!ownerId) {
+      throw new Error("Usuário não autenticado. Faça login para cadastrar demandas.");
+    }
 
     // Enforce 5 opportunities maximum quota
     const myOpps = await this.getMyOpportunities(ownerId);
@@ -257,7 +261,7 @@ export const opportunitiesService = {
       status: payload.status || "OPEN",
       competences: payload.competences,
       createdAt: new Date().toISOString(),
-      organizationName: currentUser?.name || "Eurofarma Inovação & P&D",
+      organizationName: currentUser?.companyName || currentUser?.name || "Empresa",
     };
 
     const currentList = this.getStoredOpportunities();
