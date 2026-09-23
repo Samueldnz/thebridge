@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import {
   ArrowRight,
   Network,
@@ -32,6 +33,8 @@ const solutions = [
 ];
 
 export function SolutionsSection() {
+  const navigate = useNavigate();
+
   return (
     <Section
       id="solucoes"
@@ -71,6 +74,7 @@ export function SolutionsSection() {
                 <Button
                   variant="secondary"
                   size="lg"
+                  onClick={() => navigate("/solucoes")}
                 >
                   Explorar todas as soluções
 
@@ -81,6 +85,7 @@ export function SolutionsSection() {
                   />
                 </Button>
               </div>
+
             </div>
           </div>
 

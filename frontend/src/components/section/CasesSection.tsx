@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 
 import agricultureImage from "../../assets/brand/photography/cases-agriculture.jpg";
@@ -9,31 +10,42 @@ import { Container } from "../ui/Container";
 import { Icon } from "../ui/Icon";
 import { Section } from "../ui/Section";
 
-const cases = [
+const matchingFeatures = [
   {
-    category: "Agro e biotecnologia",
-    title: "Solução biotecnológica para agricultura sustentável",
-    image: agricultureImage,
-    alt: "Pesquisador analisando o desenvolvimento de uma cultura agrícola",
-  },
-  {
-    category: "Energia limpa",
-    title: "Tecnologia universitária impulsiona energia renovável",
+    category: "Algoritmo de Compatibilidade",
+    title: "Matching Ponderado (Competências, TRL & CRL)",
+    description:
+      "Cálculo automatizado que avalia a aderência de competências técnicas (60%), prontidão tecnológica TRL (20%) e maturidade comercial CRL (20%), eliminando semanas de busca manual.",
     image: energyImage,
-    alt: "Painéis fotovoltaicos instalados em uma área agrícola",
+    alt: "Infraestrutura tecnológica e científica representando matching inteligente",
+    link: "/matching",
   },
   {
-    category: "Saúde e bem-estar",
-    title: "Inovação em saúde com impacto social",
+    category: "Propriedade Intelectual",
+    title: "Curadoria & Homologação de Patentes",
+    description:
+      "Mapeamento rigoroso de patentes concedidas ou em depósito, requisitos regulatórios e áreas de pesquisa aplicada para empresas e corporações inovadoras.",
+    image: agricultureImage,
+    alt: "Pesquisa aplicada em biotecnologia e inovação sustentável",
+    link: "/matching",
+  },
+  {
+    category: "Transferência Tecnológica",
+    title: "Conexão Direta & Homologação Ágil",
+    description:
+      "Estruturação de parcerias estratégicas, licenciamento ágil de tecnologias e colaboração científica contínua entre grupos de pesquisa e o setor produtivo.",
     image: healthImage,
-    alt: "Pesquisador trabalhando com microscópio",
+    alt: "Pesquisador trabalhando em laboratório de vanguarda",
+    link: "/matching",
   },
 ];
 
 export function CasesSection() {
+  const navigate = useNavigate();
+
   return (
     <Section
-      id="casos"
+      id="matching"
       spacing="xl"
       surface="primary"
     >
@@ -42,7 +54,7 @@ export function CasesSection() {
         <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
             <p className="font-heading text-xs font-semibold uppercase tracking-[0.08em] text-brand-green-moss">
-              Da pesquisa para a sociedade
+              Inteligência &amp; Propósito
             </p>
 
             <h2
@@ -55,14 +67,13 @@ export function CasesSection() {
                 "text-text-primary",
               ].join(" ")}
             >
-              Casos que geram
-              <br />
-              impacto real
+              Serviços de Matching
             </h2>
 
             <p className="mt-7 max-w-xl font-body text-body-md leading-7 text-text-secondary">
-              Conheça iniciativas que saíram do ambiente acadêmico
-              e se tornaram soluções para desafios do mundo real.
+              Conheça o motor de matchmaking da The Bridge e a nossa tecnologia
+              para construir a ponte estratégica entre a ciência das universidades
+              e a capacidade de escala do mercado.
             </p>
           </div>
 
@@ -70,9 +81,9 @@ export function CasesSection() {
             <Button
               variant="secondary"
               size="lg"
+              onClick={() => navigate("/matching")}
             >
-              Ver todos os casos
-
+              Conhecer o Matching
               <Icon
                 icon={ArrowRight}
                 size={17}
@@ -82,27 +93,29 @@ export function CasesSection() {
           </div>
         </div>
 
-        {/* Cases */}
+        {/* Features / Quem Somos Cards */}
         <div className="mt-14 grid gap-6 md:grid-cols-3">
-          {cases.map((item) => (
+          {matchingFeatures.map((item) => (
             <article
               key={item.title}
+              onClick={() => navigate(item.link)}
               className={[
-                "group",
+                "group cursor-pointer",
                 "overflow-hidden",
                 "border border-border-subtle",
                 "bg-surface-white",
-                "transition-shadow duration-300",
-                "hover:shadow-md",
+                "transition-all duration-300",
+                "hover:shadow-lg hover:border-brand-green-moss/40",
               ].join(" ")}
             >
               {/* Image */}
-              <div className="aspect-[4/3] overflow-hidden">
+              <div className="aspect-[4/3] overflow-hidden bg-brand-cream">
                 <img
                   src={item.image}
                   alt={item.alt}
                   className={[
-                    "h-full w-full object-cover",
+                    "h-full w-full",
+                    "object-cover",
                     "transition-transform duration-500",
                     "group-hover:scale-[1.03]",
                   ].join(" ")}
@@ -110,40 +123,34 @@ export function CasesSection() {
               </div>
 
               {/* Content */}
-              <div className="flex min-h-[250px] flex-col p-6 md:p-7">
-                <span className="inline-flex w-fit rounded-full bg-brand-green-moss/10 px-4 py-2 font-body text-[10px] font-medium uppercase tracking-[0.08em] text-brand-green-dark">
+              <div className="p-8">
+                <p className="font-body text-xs font-medium uppercase tracking-[0.08em] text-brand-green-moss">
                   {item.category}
-                </span>
+                </p>
 
                 <h3
                   className={[
-                    "mt-5",
-                    "font-heading text-xl font-semibold",
-                    "leading-7 tracking-[-0.02em]",
+                    "mt-4",
+                    "font-display font-bold",
+                    "text-xl",
+                    "leading-snug",
+                    "tracking-[-0.02em]",
                     "text-text-primary",
+                    "transition-colors duration-200",
+                    "group-hover:text-brand-green-moss",
                   ].join(" ")}
                 >
                   {item.title}
                 </h3>
 
-                <a
-                  href="#"
-                  className={[
-                    "mt-auto inline-flex w-fit items-center gap-2 pt-8",
-                    "font-heading text-sm font-semibold",
-                    "text-text-primary",
-                    "transition-colors duration-200",
-                    "hover:text-brand-green-moss",
-                  ].join(" ")}
-                >
-                  Ver caso
+                <p className="mt-4 font-body text-xs leading-relaxed text-text-secondary">
+                  {item.description}
+                </p>
 
-                  <Icon
-                    icon={ArrowRight}
-                    size={16}
-                    strokeWidth={1.75}
-                  />
-                </a>
+                <div className="mt-6 flex items-center gap-1 font-heading text-xs font-semibold text-brand-green-moss group-hover:translate-x-1 transition-transform">
+                  <span>Saiba mais</span>
+                  <Icon icon={ArrowRight} size={14} />
+                </div>
               </div>
             </article>
           ))}

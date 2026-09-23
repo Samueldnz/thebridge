@@ -1,5 +1,4 @@
 import {
-  ArrowRight,
   Building2,
   GraduationCap,
   Landmark,
@@ -8,10 +7,10 @@ import {
 
 import ecosystemLogo from "../../assets/brand/logo/TheBridge_Logotipo_Perfil.svg";
 
-import { Button } from "../ui/Button";
 import { Container } from "../ui/Container";
 import { Icon } from "../ui/Icon";
 import { Section } from "../ui/Section";
+
 
 const ecosystemNodes = [
   {
@@ -73,20 +72,6 @@ export function EcosystemSection() {
                 sustentável e inclusivo.
               </p>
 
-              <div className="mt-8">
-                <Button
-                  variant="secondary"
-                  size="lg"
-                >
-                  Conheça o ecossistema
-
-                  <Icon
-                    icon={ArrowRight}
-                    size={17}
-                    strokeWidth={1.75}
-                  />
-                </Button>
-              </div>
             </div>
           </div>
 

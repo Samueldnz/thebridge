@@ -1,28 +1,35 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 
 import { ArrowRight, Menu, X } from "lucide-react";
+
 
 import logo from "../../assets/brand/logo/TheBridge_Logo_Verde_2.svg";
 
 import { Button } from "../ui/Button";
 import { Container } from "../ui/Container";
 import { Icon } from "../ui/Icon";
+import { authService } from "../../services/auth";
 
 const navigationItems = [
-  { label: "Soluções", href: "#solucoes" },
-  { label: "Ecossistema", href: "#ecossistema" },
-  { label: "Casos", href: "#casos" },
-  { label: "Conteúdos", href: "#conteudos" },
-  { label: "Sobre", href: "#sobre" },
-  { label: "Contato", href: "#contato" },
+  { label: "Soluções", href: "/solucoes" },
+  { label: "Matching", href: "/matching" },
+  { label: "Conteúdos", href: "/conteudos" },
+  { label: "Nossa História", href: "/nossa-historia" },
+  { label: "Contato", href: "/#contato" },
 ];
 
+
+
 export function PublicHeader() {
+  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const closeMenu = () => {
     setIsMenuOpen(false);
   };
+
 
   return (
     <header
@@ -84,27 +91,46 @@ export function PublicHeader() {
 
         {/* Desktop actions */}
         <div className="hidden shrink-0 items-center gap-2 lg:flex">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="px-4"
-          >
-            Entrar
-          </Button>
+          {authService.isAuthenticated() ? (
+            <Button
+              size="sm"
+              className="min-h-10 px-5 bg-brand-green-dark text-brand-off-white"
+              onClick={() => navigate("/dashboard")}
+            >
+              Acessar Painel
+              <Icon
+                icon={ArrowRight}
+                size={15}
+                strokeWidth={1.75}
+              />
+            </Button>
+          ) : (
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="px-4"
+                onClick={() => navigate("/login")}
+              >
+                Entrar
+              </Button>
 
-          <Button
-            size="sm"
-            className="min-h-10 px-5"
-          >
-            Criar conta
-
-            <Icon
-              icon={ArrowRight}
-              size={15}
-              strokeWidth={1.75}
-            />
-          </Button>
+              <Button
+                size="sm"
+                className="min-h-10 px-5"
+                onClick={() => navigate("/cadastro")}
+              >
+                Criar conta
+                <Icon
+                  icon={ArrowRight}
+                  size={15}
+                  strokeWidth={1.75}
+                />
+              </Button>
+            </>
+          )}
         </div>
+
 
         {/* Mobile menu button */}
         <button
@@ -171,29 +197,56 @@ export function PublicHeader() {
             ))}
 
             <div className="flex flex-col gap-3 pt-6">
-              <Button
-                variant="ghost"
-                size="md"
-                className="w-full"
-                onClick={closeMenu}
-              >
-                Entrar
-              </Button>
+              {authService.isAuthenticated() ? (
+                <Button
+                  size="md"
+                  className="w-full bg-brand-green-dark text-brand-off-white"
+                  onClick={() => {
+                    closeMenu();
+                    navigate("/dashboard");
+                  }}
+                >
+                  Acessar Painel
+                  <Icon
+                    icon={ArrowRight}
+                    size={16}
+                    strokeWidth={1.75}
+                  />
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="md"
+                    className="w-full"
+                    onClick={() => {
+                      closeMenu();
+                      navigate("/login");
+                    }}
+                  >
+                    Entrar
+                  </Button>
 
-              <Button
-                size="md"
-                className="w-full"
-                onClick={closeMenu}
-              >
-                Criar conta
+                  <Button
+                    size="md"
+                    className="w-full"
+                    onClick={() => {
+                      closeMenu();
+                      navigate("/cadastro");
+                    }}
+                  >
+                    Criar conta
 
-                <Icon
-                  icon={ArrowRight}
-                  size={16}
-                  strokeWidth={1.75}
-                />
-              </Button>
+                    <Icon
+                      icon={ArrowRight}
+                      size={16}
+                      strokeWidth={1.75}
+                    />
+                  </Button>
+                </>
+              )}
             </div>
+
           </nav>
         </div>
       </Container>

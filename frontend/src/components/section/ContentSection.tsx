@@ -1,39 +1,15 @@
+import { useNavigate, Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
-
-import articleImage from "../../assets/brand/photography/Untitled-1.jpg";
-import eventImage from "../../assets/brand/photography/Untitled-6.jpg";
-import insightImage from "../../assets/brand/photography/about-people.jpg";
 
 import { Button } from "../ui/Button";
 import { Container } from "../ui/Container";
 import { Icon } from "../ui/Icon";
 import { Section } from "../ui/Section";
-
-const contents = [
-  {
-    type: "Artigo",
-    title: "O papel da ciência na construção de soluções para o futuro",
-    date: "12 set 2026",
-    image: articleImage,
-    alt: "Pesquisador trabalhando com microscópio",
-  },
-  {
-    type: "Evento",
-    title: "Inovação em rede: conexões que transformam conhecimento em impacto",
-    date: "03 out 2026",
-    image: eventImage,
-    alt: "Peças de construção representando colaboração e desenvolvimento",
-  },
-  {
-    type: "Insights",
-    title: "Tendências que estão transformando o ecossistema de inovação",
-    date: "28 ago 2026",
-    image: insightImage,
-    alt: "Profissional sentada ao lado de uma planta",
-  },
-];
+import { contentsData } from "../../data/contentsData";
 
 export function ContentSection() {
+  const navigate = useNavigate();
+
   return (
     <Section
       id="conteudos"
@@ -73,6 +49,7 @@ export function ContentSection() {
                 <Button
                   variant="secondary"
                   size="lg"
+                  onClick={() => navigate("/conteudos")}
                 >
                   Ver todos os conteúdos
 
@@ -89,19 +66,20 @@ export function ContentSection() {
           {/* Content cards */}
           <div className="lg:col-span-8">
             <div className="grid gap-6 md:grid-cols-3">
-              {contents.map((content) => (
-                <article
-                  key={content.title}
+              {contentsData.map((content) => (
+                <Link
+                  key={content.id}
+                  to={`/conteudos/${content.slug}`}
                   className={[
-                    "group",
+                    "group block",
                     "overflow-hidden",
                     "border border-border-subtle",
                     "bg-surface-white",
-                    "transition-shadow duration-300",
-                    "hover:shadow-md",
+                    "transition-all duration-300",
+                    "hover:shadow-lg hover:border-brand-green-moss/40",
                   ].join(" ")}
                 >
-                  <div className="aspect-[4/3] overflow-hidden">
+                  <div className="aspect-[4/3] overflow-hidden bg-brand-cream">
                     <img
                       src={content.image}
                       alt={content.alt}
@@ -119,7 +97,7 @@ export function ContentSection() {
                       {content.type}
                     </span>
 
-                    <h3 className="mt-5 font-heading text-lg font-semibold leading-6 tracking-[-0.02em] text-text-primary">
+                    <h3 className="mt-5 font-heading text-lg font-semibold leading-6 tracking-[-0.02em] text-text-primary group-hover:text-brand-green-moss transition-colors">
                       {content.title}
                     </h3>
 
@@ -127,7 +105,7 @@ export function ContentSection() {
                       {content.date}
                     </time>
                   </div>
-                </article>
+                </Link>
               ))}
             </div>
           </div>

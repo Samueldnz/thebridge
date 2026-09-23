@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 
 import aboutImage from "../../assets/brand/photography/about-people.jpg";
@@ -8,6 +9,8 @@ import { Icon } from "../ui/Icon";
 import { Section } from "../ui/Section";
 
 export function AboutSection() {
+  const navigate = useNavigate();
+
   return (
     <Section
       id="sobre"
@@ -46,7 +49,7 @@ export function AboutSection() {
               </p>
 
               <div className="mt-8">
-                <Button size="lg">
+                <Button size="lg" onClick={() => navigate("/nossa-historia")}>
                   Nossa história
 
                   <Icon
@@ -56,6 +59,7 @@ export function AboutSection() {
                   />
                 </Button>
               </div>
+
             </div>
           </div>
 

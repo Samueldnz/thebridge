@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 
 import ctaImage from "../../assets/brand/photography/about-people.jpg";
@@ -8,6 +9,8 @@ import { Icon } from "../ui/Icon";
 import { Section } from "../ui/Section";
 
 export function CallToActionSection() {
+  const navigate = useNavigate();
+
   return (
     <Section
       id="contato"
@@ -93,6 +96,7 @@ export function CallToActionSection() {
                 <Button
                   variant="inverse"
                   size="lg"
+                  onClick={() => navigate("/cadastro")}
                 >
                   Criar conta
 
@@ -102,6 +106,7 @@ export function CallToActionSection() {
                     strokeWidth={1.75}
                   />
                 </Button>
+
 
                 <Button
                   variant="secondary"

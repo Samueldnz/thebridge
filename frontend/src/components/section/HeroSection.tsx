@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 
 import heroScience from "../../assets/brand/photography/hero-science.jpg";
@@ -8,6 +9,8 @@ import { Icon } from "../ui/Icon";
 import { Section } from "../ui/Section";
 
 export function HeroSection() {
+  const navigate = useNavigate();
+
   return (
     <Section
       spacing="lg"
@@ -43,7 +46,10 @@ export function HeroSection() {
               </p>
 
               <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-                <Button size="lg">
+                <Button
+                  size="lg"
+                  onClick={() => document.getElementById("solucoes")?.scrollIntoView({ behavior: "smooth" })}
+                >
                   Conheça nossas soluções
 
                   <Icon
@@ -56,10 +62,12 @@ export function HeroSection() {
                 <Button
                   variant="secondary"
                   size="lg"
+                  onClick={() => navigate("/cadastro")}
                 >
                   Faça parte do ecossistema
                 </Button>
               </div>
+
             </div>
           </div>
 

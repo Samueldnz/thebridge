@@ -14,20 +14,21 @@ const navigationGroups = [
   {
     title: "Explorar",
     links: [
-      { label: "Soluções", href: "#solucoes" },
-      { label: "Ecossistema", href: "#ecossistema" },
-      { label: "Casos", href: "#casos" },
-      { label: "Conteúdos", href: "#conteudos" },
+      { label: "Soluções", href: "/solucoes" },
+      { label: "Matching", href: "/matching" },
+      { label: "Conteúdos", href: "/conteudos" },
     ],
   },
+
   {
     title: "The Bridge",
     links: [
-      { label: "Sobre", href: "#sobre" },
-      { label: "Contato", href: "#contato" },
+      { label: "Nossa História", href: "/nossa-historia" },
+      { label: "Contato", href: "/#contato" },
     ],
   },
 ];
+
 
 const socialLinks = [
   {
