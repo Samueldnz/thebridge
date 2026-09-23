@@ -1,0 +1,381 @@
+@font-face {
+  font-family: "General Sans";
+  src: url("../assets/brand/fonts/GeneralSans-Regular.woff2")
+    format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "General Sans";
+  src: url("../assets/brand/fonts/GeneralSans-Medium.woff2")
+    format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "General Sans";
+  src: url("../assets/brand/fonts/GeneralSans-Semibold.woff2")
+    format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "General Sans";
+  src: url("../assets/brand/fonts/GeneralSans-Bold.woff2")
+    format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Roboto Mono";
+  src: url("../assets/brand/fonts/RobotoMono-Regular.ttf")
+    format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+/* ============================================================
+ * THE BRIDGE — DESIGN TOKENS
+ *
+ * OFICIAL:
+ *   Brand colors and typography come from the official
+ *   The Bridge Brand Guidelines.
+ *
+ * DERIVED:
+ *   Semantic naming and frontend token architecture.
+ *
+ * IMPLEMENTATION:
+ *   Spacing, layout, radius, elevation, motion and breakpoints.
+ * ============================================================ */
+
+
+/* ============================================================
+ * 01. BRAND / PRIMITIVE TOKENS
+ * ============================================================ */
+
+@theme {
+  /*
+   * Brand colors
+   *
+   * OFICIAL
+   */
+
+  --color-brand-green-dark: #002025;
+  --color-brand-green-moss: #5f8162;
+  --color-brand-earth: #5d524b;
+
+  --color-brand-white: #ffffff;
+  --color-brand-off-white: #fef9ed;
+  --color-brand-cream: #f4e8c8;
+
+  --color-brand-graphite: #000000;
+  --color-brand-brown: #1e1310;
+
+
+  /* ==========================================================
+   * Typography
+   * ==========================================================
+   *
+   * OFICIAL
+   */
+
+  --font-display: "General Sans", sans-serif;
+  --font-heading: "General Sans", sans-serif;
+  --font-body: "Roboto Mono", monospace;
+  --font-mono: "Roboto Mono", monospace;
+
+  --font-weight-light: 300;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+
+  /* ==========================================================
+   * Display
+   * ==========================================================
+   *
+   * IMPLEMENTATION
+   */
+
+  --text-display-xl: 5rem;
+  --text-display-xl--line-height: 0.92;
+  --text-display-xl--letter-spacing: -0.055em;
+
+  --text-display-lg: 4rem;
+  --text-display-lg--line-height: 0.95;
+  --text-display-lg--letter-spacing: -0.045em;
+
+  --text-display-md: 3.25rem;
+  --text-display-md--line-height: 0.98;
+  --text-display-md--letter-spacing: -0.04em;
+
+  --text-display-sm: 2.75rem;
+  --text-display-sm--line-height: 1;
+  --text-display-sm--letter-spacing: -0.035em;
+
+
+  /* ==========================================================
+   * Headings
+   * ==========================================================
+   *
+   * IMPLEMENTATION
+   */
+
+  --text-h1: 3.5rem;
+  --text-h1--line-height: 0.98;
+  --text-h1--letter-spacing: -0.04em;
+
+  --text-h2: 2.75rem;
+  --text-h2--line-height: 1;
+  --text-h2--letter-spacing: -0.035em;
+
+  --text-h3: 2rem;
+  --text-h3--line-height: 1.05;
+  --text-h3--letter-spacing: -0.025em;
+
+  --text-h4: 1.5rem;
+  --text-h4--line-height: 1.15;
+  --text-h4--letter-spacing: -0.015em;
+
+
+  /* ==========================================================
+   * Body
+   * ==========================================================
+   *
+   * OFICIAL:
+   *   Roboto Mono for body text.
+   *
+   * IMPLEMENTATION:
+   *   Size scale.
+   */
+
+  --text-body-lg: 1.125rem;
+  --text-body-lg--line-height: 1.65;
+
+  --text-body-md: 1rem;
+  --text-body-md--line-height: 1.65;
+
+  --text-body-sm: 0.875rem;
+  --text-body-sm--line-height: 1.55;
+
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1.45;
+
+  --text-label: 0.75rem;
+  --text-label--line-height: 1.2;
+  --text-label--letter-spacing: 0.08em;
+
+
+  /* ==========================================================
+   * Spacing
+   * ==========================================================
+   *
+   * IMPLEMENTATION
+   *
+   * Base unit: 4px.
+   */
+
+  --spacing-0: 0;
+  --spacing-1: 0.25rem;
+  --spacing-2: 0.5rem;
+  --spacing-3: 0.75rem;
+  --spacing-4: 1rem;
+  --spacing-5: 1.25rem;
+  --spacing-6: 1.5rem;
+  --spacing-7: 1.75rem;
+  --spacing-8: 2rem;
+  --spacing-10: 2.5rem;
+  --spacing-12: 3rem;
+  --spacing-14: 3.5rem;
+  --spacing-16: 4rem;
+  --spacing-20: 5rem;
+  --spacing-24: 6rem;
+  --spacing-28: 7rem;
+  --spacing-32: 8rem;
+  --spacing-40: 10rem;
+  --spacing-48: 12rem;
+  --spacing-56: 14rem;
+  --spacing-64: 16rem;
+
+
+  /* ==========================================================
+   * Layout
+   * ==========================================================
+   *
+   * IMPLEMENTATION
+   */
+
+  --layout-content: 80rem;
+  --layout-content-wide: 90rem;
+  --layout-content-narrow: 48rem;
+
+  --layout-gutter-mobile: 1.25rem;
+  --layout-gutter-tablet: 2rem;
+  --layout-gutter-desktop: 4rem;
+
+  --section-space-sm: 4rem;
+  --section-space-md: 6rem;
+  --section-space-lg: 8rem;
+  --section-space-xl: 10rem;
+
+
+  /* ==========================================================
+   * Grid
+   * ==========================================================
+   *
+   * IMPLEMENTATION
+   */
+
+  --grid-columns-mobile: 4;
+  --grid-columns-tablet: 8;
+  --grid-columns-desktop: 12;
+
+  --grid-gap-mobile: 1rem;
+  --grid-gap-tablet: 1.5rem;
+  --grid-gap-desktop: 2rem;
+
+
+  /* ==========================================================
+   * Borders
+   * ==========================================================
+   *
+   * IMPLEMENTATION
+   */
+
+  --border-width-thin: 1px;
+  --border-width-default: 1px;
+  --border-width-strong: 2px;
+
+
+  /* ==========================================================
+   * Radius
+   * ==========================================================
+   *
+   * IMPLEMENTATION
+   */
+
+  --radius-none: 0;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-full: 9999px;
+
+
+  /* ==========================================================
+   * Elevation
+   * ==========================================================
+   *
+   * IMPLEMENTATION
+   */
+
+  --shadow-none: none;
+
+  --shadow-sm:
+    0 1px 2px rgb(0 0 0 / 0.06);
+
+  --shadow-md:
+    0 4px 12px rgb(0 0 0 / 0.08);
+
+  --shadow-lg:
+    0 12px 32px rgb(0 0 0 / 0.10);
+
+
+  /* ==========================================================
+   * Motion
+   * ==========================================================
+   *
+   * IMPLEMENTATION
+   */
+
+  --duration-fast: 120ms;
+  --duration-normal: 200ms;
+  --duration-slow: 320ms;
+
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+
+
+  /* ==========================================================
+   * Breakpoints
+   * ==========================================================
+   *
+   * IMPLEMENTATION
+   */
+
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+
+
+  /* ==========================================================
+   * Z-index
+   * ==========================================================
+   *
+   * IMPLEMENTATION
+   */
+
+  --z-base: 0;
+  --z-content: 10;
+  --z-header: 100;
+  --z-dropdown: 200;
+  --z-modal: 300;
+  --z-toast: 400;
+  --z-tooltip: 500;
+}
+
+
+/* ============================================================
+ * 02. SEMANTIC TOKENS
+ *
+ * DERIVED
+ *
+ * @theme inline is intentional because these values reference
+ * other theme variables.
+ * ============================================================ */
+
+@theme inline {
+  --color-surface-primary: var(--color-brand-off-white);
+  --color-surface-secondary: var(--color-brand-cream);
+  --color-surface-inverse: var(--color-brand-green-dark);
+  --color-surface-dark: var(--color-brand-brown);
+  --color-surface-white: var(--color-brand-white);
+
+  --color-text-primary: var(--color-brand-green-dark);
+  --color-text-secondary: var(--color-brand-earth);
+  --color-text-muted: var(--color-brand-moss);
+  --color-text-inverse: var(--color-brand-off-white);
+  --color-text-on-dark: var(--color-brand-white);
+
+  --color-border-default: var(--color-brand-earth);
+
+  --color-border-subtle: color-mix(
+    in srgb,
+    var(--color-brand-earth) 24%,
+    transparent
+  );
+
+  --color-border-strong: var(--color-brand-green-dark);
+
+  --color-accent-primary: var(--color-brand-green-moss);
+  --color-accent-secondary: var(--color-brand-cream);
+
+  --color-state-focus: var(--color-brand-green-moss);
+  --color-state-success: var(--color-brand-green-moss);
+  --color-state-warning: var(--color-brand-cream);
+  --color-state-danger: var(--color-brand-brown);
+  --color-state-info: var(--color-brand-earth);
+}
