@@ -17,11 +17,22 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService);
 
-  const port = configService.getOrThrow<number>('PORT');
-  const corsOrigin = configService.getOrThrow<string>('CORS_ORIGIN');
+  const port = configService.get<number>('PORT') || 3000;
+  const corsOrigin = configService.get<string>('CORS_ORIGIN') || '*';
+  const defaultOrigins = [
+    'https://thebridge.app.br',
+    'https://www.thebridge.app.br',
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+  ];
+  const allowedOrigins = corsOrigin.includes(',')
+    ? corsOrigin.split(',').map((o) => o.trim())
+    : corsOrigin === '*'
+      ? defaultOrigins
+      : Array.from(new Set([corsOrigin, ...defaultOrigins]));
 
   app.enableCors({
-    origin: corsOrigin,
+    origin: allowedOrigins,
     credentials: true,
   });
 

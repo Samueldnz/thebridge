@@ -342,6 +342,11 @@ export const authService = {
         }),
       });
 
+      const isJson = response.headers.get("content-type")?.includes("application/json");
+      if (!isJson) {
+        throw new TypeError("Backend returned non-JSON response (offline/proxy fallback)");
+      }
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
         const errorMessage =
@@ -356,7 +361,7 @@ export const authService = {
       this.setSession(data.accessToken, data.user, remember);
       return data;
     } catch (err: unknown) {
-      if (err instanceof Error && err.name === "TypeError" && err.message.includes("fetch")) {
+      if (err instanceof Error && (err.name === "TypeError" || err.message.includes("fetch") || err.message.includes("offline"))) {
         // Backend offline demonstration fallback: check known accounts
         const known = this.getKnownAccounts()[cleanEmail];
         const isCompanyEmail = cleanEmail.includes("empresa") || cleanEmail.includes("company") || cleanEmail.includes("eurofarma");
@@ -398,6 +403,11 @@ export const authService = {
         }),
       });
 
+      const isJson = response.headers.get("content-type")?.includes("application/json");
+      if (!isJson) {
+        throw new TypeError("Backend returned non-JSON response (offline/proxy fallback)");
+      }
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
         const errorMessage =
@@ -412,7 +422,7 @@ export const authService = {
       this.setSession(data.accessToken, data.user, remember);
       return data;
     } catch (err: unknown) {
-      if (err instanceof Error && err.name === "TypeError" && err.message.includes("fetch")) {
+      if (err instanceof Error && (err.name === "TypeError" || err.message.includes("fetch") || err.message.includes("offline"))) {
         // Backend offline demonstration fallback
         const mockUser: User = {
           id: `user-${Date.now()}`,
