@@ -1,5 +1,6 @@
 import { env } from "../config/env";
 import { authService } from "./auth";
+import { defaultCompetences } from "./competences";
 
 export type PatentRequirement = "NOT_REQUIRED" | "REQUIRED" | "PENDING_ACCEPTED";
 export type OpportunityStatus = "DRAFT" | "OPEN" | "CLOSED" | "ARCHIVED";
@@ -45,7 +46,7 @@ export interface CreateOpportunityPayload {
   currency?: string;
   timeline?: string;
   status?: OpportunityStatus;
-  competences: { competenceId: string; weight: number }[];
+  competences: { competenceId: string; weight: number; name?: string }[];
 }
 
 const STORAGE_KEY = "thebridge_demo_opportunities";
@@ -150,6 +151,8 @@ export const opportunitiesService = {
 
   async getOpportunities(): Promise<Opportunity[]> {
     const token = authService.getStoredToken();
+    const stored = this.getStoredOpportunities();
+
     try {
       const res = await fetch(`${env.apiUrl}/opportunities`, {
         headers: {
@@ -157,16 +160,38 @@ export const opportunitiesService = {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
       });
+
       if (res.ok) {
         const data = await res.json();
-        if (Array.isArray(data.data || data)) {
-          return data.data || data;
-        }
+        const apiList = Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : []);
+
+        const oppMap = new Map<string, Opportunity>();
+
+        // 1. Manter catalogo inicial padrao
+        defaultInitialOpportunities.forEach((o) => oppMap.set(o.id, o));
+
+        // 2. Manter demandas locais ja gravadas pelo usuario
+        stored.forEach((o) => oppMap.set(o.id, o));
+
+        // 3. Adicionar demandas vindas do backend
+        apiList.forEach((o: any) => {
+          oppMap.set(o.id, {
+            ...o,
+            organizationName: o.owner?.name || o.organizationName || "Empresa",
+            competences: o.competences || [],
+            status: o.status || "OPEN",
+          });
+        });
+
+        const merged = Array.from(oppMap.values());
+        this.saveStoredOpportunities(merged);
+        return merged;
       }
     } catch {
       // Offline fallback
     }
-    return this.getStoredOpportunities();
+
+    return stored;
   },
 
   async getMyOpportunities(userId?: string): Promise<Opportunity[]> {
@@ -174,7 +199,7 @@ export const opportunitiesService = {
     const currentUser = authService.getStoredUser();
     const targetOwnerId = userId || currentUser?.id;
     if (!targetOwnerId) return [];
-    return all.filter((o) => o.ownerId === targetOwnerId);
+    return all.filter((o) => o.ownerId === targetOwnerId || (o as any).owner?.id === targetOwnerId);
   },
 
   async getOpportunity(id: string): Promise<Opportunity | null> {
@@ -196,7 +221,36 @@ export const opportunitiesService = {
       throw new Error("Limite máximo de 5 demandas atingido para este perfil. Edite uma demanda existente.");
     }
 
-    // Try backend first
+    // 1. Criar e persistir localmente DE IMEDIATO para que a demanda nunca seja perdida
+    let newOpportunity: Opportunity = {
+      id: `opp-${Date.now()}`,
+      ownerId,
+      title: payload.title,
+      description: payload.description,
+      keywords: payload.keywords,
+      industrySector: payload.industrySector,
+      desiredTechnology: payload.desiredTechnology,
+      minTrl: payload.minTrl,
+      desiredCrl: payload.desiredCrl,
+      patentRequirement: payload.patentRequirement,
+      budgetMin: payload.budgetMin,
+      budgetMax: payload.budgetMax,
+      currency: payload.currency || "BRL",
+      timeline: payload.timeline,
+      status: payload.status || "OPEN",
+      competences: payload.competences.map((c) => ({
+        competenceId: c.competenceId,
+        weight: c.weight,
+        name: c.name || defaultCompetences.find((dc) => dc.id === c.competenceId)?.name || c.competenceId,
+      })),
+      createdAt: new Date().toISOString(),
+      organizationName: currentUser?.companyName || currentUser?.name || "Empresa",
+    };
+
+    const currentList = this.getStoredOpportunities();
+    this.saveStoredOpportunities([newOpportunity, ...currentList.filter((o) => o.id !== newOpportunity.id)]);
+
+    // 2. Sincronizar com a API no backend
     try {
       const res = await fetch(`${env.apiUrl}/opportunities`, {
         method: "POST",
@@ -221,62 +275,81 @@ export const opportunitiesService = {
       });
 
       if (res.ok) {
-        const createdOpportunity = await res.json();
-        for (const comp of payload.competences) {
-          try {
-            await fetch(`${env.apiUrl}/opportunities/${createdOpportunity.id}/competences/${comp.competenceId}`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                ...(token ? { Authorization: `Bearer ${token}` } : {}),
-              },
-              body: JSON.stringify({ weight: comp.weight }),
-            });
-          } catch {
-            // Ignore single competence error
+        const createdOpp = await res.json();
+        if (createdOpp && createdOpp.id) {
+          newOpportunity = {
+            ...newOpportunity,
+            id: createdOpp.id,
+            status: "OPEN",
+          };
+
+          const syncedList = [newOpportunity, ...currentList.filter((o) => o.id !== newOpportunity.id && o.id !== createdOpp.id)];
+          this.saveStoredOpportunities(syncedList);
+
+          // Associar competências no backend
+          for (const comp of payload.competences) {
+            try {
+              await fetch(`${env.apiUrl}/opportunities/${createdOpp.id}/competences/${comp.competenceId}`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                },
+                body: JSON.stringify({ weight: comp.weight }),
+              });
+            } catch {
+              // Ignore single competence error
+            }
           }
         }
-        return createdOpportunity;
       }
     } catch {
-      // Fallback
+      // Backend indisponível, demanda já garantida localmente
     }
-
-    // Local Persistence Fallback
-    const newOpportunity: Opportunity = {
-      id: `opp-${Date.now()}`,
-      ownerId,
-      title: payload.title,
-      description: payload.description,
-      keywords: payload.keywords,
-      industrySector: payload.industrySector,
-      desiredTechnology: payload.desiredTechnology,
-      minTrl: payload.minTrl,
-      desiredCrl: payload.desiredCrl,
-      patentRequirement: payload.patentRequirement,
-      budgetMin: payload.budgetMin,
-      budgetMax: payload.budgetMax,
-      currency: payload.currency || "BRL",
-      timeline: payload.timeline,
-      status: payload.status || "OPEN",
-      competences: payload.competences,
-      createdAt: new Date().toISOString(),
-      organizationName: currentUser?.companyName || currentUser?.name || "Empresa",
-    };
-
-    const currentList = this.getStoredOpportunities();
-    const updated = [newOpportunity, ...currentList];
-    this.saveStoredOpportunities(updated);
 
     return newOpportunity;
   },
 
   async updateOpportunity(id: string, payload: Partial<CreateOpportunityPayload>): Promise<Opportunity> {
     const token = authService.getStoredToken();
+    const currentList = this.getStoredOpportunities();
+    const index = currentList.findIndex((o) => o.id === id);
 
-    // Try backend first
+    let updatedOpp: Opportunity;
+    if (index !== -1) {
+      const existing = currentList[index];
+      updatedOpp = {
+        ...existing,
+        title: payload.title !== undefined ? payload.title : existing.title,
+        description: payload.description !== undefined ? payload.description : existing.description,
+        keywords: payload.keywords !== undefined ? payload.keywords : existing.keywords,
+        industrySector: payload.industrySector !== undefined ? payload.industrySector : existing.industrySector,
+        desiredTechnology: payload.desiredTechnology !== undefined ? payload.desiredTechnology : existing.desiredTechnology,
+        minTrl: payload.minTrl !== undefined ? payload.minTrl : existing.minTrl,
+        desiredCrl: payload.desiredCrl !== undefined ? payload.desiredCrl : existing.desiredCrl,
+        patentRequirement: payload.patentRequirement !== undefined ? payload.patentRequirement : existing.patentRequirement,
+        budgetMin: payload.budgetMin !== undefined ? payload.budgetMin : existing.budgetMin,
+        budgetMax: payload.budgetMax !== undefined ? payload.budgetMax : existing.budgetMax,
+        currency: payload.currency !== undefined ? payload.currency : existing.currency,
+        timeline: payload.timeline !== undefined ? payload.timeline : existing.timeline,
+        competences:
+          payload.competences !== undefined
+            ? payload.competences.map((c) => ({
+                competenceId: c.competenceId,
+                weight: c.weight,
+                name: c.name || defaultCompetences.find((dc) => dc.id === c.competenceId)?.name || c.competenceId,
+              }))
+            : existing.competences,
+      };
+      currentList[index] = updatedOpp;
+      this.saveStoredOpportunities([...currentList]);
+    } else {
+      throw new Error("Demanda corporativa não encontrada para edição.");
+    }
+
+    // Tentar atualizar no backend
     try {
-      const res = await fetch(`${env.apiUrl}/opportunities/${id}`, {
+      await fetch(`${env.apiUrl}/opportunities/${id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -284,43 +357,9 @@ export const opportunitiesService = {
         },
         body: JSON.stringify(payload),
       });
-
-      if (res.ok) {
-        const updatedFromApi = await res.json();
-        return updatedFromApi;
-      }
     } catch {
       // fallback
     }
-
-    // Local Persistence Fallback
-    const currentList = this.getStoredOpportunities();
-    const index = currentList.findIndex((o) => o.id === id);
-    if (index === -1) {
-      throw new Error("Demanda corporativa não encontrada para edição.");
-    }
-
-    const existing = currentList[index];
-    const updatedOpp: Opportunity = {
-      ...existing,
-      title: payload.title !== undefined ? payload.title : existing.title,
-      description: payload.description !== undefined ? payload.description : existing.description,
-      keywords: payload.keywords !== undefined ? payload.keywords : existing.keywords,
-      industrySector: payload.industrySector !== undefined ? payload.industrySector : existing.industrySector,
-      desiredTechnology: payload.desiredTechnology !== undefined ? payload.desiredTechnology : existing.desiredTechnology,
-      minTrl: payload.minTrl !== undefined ? payload.minTrl : existing.minTrl,
-      desiredCrl: payload.desiredCrl !== undefined ? payload.desiredCrl : existing.desiredCrl,
-      patentRequirement: payload.patentRequirement !== undefined ? payload.patentRequirement : existing.patentRequirement,
-      budgetMin: payload.budgetMin !== undefined ? payload.budgetMin : existing.budgetMin,
-      budgetMax: payload.budgetMax !== undefined ? payload.budgetMax : existing.budgetMax,
-      currency: payload.currency !== undefined ? payload.currency : existing.currency,
-      timeline: payload.timeline !== undefined ? payload.timeline : existing.timeline,
-      status: payload.status !== undefined ? payload.status : existing.status,
-      competences: payload.competences !== undefined ? payload.competences : existing.competences,
-    };
-
-    currentList[index] = updatedOpp;
-    this.saveStoredOpportunities([...currentList]);
 
     return updatedOpp;
   },

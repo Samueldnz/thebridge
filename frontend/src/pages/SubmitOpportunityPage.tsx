@@ -2,7 +2,6 @@ import { useState, useEffect, type FormEvent } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import {
   ArrowLeft,
-  ArrowRight,
   Building2,
   CheckCircle2,
   DollarSign,
@@ -174,6 +173,7 @@ export function SubmitOpportunityPage() {
           competences: selectedCompetences.map((c) => ({
             competenceId: c.competenceId,
             weight: c.weight,
+            name: c.name,
           })),
         });
 
@@ -199,6 +199,7 @@ export function SubmitOpportunityPage() {
           competences: selectedCompetences.map((c) => ({
             competenceId: c.competenceId,
             weight: c.weight,
+            name: c.name,
           })),
         });
 
@@ -265,11 +266,11 @@ export function SubmitOpportunityPage() {
           </div>
 
           <h2 className="font-display text-2xl md:text-3xl font-bold text-text-primary">
-            {isEditing ? "Demanda Atualizada com Sucesso!" : "Demanda Corporativa Cadastrada!"}
+            {isEditing ? "Demanda Atualizada e Salva com Sucesso!" : "Demanda Salva e Publicada com Sucesso!"}
           </h2>
 
           <p className="mt-3 font-body text-sm md:text-base text-text-secondary max-w-lg mx-auto">
-            O desafio <strong>"{submittedOpportunity.title}"</strong> foi salvo e o <strong>Rematch</strong> com projetos acadêmicos e patentes foi recalculado.
+            O desafio <strong>"{submittedOpportunity.title}"</strong> foi salvo com sucesso em seu painel e o <strong>Rematch</strong> com projetos acadêmicos e patentes foi recalculado.
           </p>
 
           <div className="mt-6 flex flex-wrap justify-center gap-2">
@@ -287,18 +288,19 @@ export function SubmitOpportunityPage() {
           <div className="mt-10 flex flex-col sm:flex-row justify-center gap-4">
             <Button
               size="lg"
-              onClick={() => navigate("/dashboard/matching")}
+              onClick={() => navigate("/dashboard/demandas")}
               className="bg-brand-green-dark text-brand-off-white"
             >
-              <Icon icon={Sparkles} size={16} />
-              Ver Resultados do Rematch
+              <Icon icon={FolderGit2} size={16} />
+              Ver Minhas Demandas Salvas
             </Button>
             <Button
               variant="secondary"
               size="lg"
-              onClick={() => navigate("/dashboard/demandas")}
+              onClick={() => navigate("/dashboard/matching")}
             >
-              Ver Minhas Demandas
+              <Icon icon={Sparkles} size={16} />
+              Ver Resultados do Matching
             </Button>
           </div>
         </div>
@@ -709,27 +711,32 @@ export function SubmitOpportunityPage() {
           </div>
 
           {/* Form Actions */}
-          <div className="flex flex-col sm:flex-row items-center justify-end gap-4 pt-4">
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => navigate("/dashboard/demandas")}
-            >
-              Cancelar
-            </Button>
-            <Button
-              type="submit"
-              size="lg"
-              disabled={loading}
-              className="bg-brand-green-dark text-brand-off-white"
-            >
-              {loading
-                ? "Salvando alterações..."
-                : isEditing
-                ? "Salvar Demanda & Executar Rematch"
-                : "Publicar Demanda Tecnológica"}
-              <Icon icon={ArrowRight} size={16} />
-            </Button>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-border-subtle">
+            <p className="text-xs text-text-secondary text-center sm:text-left">
+              * Sua demanda corporativa é <strong>salva imediatamente</strong> no seu perfil e disponibilizada no motor de Matching.
+            </p>
+            <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => navigate("/dashboard/demandas")}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                size="lg"
+                disabled={loading}
+                className="bg-brand-green-dark text-brand-off-white"
+              >
+                <Icon icon={CheckCircle2} size={16} />
+                {loading
+                  ? "Salvando..."
+                  : isEditing
+                  ? "Salvar Alterações da Demanda"
+                  : "Salvar e Publicar Demanda"}
+              </Button>
+            </div>
           </div>
         </form>
       )}

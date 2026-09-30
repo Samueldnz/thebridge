@@ -142,9 +142,27 @@ export class OpportunitiesService {
       });
 
     if (!membership) {
-      throw new ForbiddenException(
-        'User is not associated with a company organization',
-      );
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { name: true },
+      });
+      const org = await this.prisma.organization.create({
+        data: {
+          type: 'COMPANY',
+          legalName: user?.name || 'Empresa Parceira',
+          tradeName: user?.name || 'Empresa Parceira',
+          members: {
+            create: {
+              userId,
+              role: 'OWNER',
+            },
+          },
+        },
+        select: {
+          id: true,
+        },
+      });
+      return org.id;
     }
 
     return membership.organizationId;
@@ -183,6 +201,7 @@ export class OpportunitiesService {
         budgetMax: dto.budgetMax,
         currency: dto.currency,
         timeline: dto.timeline,
+        status: 'OPEN',
       },
       select: {
         id: true,

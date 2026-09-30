@@ -1,5 +1,6 @@
 import { env } from "../config/env";
 import { authService } from "./auth";
+import { defaultCompetences } from "./competences";
 
 export type PatentStatus = "NONE" | "PENDING" | "GRANTED";
 export type ProjectStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
@@ -35,7 +36,7 @@ export interface CreateProjectPayload {
   crl: number;
   patentStatus: PatentStatus;
   status?: ProjectStatus;
-  competences: { competenceId: string; level: number }[];
+  competences: { competenceId: string; level: number; name?: string }[];
 }
 
 const STORAGE_KEY = "thebridge_demo_projects";
@@ -125,6 +126,8 @@ export const projectsService = {
 
   async getProjects(): Promise<Project[]> {
     const token = authService.getStoredToken();
+    const stored = this.getStoredProjects();
+
     try {
       const res = await fetch(`${env.apiUrl}/projects`, {
         headers: {
@@ -132,16 +135,38 @@ export const projectsService = {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
       });
+
       if (res.ok) {
         const data = await res.json();
-        if (Array.isArray(data.data || data)) {
-          return (data.data || data);
-        }
+        const apiList = Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : []);
+
+        const projectMap = new Map<string, Project>();
+
+        // 1. Manter catalogo inicial padrao
+        defaultInitialProjects.forEach((p) => projectMap.set(p.id, p));
+
+        // 2. Manter submissoes locais ja gravadas pelo usuario
+        stored.forEach((p) => projectMap.set(p.id, p));
+
+        // 3. Adicionar projetos vindos do backend
+        apiList.forEach((p: any) => {
+          projectMap.set(p.id, {
+            ...p,
+            ownerName: p.owner?.name || p.ownerName || "Pesquisador",
+            competences: p.competences || [],
+            status: p.status || "PUBLISHED",
+          });
+        });
+
+        const merged = Array.from(projectMap.values());
+        this.saveStoredProjects(merged);
+        return merged;
       }
     } catch {
       // Offline fallback
     }
-    return this.getStoredProjects();
+
+    return stored;
   },
 
   async getMyProjects(userId?: string): Promise<Project[]> {
@@ -149,7 +174,7 @@ export const projectsService = {
     const currentUser = authService.getStoredUser();
     const targetOwnerId = userId || currentUser?.id;
     if (!targetOwnerId) return [];
-    return all.filter((p) => p.ownerId === targetOwnerId);
+    return all.filter((p) => p.ownerId === targetOwnerId || (p as any).owner?.id === targetOwnerId);
   },
 
   async getProject(id: string): Promise<Project | null> {
@@ -171,7 +196,31 @@ export const projectsService = {
       throw new Error("Limite máximo de 5 projetos atingido para este perfil. Edite um projeto existente.");
     }
 
-    // Try backend first
+    // 1. Criar e persistir localmente DE IMEDIATO para que a submissão nunca seja perdida
+    let newProject: Project = {
+      id: `proj-${Date.now()}`,
+      ownerId,
+      title: payload.title,
+      description: payload.description,
+      keywords: payload.keywords,
+      researchField: payload.researchField,
+      trl: payload.trl,
+      crl: payload.crl,
+      patentStatus: payload.patentStatus,
+      status: payload.status || "PUBLISHED",
+      competences: payload.competences.map((c) => ({
+        competenceId: c.competenceId,
+        level: c.level,
+        name: c.name || defaultCompetences.find((dc) => dc.id === c.competenceId)?.name || c.competenceId,
+      })),
+      createdAt: new Date().toISOString(),
+      ownerName: currentUser?.name || "Pesquisador",
+    };
+
+    const currentList = this.getStoredProjects();
+    this.saveStoredProjects([newProject, ...currentList.filter((p) => p.id !== newProject.id)]);
+
+    // 2. Sincronizar com a API no backend
     try {
       const res = await fetch(`${env.apiUrl}/projects`, {
         method: "POST",
@@ -192,56 +241,75 @@ export const projectsService = {
 
       if (res.ok) {
         const createdProject = await res.json();
-        for (const comp of payload.competences) {
-          try {
-            await fetch(`${env.apiUrl}/projects/${createdProject.id}/competences/${comp.competenceId}`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                ...(token ? { Authorization: `Bearer ${token}` } : {}),
-              },
-              body: JSON.stringify({ level: comp.level }),
-            });
-          } catch {
-            // Ignore single competence error
+        if (createdProject && createdProject.id) {
+          newProject = {
+            ...newProject,
+            id: createdProject.id,
+            status: "PUBLISHED",
+          };
+
+          const syncedList = [newProject, ...currentList.filter((p) => p.id !== newProject.id && p.id !== createdProject.id)];
+          this.saveStoredProjects(syncedList);
+
+          // Associar competências no backend
+          for (const comp of payload.competences) {
+            try {
+              await fetch(`${env.apiUrl}/projects/${createdProject.id}/competences/${comp.competenceId}`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                },
+                body: JSON.stringify({ level: comp.level }),
+              });
+            } catch {
+              // Ignore single competence error
+            }
           }
         }
-        return createdProject;
       }
     } catch {
-      // Fallback to local persistence
+      // Backend indisponível, submissão já garantida localmente
     }
-
-    // Local Persistence Fallback
-    const newProject: Project = {
-      id: `proj-${Date.now()}`,
-      ownerId,
-      title: payload.title,
-      description: payload.description,
-      keywords: payload.keywords,
-      researchField: payload.researchField,
-      trl: payload.trl,
-      crl: payload.crl,
-      patentStatus: payload.patentStatus,
-      status: payload.status || "PUBLISHED",
-      competences: payload.competences,
-      createdAt: new Date().toISOString(),
-      ownerName: currentUser?.name || "Pesquisador",
-    };
-
-    const currentList = this.getStoredProjects();
-    const updated = [newProject, ...currentList];
-    this.saveStoredProjects(updated);
 
     return newProject;
   },
 
   async updateProject(id: string, payload: Partial<CreateProjectPayload>): Promise<Project> {
     const token = authService.getStoredToken();
+    const currentList = this.getStoredProjects();
+    const index = currentList.findIndex((p) => p.id === id);
 
-    // Try backend first
+    let updatedProject: Project;
+    if (index !== -1) {
+      const existing = currentList[index];
+      updatedProject = {
+        ...existing,
+        title: payload.title !== undefined ? payload.title : existing.title,
+        description: payload.description !== undefined ? payload.description : existing.description,
+        keywords: payload.keywords !== undefined ? payload.keywords : existing.keywords,
+        researchField: payload.researchField !== undefined ? payload.researchField : existing.researchField,
+        trl: payload.trl !== undefined ? payload.trl : existing.trl,
+        crl: payload.crl !== undefined ? payload.crl : existing.crl,
+        patentStatus: payload.patentStatus !== undefined ? payload.patentStatus : existing.patentStatus,
+        competences:
+          payload.competences !== undefined
+            ? payload.competences.map((c) => ({
+                competenceId: c.competenceId,
+                level: c.level,
+                name: c.name || defaultCompetences.find((dc) => dc.id === c.competenceId)?.name || c.competenceId,
+              }))
+            : existing.competences,
+      };
+      currentList[index] = updatedProject;
+      this.saveStoredProjects([...currentList]);
+    } else {
+      throw new Error("Projeto não encontrado para edição.");
+    }
+
+    // Tentar atualizar no backend
     try {
-      const res = await fetch(`${env.apiUrl}/projects/${id}`, {
+      await fetch(`${env.apiUrl}/projects/${id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -249,38 +317,9 @@ export const projectsService = {
         },
         body: JSON.stringify(payload),
       });
-
-      if (res.ok) {
-        const updatedFromApi = await res.json();
-        return updatedFromApi;
-      }
     } catch {
       // fallback
     }
-
-    // Local Persistence Fallback
-    const currentList = this.getStoredProjects();
-    const index = currentList.findIndex((p) => p.id === id);
-    if (index === -1) {
-      throw new Error("Projeto não encontrado para edição.");
-    }
-
-    const existing = currentList[index];
-    const updatedProject: Project = {
-      ...existing,
-      title: payload.title !== undefined ? payload.title : existing.title,
-      description: payload.description !== undefined ? payload.description : existing.description,
-      keywords: payload.keywords !== undefined ? payload.keywords : existing.keywords,
-      researchField: payload.researchField !== undefined ? payload.researchField : existing.researchField,
-      trl: payload.trl !== undefined ? payload.trl : existing.trl,
-      crl: payload.crl !== undefined ? payload.crl : existing.crl,
-      patentStatus: payload.patentStatus !== undefined ? payload.patentStatus : existing.patentStatus,
-      status: payload.status !== undefined ? payload.status : existing.status,
-      competences: payload.competences !== undefined ? payload.competences : existing.competences,
-    };
-
-    currentList[index] = updatedProject;
-    this.saveStoredProjects([...currentList]);
 
     return updatedProject;
   },

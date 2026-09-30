@@ -56,6 +56,7 @@ export class ProjectsService {
         trl: dto.trl,
         crl: dto.crl,
         patentStatus: dto.patentStatus,
+        status: 'PUBLISHED',
       },
       select: {
         id: true,

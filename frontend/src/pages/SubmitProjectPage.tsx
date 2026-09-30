@@ -2,7 +2,6 @@ import { useState, useEffect, type FormEvent } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import {
   ArrowLeft,
-  ArrowRight,
   BrainCircuit,
   CheckCircle2,
   FolderGit2,
@@ -185,6 +184,7 @@ export function SubmitProjectPage() {
           competences: selectedCompetences.map((c) => ({
             competenceId: c.competenceId,
             level: c.level,
+            name: c.name,
           })),
         });
 
@@ -205,6 +205,7 @@ export function SubmitProjectPage() {
           competences: selectedCompetences.map((c) => ({
             competenceId: c.competenceId,
             level: c.level,
+            name: c.name,
           })),
         });
 
@@ -271,11 +272,11 @@ export function SubmitProjectPage() {
           </div>
 
           <h2 className="font-display text-2xl md:text-3xl font-bold text-text-primary">
-            {isEditing ? "Projeto Atualizado com Sucesso!" : "Projeto Submetido com Sucesso!"}
+            {isEditing ? "Projeto Atualizado e Salvo com Sucesso!" : "Projeto Salvo e Publicado com Sucesso!"}
           </h2>
 
           <p className="mt-3 font-body text-sm md:text-base text-text-secondary max-w-lg mx-auto">
-            O projeto <strong>"{submittedProject.title}"</strong> foi salvo e o <strong>Rematch</strong> com as demandas industriais já foi recalculado pelo algoritmo The Bridge.
+            O projeto <strong>"{submittedProject.title}"</strong> foi salvo com sucesso em seu painel e o <strong>Rematch</strong> com as demandas industriais já foi recalculado pelo algoritmo The Bridge.
           </p>
 
           <div className="mt-6 flex flex-wrap justify-center gap-2">
@@ -293,18 +294,19 @@ export function SubmitProjectPage() {
           <div className="mt-10 flex flex-col sm:flex-row justify-center gap-4">
             <Button
               size="lg"
-              onClick={() => navigate("/dashboard/matching")}
+              onClick={() => navigate("/dashboard/projetos")}
               className="bg-brand-green-dark text-brand-off-white"
             >
-              <Icon icon={Sparkles} size={16} />
-              Ver Resultados do Rematch
+              <Icon icon={FolderGit2} size={16} />
+              Ver Meus Projetos Salvos
             </Button>
             <Button
               variant="secondary"
               size="lg"
-              onClick={() => navigate("/dashboard/projetos")}
+              onClick={() => navigate("/dashboard/matching")}
             >
-              Ver Meus Projetos
+              <Icon icon={Sparkles} size={16} />
+              Ver Resultados do Matching
             </Button>
           </div>
         </div>
@@ -635,27 +637,32 @@ export function SubmitProjectPage() {
           </div>
 
           {/* Form Actions */}
-          <div className="flex flex-col sm:flex-row items-center justify-end gap-4 pt-4">
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => navigate("/dashboard/projetos")}
-            >
-              Cancelar
-            </Button>
-            <Button
-              type="submit"
-              size="lg"
-              disabled={loading}
-              className="bg-brand-green-dark text-brand-off-white"
-            >
-              {loading
-                ? "Salvando alterações..."
-                : isEditing
-                ? "Salvar Projeto & Executar Rematch"
-                : "Publicar Projeto para Matching"}
-              <Icon icon={ArrowRight} size={16} />
-            </Button>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-border-subtle">
+            <p className="text-xs text-text-secondary text-center sm:text-left">
+              * Seu projeto é <strong>salvo imediatamente</strong> no seu perfil e disponibilizado no motor de Matching.
+            </p>
+            <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => navigate("/dashboard/projetos")}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                size="lg"
+                disabled={loading}
+                className="bg-brand-green-dark text-brand-off-white"
+              >
+                <Icon icon={CheckCircle2} size={16} />
+                {loading
+                  ? "Salvando..."
+                  : isEditing
+                  ? "Salvar Alterações do Projeto"
+                  : "Salvar e Publicar Projeto"}
+              </Button>
+            </div>
           </div>
         </form>
       )}
