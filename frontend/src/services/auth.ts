@@ -29,6 +29,10 @@ export interface User extends UserProfileFields {
   profileCompleted?: boolean;
   tier?: ProfileTier;
   tierScore?: number;
+  couponCode?: string;
+  subscriptionPlan?: string;
+  subscriptionStatus?: "FREE_TRIAL" | "ACTIVE" | "EXPIRED" | "STANDARD";
+  trialEndsAt?: string;
 }
 
 export interface ProfileChecklistItem {
@@ -248,6 +252,7 @@ export interface RegisterPayload {
   email: string;
   password: string;
   profileType: ProfileType;
+  couponCode?: string;
 }
 
 export interface LoginPayload {
@@ -337,6 +342,24 @@ export const authService = {
     return Boolean(this.getStoredToken() && this.getStoredUser());
   },
 
+  validateCoupon(code: string): { valid: boolean; discountDescription?: string; trialMonths?: number; error?: string } {
+    const clean = code.trim().toUpperCase();
+    if (!clean) {
+      return { valid: false, error: "Digite um código de cupom." };
+    }
+    if (clean === "SBPMAT26") {
+      return {
+        valid: true,
+        discountDescription: "Acesso gratuito por 2 meses (60 dias)",
+        trialMonths: 2,
+      };
+    }
+    return {
+      valid: false,
+      error: "Cupom inválido ou expirado. Verifique a digitação ou deixe em branco.",
+    };
+  },
+
   async login(payload: LoginPayload, remember: boolean = true): Promise<AuthResponse> {
     const cleanEmail = payload.email.trim().toLowerCase();
 
@@ -397,6 +420,16 @@ export const authService = {
         };
       }
 
+      // Restaurar informações de cupom e plano caso existam nos registros locais
+      const knownAccounts = this.getKnownAccounts();
+      const known = knownAccounts[cleanEmail];
+      if (known) {
+        if (known.couponCode) user.couponCode = known.couponCode;
+        if (known.subscriptionStatus) user.subscriptionStatus = known.subscriptionStatus;
+        if (known.subscriptionPlan) user.subscriptionPlan = known.subscriptionPlan;
+        if (known.trialEndsAt) user.trialEndsAt = known.trialEndsAt;
+      }
+
       this.setSession(data.accessToken, user, remember);
       return { accessToken: data.accessToken, user };
     } catch (err: unknown) {
@@ -412,6 +445,12 @@ export const authService = {
 
   async register(payload: RegisterPayload, remember: boolean = true): Promise<AuthResponse> {
     const cleanEmail = payload.email.trim().toLowerCase();
+    const cleanCoupon = payload.couponCode ? payload.couponCode.trim().toUpperCase() : undefined;
+    const isCouponValid = cleanCoupon === "SBPMAT26";
+
+    if (cleanCoupon && !isCouponValid) {
+      throw new Error("Cupom inválido ou expirado. Verifique a digitação ou deixe em branco.");
+    }
 
     try {
       const response = await fetch(`${env.apiUrl}/auth/register`, {
@@ -470,6 +509,16 @@ export const authService = {
           status: "ACTIVE",
           profileCompleted: true,
         };
+      }
+
+      // Aplicar benefícios do cupom SBPMAT26 (2 meses / 60 dias de gratuidade total)
+      if (isCouponValid) {
+        user.couponCode = "SBPMAT26";
+        user.subscriptionStatus = "FREE_TRIAL";
+        user.subscriptionPlan = "PRO_TRIAL_2M";
+        user.trialEndsAt = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString();
+      } else {
+        user.subscriptionStatus = user.subscriptionStatus || "STANDARD";
       }
 
       this.setSession(data.accessToken, user, remember);

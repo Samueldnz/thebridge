@@ -12,6 +12,7 @@ import {
   ShieldAlert,
   ShieldCheck,
   Sparkles,
+  Ticket,
 } from "lucide-react";
 
 import { DashboardLayout } from "../components/layout/DashboardLayout";
@@ -30,6 +31,9 @@ export function DashboardPage() {
   const [myMatches, setMyMatches] = useState<MatchItem[]>([]);
 
   const isResearcher = user?.profileType === "RESEARCHER";
+  const daysRemaining = user?.trialEndsAt
+    ? Math.max(0, Math.ceil((new Date(user.trialEndsAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+    : 60;
 
   useEffect(() => {
     if (isResearcher) {
@@ -99,6 +103,43 @@ export function DashboardPage() {
       }
     >
       <div className="space-y-10">
+        {/* Active Free Trial Coupon Banner */}
+        {(user?.couponCode === "SBPMAT26" || user?.subscriptionStatus === "FREE_TRIAL") && (
+          <div className="rounded-3xl border border-purple-200 bg-gradient-to-r from-purple-50 via-white to-purple-50/40 p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-5">
+            <div className="flex items-start sm:items-center gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-purple-100 text-purple-700 shadow-2xs">
+                <Icon icon={Ticket} size={24} />
+              </div>
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="rounded-full bg-purple-100 px-2.5 py-0.5 font-mono text-[11px] font-bold text-purple-900 border border-purple-200">
+                    CUPOM SBPMAT26 ATIVADO
+                  </span>
+                  <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-800">
+                    {daysRemaining} dias restantes de cortesia
+                  </span>
+                </div>
+                <h3 className="font-heading font-bold text-base text-text-primary mt-1">
+                  Acesso Gratuito por 2 Meses Liberado
+                </h3>
+                <p className="font-body text-xs text-text-secondary mt-0.5 max-w-2xl">
+                  Sua conta conta com todos os recursos e isenção de taxas do The Bridge durante o período promocional de 60 dias.
+                </p>
+              </div>
+            </div>
+
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => navigate(isResearcher ? "/dashboard/projetos/novo" : "/dashboard/demandas/nova")}
+              className="border-purple-200 text-purple-900 hover:bg-purple-100 shrink-0 self-start md:self-center"
+            >
+              <Icon icon={Sparkles} size={14} className="text-purple-600" />
+              Aproveitar Benefício
+            </Button>
+          </div>
+        )}
+
         {/* Metric Cards Banner */}
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-3xl border border-border-subtle bg-surface-white p-6 shadow-xs">

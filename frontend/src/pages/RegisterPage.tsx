@@ -1,6 +1,7 @@
 import { useState, useId, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
+  AlertCircle,
   ArrowLeft,
   ArrowRight,
   Building2,
@@ -9,6 +10,9 @@ import {
   EyeOff,
   GraduationCap,
   Mail,
+  Sparkles,
+  Tag,
+  Ticket,
   User as UserIcon,
 } from "lucide-react";
 
@@ -20,6 +24,9 @@ import { authService, type ProfileType } from "../services/auth";
 
 export function RegisterPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const urlCoupon = (searchParams.get("cupom") || searchParams.get("coupon") || "").trim().toUpperCase();
+
   const [profileType, setProfileType] = useState<ProfileType>("RESEARCHER");
 
   // Form states
@@ -28,6 +35,14 @@ export function RegisterPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [agreeTerms, setAgreeTerms] = useState(false);
+
+  // Coupon states
+  const [couponCode, setCouponCode] = useState(urlCoupon);
+  const [isCouponApplied, setIsCouponApplied] = useState(urlCoupon === "SBPMAT26");
+  const [couponFeedback, setCouponFeedback] = useState<string | null>(
+    urlCoupon === "SBPMAT26" ? "Cupom SBPMAT26 ativado! 2 meses de acesso gratuito concedidos." : null
+  );
+  const [couponError, setCouponError] = useState<string | null>(null);
 
   // UI states
   const [showPassword, setShowPassword] = useState(false);
@@ -41,7 +56,36 @@ export function RegisterPage() {
   const regEmailId = useId();
   const regPasswordId = useId();
   const regConfirmPasswordId = useId();
+  const regCouponId = useId();
   const agreeTermsId = useId();
+
+  const handleApplyCoupon = () => {
+    setCouponError(null);
+    setCouponFeedback(null);
+
+    const clean = couponCode.trim().toUpperCase();
+    if (!clean) {
+      setCouponError("Por favor, digite o código do cupom.");
+      return;
+    }
+
+    const validation = authService.validateCoupon(clean);
+    if (validation.valid) {
+      setIsCouponApplied(true);
+      setCouponCode(clean);
+      setCouponFeedback("🎉 Cupom SBPMAT26 ativado! 2 meses de acesso gratuito (60 dias) liberados.");
+    } else {
+      setIsCouponApplied(false);
+      setCouponError(validation.error || "Cupom inválido ou expirado.");
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setIsCouponApplied(false);
+    setCouponCode("");
+    setCouponFeedback(null);
+    setCouponError(null);
+  };
 
   const handleRegister = async (e: FormEvent) => {
     e.preventDefault();
@@ -69,6 +113,21 @@ export function RegisterPage() {
       return;
     }
 
+    // Auto-validar cupom caso o usuário tenha digitado sem clicar em 'Aplicar'
+    let finalCoupon: string | undefined = undefined;
+    if (isCouponApplied) {
+      finalCoupon = "SBPMAT26";
+    } else if (couponCode.trim()) {
+      const validation = authService.validateCoupon(couponCode);
+      if (validation.valid) {
+        finalCoupon = "SBPMAT26";
+        setIsCouponApplied(true);
+      } else {
+        setErrorMessage("O cupom digitado é inválido. Corrija para SBPMAT26 ou deixe em branco.");
+        return;
+      }
+    }
+
     try {
       setLoading(true);
       const res = await authService.register(
@@ -77,10 +136,15 @@ export function RegisterPage() {
           email: email.trim(),
           password,
           profileType,
+          couponCode: finalCoupon,
         },
         true
       );
-      setSuccessMessage(`Conta criada com sucesso! Seja bem-vindo(a), ${res.user.name}.`);
+      if (finalCoupon === "SBPMAT26") {
+        setSuccessMessage(`Conta criada com sucesso com o cupom SBPMAT26! Você tem 2 meses de acesso gratuito liberados. Bem-vindo(a), ${res.user.name}.`);
+      } else {
+        setSuccessMessage(`Conta criada com sucesso! Seja bem-vindo(a), ${res.user.name}.`);
+      }
       setTimeout(() => {
         navigate("/dashboard");
       }, 1000);
@@ -172,6 +236,16 @@ export function RegisterPage() {
                   </div>
                   <span>Ecossistema com pesquisadores, empresas e laboratórios</span>
                 </div>
+              </div>
+
+              <div className="mt-6 rounded-2xl border border-amber-400/30 bg-amber-400/10 p-3.5 backdrop-blur-xs">
+                <div className="flex items-center gap-2 font-heading text-xs font-bold text-amber-300">
+                  <Icon icon={Sparkles} size={14} />
+                  <span>Acesso Promocional Disponível</span>
+                </div>
+                <p className="mt-1 font-body text-[11px] text-brand-off-white/90 leading-snug">
+                  Insira o cupom <strong className="text-amber-300 font-mono">SBPMAT26</strong> no formulário e ganhe <strong>2 meses de acesso 100% gratuito</strong> para impulsionar suas conexões.
+                </p>
               </div>
             </div>
 
@@ -376,6 +450,98 @@ export function RegisterPage() {
                 </div>
               </div>
 
+              {/* Promotional Coupon Field */}
+              <div className="rounded-2xl border border-border-subtle bg-surface-primary/70 p-4 transition-all">
+                <div className="flex items-center justify-between">
+                  <label
+                    htmlFor={regCouponId}
+                    className="flex items-center gap-1.5 font-heading text-xs font-semibold uppercase tracking-wider text-text-primary"
+                  >
+                    <Icon icon={Ticket} size={15} className="text-brand-green-moss" />
+                    <span>Cupom de Desconto / Promocional</span>
+                    <span className="font-normal text-text-muted lowercase text-[11px]">(opcional)</span>
+                  </label>
+
+                  {isCouponApplied && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 font-mono text-[10px] font-bold text-emerald-800">
+                      <Icon icon={CheckCircle2} size={11} />
+                      SBPMAT26 Ativo
+                    </span>
+                  )}
+                </div>
+
+                <div className="mt-2 flex gap-2">
+                  <div className="relative flex-1">
+                    <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-text-muted">
+                      <Icon icon={Tag} size={16} />
+                    </span>
+                    <input
+                      id={regCouponId}
+                      type="text"
+                      value={couponCode}
+                      disabled={isCouponApplied}
+                      onChange={(e) => {
+                        setCouponCode(e.target.value.toUpperCase());
+                        setCouponError(null);
+                        setCouponFeedback(null);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleApplyCoupon();
+                        }
+                      }}
+                      placeholder="Ex: SBPMAT26"
+                      className="w-full rounded-xl border border-border-subtle bg-surface-white py-2 pl-10 pr-4 font-mono text-sm uppercase tracking-wider text-text-primary placeholder:font-sans placeholder:text-xs placeholder:normal-case placeholder:tracking-normal placeholder:text-text-muted focus:border-brand-green-moss focus:outline-none focus:ring-2 focus:ring-brand-green-moss/20 disabled:bg-surface-secondary/50 disabled:text-text-secondary"
+                    />
+                  </div>
+
+                  {isCouponApplied ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleRemoveCoupon}
+                      className="text-xs text-red-600 hover:bg-red-50 hover:text-red-700"
+                    >
+                      Remover
+                    </Button>
+                  ) : (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={handleApplyCoupon}
+                      className="px-4 text-xs font-semibold"
+                    >
+                      Aplicar
+                    </Button>
+                  )}
+                </div>
+
+                {/* Feedback state */}
+                {isCouponApplied && couponFeedback && (
+                  <div className="mt-2.5 flex items-start gap-2.5 rounded-xl border border-emerald-200 bg-emerald-50/90 p-2.5 text-xs text-emerald-900">
+                    <Icon icon={Sparkles} size={16} className="text-emerald-700 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-bold text-emerald-950">
+                        🎉 Cupom SBPMAT26 Aplicado com Sucesso!
+                      </p>
+                      <p className="mt-0.5 text-[11px] text-emerald-800 leading-tight">
+                        Esta conta terá <strong>2 meses de acesso 100% gratuito (60 dias)</strong> com todas as funcionalidades de matching e conexões liberadas.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {couponError && (
+                  <p className="mt-2 text-xs font-medium text-red-600 flex items-center gap-1.5">
+                    <Icon icon={AlertCircle} size={14} />
+                    <span>{couponError}</span>
+                  </p>
+                )}
+              </div>
+
               {/* Terms Acceptance */}
               <div className="flex items-start gap-2 pt-1">
                 <input
@@ -415,7 +581,11 @@ export function RegisterPage() {
                   className="w-full justify-center"
                   disabled={loading}
                 >
-                  {loading ? "Criando conta..." : "Criar minha conta"}
+                  {loading
+                    ? "Criando conta..."
+                    : isCouponApplied
+                    ? "Criar conta com 2 meses grátis"
+                    : "Criar minha conta"}
                   {!loading && <Icon icon={ArrowRight} size={16} />}
                 </Button>
               </div>

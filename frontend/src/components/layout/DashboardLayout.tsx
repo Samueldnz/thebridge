@@ -11,6 +11,7 @@ import {
   Menu,
   PlusCircle,
   Sparkles,
+  Ticket,
   User as UserIcon,
   X,
 } from "lucide-react";
@@ -190,6 +191,17 @@ export function DashboardLayout({
               <Icon icon={isResearcher ? GraduationCap : Building2} size={14} />
               <span>{isResearcher ? "Perfil: Pesquisador" : "Perfil: Empresa"}</span>
             </div>
+
+            {/* Active Coupon Badge */}
+            {(user?.couponCode === "SBPMAT26" || user?.subscriptionStatus === "FREE_TRIAL") && (
+              <div
+                title="Cupom SBPMAT26: Acesso 100% gratuito por 2 meses liberado nesta conta"
+                className="hidden xl:inline-flex items-center gap-1.5 rounded-full border border-purple-300 bg-purple-50 px-2.5 py-1 font-heading text-xs font-semibold text-purple-900 shadow-2xs select-none"
+              >
+                <Icon icon={Ticket} size={13} className="text-purple-600" />
+                <span>SBPMAT26 • 2 Meses Grátis</span>
+              </div>
+            )}
 
             {/* User Identity Chip - Clickable to Edit Profile & Level */}
             <Link

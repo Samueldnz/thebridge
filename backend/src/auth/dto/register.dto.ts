@@ -1,4 +1,4 @@
-import { IsEmail, IsIn, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsIn, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class RegisterDto {
   @IsString()
@@ -14,4 +14,8 @@ export class RegisterDto {
 
   @IsIn(['COMPANY', 'RESEARCHER'])
   profileType!: 'COMPANY' | 'RESEARCHER';
+
+  @IsOptional()
+  @IsString()
+  couponCode?: string;
 }

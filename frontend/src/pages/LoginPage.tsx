@@ -256,7 +256,7 @@ export function LoginPage() {
               </div>
 
               {/* Link to Register */}
-              <div className="pt-4 border-t border-border-subtle text-center">
+              <div className="pt-4 border-t border-border-subtle text-center space-y-2">
                 <p className="font-body text-xs text-text-secondary">
                   Ainda não possui uma conta?{" "}
                   <Link
@@ -266,6 +266,14 @@ export function LoginPage() {
                     Cadastre-se gratuitamente
                   </Link>
                 </p>
+                <div>
+                  <Link
+                    to="/cadastro?cupom=SBPMAT26"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-[11px] font-medium text-amber-900 hover:bg-amber-100 transition-colors shadow-2xs"
+                  >
+                    <span>🎟️ Possui o cupom <strong>SBPMAT26</strong>? Cadastre-se e ganhe 2 meses grátis →</span>
+                  </Link>
+                </div>
               </div>
             </form>
           </div>
