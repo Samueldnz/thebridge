@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 
 import authHeroImage from "../assets/brand/photography/Untitled-6.jpg";
-import logo from "../assets/brand/logo/TheBridge_Logo_Verde_2.svg";
+import logo from "../assets/brand/logo/TheBridge_Logo_Horizontal.svg";
 import { Button } from "../components/ui/Button";
 import { Icon } from "../components/ui/Icon";
 import { authService } from "../services/auth";
@@ -79,8 +79,8 @@ export function LoginPage() {
             <span>Voltar para o site</span>
           </Link>
 
-          <Link to="/" aria-label="The Bridge - Página inicial">
-            <img src={logo} alt="The Bridge" className="h-7 w-auto md:h-8" />
+          <Link to="/" aria-label="The Bridge - Página inicial" className="flex items-center">
+            <img src={logo} alt="The Bridge" className="h-9 w-auto md:h-11" />
           </Link>
         </div>
       </header>
@@ -104,18 +104,51 @@ export function LoginPage() {
               />
             </div>
 
-            {/* Top Logo replacing the old text badge */}
+            {/* Top Logo spanning across the width of the column */}
             <div className="relative z-10 flex items-center">
-              <Link to="/" aria-label="The Bridge - Início">
+              <Link
+                to="/"
+                aria-label="The Bridge - Início"
+                className="inline-block w-full max-w-[280px] sm:max-w-[340px]"
+              >
                 <img
                   src={logo}
                   alt="The Bridge"
-                  className="h-10 w-auto brightness-0 invert drop-shadow"
+                  className="w-full h-auto brightness-0 invert drop-shadow"
                 />
               </Link>
             </div>
 
+            {/* Middle Quote */}
+            <div className="relative z-10 my-auto py-8">
+              <h2 className="font-display text-3xl font-bold leading-snug tracking-tight text-brand-off-white md:text-4xl">
+                O elo que faltava entre pesquisa científica e mercado.
+              </h2>
+              <p className="mt-4 font-body text-sm leading-relaxed text-brand-off-white/80">
+                Conecte-se com projetos acadêmicos, parcerias de P&amp;D e demandas de tecnologia através do nosso motor de inteligência de compatibilidade.
+              </p>
 
+              <div className="mt-8 space-y-3 font-body text-xs text-brand-off-white/90">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-green-moss text-brand-off-white">
+                    <Icon icon={CheckCircle2} size={13} />
+                  </div>
+                  <span>Taxonomia de competências com pesos inteligentes</span>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-green-moss text-brand-off-white">
+                    <Icon icon={CheckCircle2} size={13} />
+                  </div>
+                  <span>Maturidade tecnológica calibrada em TRL e CRL</span>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-green-moss text-brand-off-white">
+                    <Icon icon={CheckCircle2} size={13} />
+                  </div>
+                  <span>Ecossistema com pesquisadores, empresas e laboratórios</span>
+                </div>
+              </div>
+            </div>
 
             {/* Bottom info */}
             <div className="relative z-10 border-t border-brand-off-white/10 pt-4 font-body text-xs text-brand-off-white/60">

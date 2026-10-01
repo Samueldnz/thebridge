@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 
 import authHeroImage from "../assets/brand/photography/Untitled-6.jpg";
-import logo from "../assets/brand/logo/TheBridge_Logo_Verde_2.svg";
+import logo from "../assets/brand/logo/TheBridge_Logo_Horizontal.svg";
 import { Button } from "../components/ui/Button";
 import { Icon } from "../components/ui/Icon";
 import { authService, type ProfileType } from "../services/auth";
@@ -173,8 +173,8 @@ export function RegisterPage() {
             <span>Voltar para o site</span>
           </Link>
 
-          <Link to="/" aria-label="The Bridge - Página inicial">
-            <img src={logo} alt="The Bridge" className="h-7 w-auto md:h-8" />
+          <Link to="/" aria-label="The Bridge - Página inicial" className="flex items-center">
+            <img src={logo} alt="The Bridge" className="h-9 w-auto md:h-11" />
           </Link>
         </div>
       </header>
@@ -198,19 +198,23 @@ export function RegisterPage() {
               />
             </div>
 
-            {/* Top Logo replacing the old text badge */}
+            {/* Top Logo spanning across the width of the column */}
             <div className="relative z-10 flex items-center">
-              <Link to="/" aria-label="The Bridge - Início">
+              <Link
+                to="/"
+                aria-label="The Bridge - Início"
+                className="inline-block w-full max-w-[280px] sm:max-w-[340px]"
+              >
                 <img
                   src={logo}
                   alt="The Bridge"
-                  className="h-10 w-auto brightness-0 invert drop-shadow"
+                  className="w-full h-auto brightness-0 invert drop-shadow"
                 />
               </Link>
             </div>
 
             {/* Middle Quote */}
-            <div className="relative z-10 my-auto py-12">
+            <div className="relative z-10 my-auto py-8">
               <h2 className="font-display text-3xl font-bold leading-snug tracking-tight text-brand-off-white md:text-4xl">
                 O elo que faltava entre pesquisa científica e mercado.
               </h2>

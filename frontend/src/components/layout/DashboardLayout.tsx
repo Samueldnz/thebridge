@@ -16,7 +16,7 @@ import {
   X,
 } from "lucide-react";
 
-import logo from "../../assets/brand/logo/TheBridge_Logo_Verde_2.svg";
+import logo from "../../assets/brand/logo/TheBridge_Logo_Horizontal.svg";
 import { authService, calculateProfileTier } from "../../services/auth";
 import { Container } from "../ui/Container";
 import { Icon } from "../ui/Icon";
@@ -141,7 +141,7 @@ export function DashboardLayout({
           {/* Logo & Public Site Link */}
           <div className="flex items-center gap-6">
             <Link to="/dashboard" aria-label="The Bridge Painel" className="flex items-center">
-              <img src={logo} alt="The Bridge" className="h-7 w-auto md:h-8" />
+              <img src={logo} alt="The Bridge" className="h-8 w-auto md:h-9" />
             </Link>
 
             <span className="hidden md:inline-block h-4 w-px bg-border-subtle" />

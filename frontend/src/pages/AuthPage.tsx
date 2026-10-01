@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 
 import authHeroImage from "../assets/brand/photography/Untitled-6.jpg";
-import logo from "../assets/brand/logo/TheBridge_Logo_Verde_2.svg";
+import logo from "../assets/brand/logo/TheBridge_Logo_Horizontal.svg";
 import { Button } from "../components/ui/Button";
 import { Icon } from "../components/ui/Icon";
 import { authService, type ProfileType } from "../services/auth";
@@ -155,8 +155,8 @@ export function AuthPage({ initialMode = "login" }: AuthPageProps) {
             <span>Voltar para o site</span>
           </Link>
 
-          <Link to="/" aria-label="The Bridge - Página inicial">
-            <img src={logo} alt="The Bridge" className="h-7 w-auto md:h-8" />
+          <Link to="/" aria-label="The Bridge - Página inicial" className="flex items-center">
+            <img src={logo} alt="The Bridge" className="h-9 w-auto md:h-11" />
           </Link>
         </div>
       </header>
