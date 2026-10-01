@@ -37,10 +37,11 @@ export function RegisterPage() {
   const [agreeTerms, setAgreeTerms] = useState(false);
 
   // Coupon states
-  const [couponCode, setCouponCode] = useState(urlCoupon);
-  const [isCouponApplied, setIsCouponApplied] = useState(urlCoupon === "SBPMAT26");
+  const initialValidation = authService.validateCoupon(urlCoupon);
+  const [couponCode, setCouponCode] = useState(initialValidation.valid ? urlCoupon : "");
+  const [isCouponApplied, setIsCouponApplied] = useState(initialValidation.valid);
   const [couponFeedback, setCouponFeedback] = useState<string | null>(
-    urlCoupon === "SBPMAT26" ? "Cupom SBPMAT26 ativado! 2 meses de acesso gratuito concedidos." : null
+    initialValidation.valid ? "Cupom promocional ativado! 2 meses de acesso gratuito concedidos." : null
   );
   const [couponError, setCouponError] = useState<string | null>(null);
 
@@ -73,7 +74,7 @@ export function RegisterPage() {
     if (validation.valid) {
       setIsCouponApplied(true);
       setCouponCode(clean);
-      setCouponFeedback("🎉 Cupom SBPMAT26 ativado! 2 meses de acesso gratuito (60 dias) liberados.");
+      setCouponFeedback("🎉 Cupom promocional ativado! 2 meses de acesso gratuito (60 dias) liberados.");
     } else {
       setIsCouponApplied(false);
       setCouponError(validation.error || "Cupom inválido ou expirado.");
@@ -116,14 +117,14 @@ export function RegisterPage() {
     // Auto-validar cupom caso o usuário tenha digitado sem clicar em 'Aplicar'
     let finalCoupon: string | undefined = undefined;
     if (isCouponApplied) {
-      finalCoupon = "SBPMAT26";
+      finalCoupon = couponCode.trim().toUpperCase();
     } else if (couponCode.trim()) {
       const validation = authService.validateCoupon(couponCode);
       if (validation.valid) {
-        finalCoupon = "SBPMAT26";
+        finalCoupon = couponCode.trim().toUpperCase();
         setIsCouponApplied(true);
       } else {
-        setErrorMessage("O cupom digitado é inválido. Corrija para SBPMAT26 ou deixe em branco.");
+        setErrorMessage("O cupom digitado é inválido. Verifique a digitação ou deixe em branco.");
         return;
       }
     }
@@ -140,8 +141,8 @@ export function RegisterPage() {
         },
         true
       );
-      if (finalCoupon === "SBPMAT26") {
-        setSuccessMessage(`Conta criada com sucesso com o cupom SBPMAT26! Você tem 2 meses de acesso gratuito liberados. Bem-vindo(a), ${res.user.name}.`);
+      if (finalCoupon) {
+        setSuccessMessage(`Conta criada com sucesso com seu cupom promocional! Você tem 2 meses de acesso gratuito liberados. Bem-vindo(a), ${res.user.name}.`);
       } else {
         setSuccessMessage(`Conta criada com sucesso! Seja bem-vindo(a), ${res.user.name}.`);
       }
@@ -241,10 +242,10 @@ export function RegisterPage() {
               <div className="mt-6 rounded-2xl border border-amber-400/30 bg-amber-400/10 p-3.5 backdrop-blur-xs">
                 <div className="flex items-center gap-2 font-heading text-xs font-bold text-amber-300">
                   <Icon icon={Sparkles} size={14} />
-                  <span>Acesso Promocional Disponível</span>
+                  <span>Acesso Promocional</span>
                 </div>
                 <p className="mt-1 font-body text-[11px] text-brand-off-white/90 leading-snug">
-                  Insira o cupom <strong className="text-amber-300 font-mono">SBPMAT26</strong> no formulário e ganhe <strong>2 meses de acesso 100% gratuito</strong> para impulsionar suas conexões.
+                  Possui um cupom de congresso ou parceiro institucional? Insira o código no formulário ao lado para resgatar seu benefício de cortesia.
                 </p>
               </div>
             </div>
@@ -465,7 +466,7 @@ export function RegisterPage() {
                   {isCouponApplied && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 font-mono text-[10px] font-bold text-emerald-800">
                       <Icon icon={CheckCircle2} size={11} />
-                      SBPMAT26 Ativo
+                      Cupom Ativo ✓
                     </span>
                   )}
                 </div>
@@ -491,7 +492,7 @@ export function RegisterPage() {
                           handleApplyCoupon();
                         }
                       }}
-                      placeholder="Ex: SBPMAT26"
+                      placeholder="Digite o código do cupom"
                       className="w-full rounded-xl border border-border-subtle bg-surface-white py-2 pl-10 pr-4 font-mono text-sm uppercase tracking-wider text-text-primary placeholder:font-sans placeholder:text-xs placeholder:normal-case placeholder:tracking-normal placeholder:text-text-muted focus:border-brand-green-moss focus:outline-none focus:ring-2 focus:ring-brand-green-moss/20 disabled:bg-surface-secondary/50 disabled:text-text-secondary"
                     />
                   </div>
@@ -525,7 +526,7 @@ export function RegisterPage() {
                     <Icon icon={Sparkles} size={16} className="text-emerald-700 shrink-0 mt-0.5" />
                     <div>
                       <p className="font-bold text-emerald-950">
-                        🎉 Cupom SBPMAT26 Aplicado com Sucesso!
+                        🎉 Cupom Promocional Aplicado!
                       </p>
                       <p className="mt-0.5 text-[11px] text-emerald-800 leading-tight">
                         Esta conta terá <strong>2 meses de acesso 100% gratuito (60 dias)</strong> com todas as funcionalidades de matching e conexões liberadas.

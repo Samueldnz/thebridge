@@ -104,7 +104,7 @@ export function DashboardPage() {
     >
       <div className="space-y-10">
         {/* Active Free Trial Coupon Banner */}
-        {(user?.couponCode === "SBPMAT26" || user?.subscriptionStatus === "FREE_TRIAL") && (
+        {(user?.couponCode || user?.subscriptionStatus === "FREE_TRIAL") && (
           <div className="rounded-3xl border border-purple-200 bg-gradient-to-r from-purple-50 via-white to-purple-50/40 p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-5">
             <div className="flex items-start sm:items-center gap-4">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-purple-100 text-purple-700 shadow-2xs">
@@ -113,7 +113,7 @@ export function DashboardPage() {
               <div>
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="rounded-full bg-purple-100 px-2.5 py-0.5 font-mono text-[11px] font-bold text-purple-900 border border-purple-200">
-                    CUPOM SBPMAT26 ATIVADO
+                    ACESSO PROMOCIONAL ATIVO
                   </span>
                   <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-800">
                     {daysRemaining} dias restantes de cortesia

@@ -268,10 +268,10 @@ export function LoginPage() {
                 </p>
                 <div>
                   <Link
-                    to="/cadastro?cupom=SBPMAT26"
+                    to="/cadastro"
                     className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-[11px] font-medium text-amber-900 hover:bg-amber-100 transition-colors shadow-2xs"
                   >
-                    <span>🎟️ Possui o cupom <strong>SBPMAT26</strong>? Cadastre-se e ganhe 2 meses grátis →</span>
+                    <span>🎟️ Possui um cupom promocional ou de parceiro? Insira no cadastro para resgatar →</span>
                   </Link>
                 </div>
               </div>
