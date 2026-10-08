@@ -19,7 +19,7 @@ import {
 import { DashboardLayout } from "../components/layout/DashboardLayout";
 import { Button } from "../components/ui/Button";
 import { Icon } from "../components/ui/Icon";
-import { scientificMatchingService, type ScientificArticle } from "../services/scientificMatching";
+import { scientificMatchingService, cleanScientificAbstract, type ScientificArticle } from "../services/scientificMatching";
 import { authService } from "../services/auth";
 import { opportunitiesService, type Opportunity } from "../services/opportunities";
 import { connectionsService } from "../services/connections";
@@ -44,15 +44,10 @@ function buildQueryFromOpportunity(opp: Opportunity): string {
 }
 
 /**
- * Extrai o texto do resumo iniciando logo após "Resumo :" ou "Resumo:"
+ * Extrai o texto limpo do resumo acadêmico sem duplicar metadados do cabeçalho
  */
 function getCleanAbstract(rawText: string): string {
-  if (!rawText) return "";
-  const match = rawText.match(/resumo\s*:\s*/i);
-  if (match && typeof match.index === "number") {
-    return rawText.slice(match.index + match[0].length).trim();
-  }
-  return rawText.trim();
+  return cleanScientificAbstract(rawText);
 }
 
 export function MatchingResultsPage() {

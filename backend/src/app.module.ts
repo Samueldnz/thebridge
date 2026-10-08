@@ -14,6 +14,7 @@ import { ProjectsModule } from './projects/projects.module.js';
 import { OpportunitiesModule } from './opportunities/opportunities.module.js';
 import { ResearcherAffiliationsModule } from './researcher-affiliations/researcher-affiliations.module.js';
 import { DiscoveryModule } from './discovery/discovery.module.js';
+import { MatchingModule } from './matching/matching.module.js';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { DiscoveryModule } from './discovery/discovery.module.js';
     OpportunitiesModule,
     ResearcherAffiliationsModule,
     DiscoveryModule,
+    MatchingModule,
   ],
   controllers: [AppController],
   providers: [AppService],

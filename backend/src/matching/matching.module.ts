@@ -5,11 +5,13 @@ import { AuthModule } from '../auth/auth.module.js';
 import { MatchingService } from './matching.service.js';
 import { MatchesController } from './matches.controller.js';
 import { MatchesService } from './matches.service.js';
+import { ScientificMatchingService } from './scientific-matching.service.js';
+import { ScientificMatchingController } from './scientific-matching.controller.js';
 
 @Module({
-  imports: [PrismaModule, AuthModule,],
-  providers: [MatchingService, MatchesService],
-  exports: [MatchingService],
-  controllers: [MatchesController],
+  imports: [PrismaModule, AuthModule],
+  providers: [MatchingService, MatchesService, ScientificMatchingService],
+  exports: [MatchingService, ScientificMatchingService],
+  controllers: [MatchesController, ScientificMatchingController],
 })
 export class MatchingModule {}

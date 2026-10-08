@@ -224,6 +224,56 @@ function generateFallbackMatches(query: string, topK: number = 10): ScientificMa
   };
 }
 
+/**
+ * Remove metadados duplicados de cabeçalho do PDF (título, autores, filiações, e-mail)
+ * e extrai o corpo de texto real do resumo acadêmico.
+ */
+export function cleanScientificAbstract(rawText: string): string {
+  if (!rawText) return "";
+  let text = rawText.trim();
+
+  // 1. Pular cabeçalho do template inicial (Título / Autores / Sessão / Evento / Resumo:)
+  const firstResumoIdx = text.search(/(?:^|\n)\s*resumo\s*:\s*/i);
+  if (firstResumoIdx !== -1) {
+    const afterMatch = text.slice(firstResumoIdx).replace(/^(?:\r?\n)?\s*resumo\s*:\s*/i, "");
+    text = afterMatch.trim();
+  }
+
+  // 2. Procurar se há marcador explícito 'Abstract -', 'Abstract:', 'Abstract\n', 'Resumo -'
+  const abstractMatch = text.match(/(?:^|\n)\s*(?:Abstract|Resumo)\s*[-:—]?\s*/i);
+  if (abstractMatch && typeof abstractMatch.index === "number") {
+    const candidate = text.slice(abstractMatch.index + abstractMatch[0].length).trim();
+    if (candidate.length > 50) {
+      text = candidate;
+    }
+  }
+
+  // 3. Os PDFs dos anais colocam título, autores e filiações antes do e-mail do autor correspondente
+  const emailRegex = /(?:e-?mail|email):\s*[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\s*/i;
+  const matchEmail = text.match(emailRegex);
+  if (matchEmail && typeof matchEmail.index === "number") {
+    const candidate = text.slice(matchEmail.index + matchEmail[0].length).trim();
+    if (candidate.length > 50) {
+      text = candidate;
+    }
+  }
+
+  // 4. Normalizar quebras de linha e espaços duplos
+  text = text.replace(/[\r\n]+/g, " ").replace(/[ \t]{2,}/g, " ").trim();
+
+  // 5. Tratar cortes abruptos no final do texto caso truncado no limite de caracteres do Space
+  if (!/[.!?]$/.test(text)) {
+    const lastSpace = text.lastIndexOf(" ");
+    if (lastSpace > text.length - 25) {
+      text = text.slice(0, lastSpace) + "...";
+    } else {
+      text = text + "...";
+    }
+  }
+
+  return text;
+}
+
 function parseEventData(dataStr: string): ScientificMatchResult | null {
   const trimmed = dataStr.trim();
   if (!trimmed || trimmed === "null" || trimmed === "undefined") {
@@ -251,6 +301,7 @@ function parseEventData(dataStr: string): ScientificMatchResult | null {
         const artigos = (rawResult.artigos || []).map((art) => ({
           ...art,
           relevancia_pct: calculateRelevance(art.score_cosseno),
+          resumo: cleanScientificAbstract(art.resumo),
         }));
         return {
           ...rawResult,
@@ -274,6 +325,33 @@ export const scientificMatchingService = {
       };
     }
 
+    // Camada 1: Tentar via Backend Proxy (100% seguro contra exposição de token no cliente)
+    try {
+      const backendUrl = `${env.apiUrl}/matches/scientific`;
+      const backendRes = await fetch(backendUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: trimmed, topK: Math.min(topK, 15) }),
+      });
+
+      if (backendRes.ok) {
+        const data = (await backendRes.json()) as ScientificMatchResult;
+        if (data && Array.isArray(data.artigos) && data.artigos.length > 0) {
+          return {
+            ...data,
+            artigos: data.artigos.map((art) => ({
+              ...art,
+              relevancia_pct: calculateRelevance(art.score_cosseno),
+              resumo: cleanScientificAbstract(art.resumo),
+            })),
+          };
+        }
+      }
+    } catch {
+      // Backend ainda não atualizado ou em deploy - prossegue para contingência direta
+    }
+
+    // Camada 2: Conexão direta ao Hugging Face ZeroGPU
     const hfUrl = env.hfMatchingUrl.replace(/\/+$/, "");
     const token = env.hfToken.trim();
 
