@@ -57,6 +57,11 @@ export const scientificMatchingService = {
     });
 
     if (!postRes.ok) {
+      if (postRes.status === 401 || postRes.status === 404) {
+        throw new Error(
+          "O Space no Hugging Face pode estar privado ou inacessível. Certifique-se de torná-lo 'Public' no Hugging Face ou configurar o token de acesso."
+        );
+      }
       throw new Error(`Falha ao conectar ao motor de IA no Hugging Face (${postRes.status}).`);
     }
 
