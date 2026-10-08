@@ -491,6 +491,7 @@ export function MatchingResultsPage() {
           <div className="space-y-6">
             {filteredArticles.map((art, idx) => {
               const isHigh = art.relevancia_pct >= 80;
+              const isMed = art.relevancia_pct >= 50 && art.relevancia_pct < 80;
               const isExpanded = expandedAbstractId === art.id;
               const cleanAbstract = getCleanAbstract(art.resumo);
 
@@ -502,21 +503,31 @@ export function MatchingResultsPage() {
                     isHigh ? "border-emerald-300 ring-1 ring-emerald-100" : "border-border-subtle",
                   ].join(" ")}
                 >
-                  <div className="pb-4 border-b border-border-subtle space-y-2">
-                    <div className="flex items-center gap-2.5">
-                      <span className="rounded-full bg-brand-green-dark !text-white px-2.5 py-0.5 text-xs font-mono font-bold">
+                  <div className="flex items-start justify-between gap-4 pb-4 border-b border-border-subtle">
+                    <div className="space-y-2 flex-1 min-w-0">
+                      <span className="rounded-full bg-brand-green-dark !text-white px-2.5 py-0.5 text-xs font-mono font-bold inline-block w-fit">
                         #{idx + 1}
                       </span>
+                      <h3 className="font-heading text-lg md:text-xl font-bold text-text-primary leading-snug">
+                        {art.titulo}
+                      </h3>
+                    </div>
+
+                    <div className="shrink-0 pt-0.5 text-right">
                       <span
-                        className="font-mono text-base md:text-lg font-bold text-brand-green-dark"
-                        title={`Score Cosseno: ${art.score_cosseno.toFixed(4)}`}
+                        className={[
+                          "font-display text-xl md:text-2xl font-bold",
+                          isHigh
+                            ? "text-emerald-900"
+                            : isMed
+                            ? "text-blue-900"
+                            : "text-amber-900",
+                        ].join(" ")}
+                        title={`Score Cosseno: ${art.score_cosseno.toFixed(4)} | Fórmula: ((score - 0.35) / 0.40) × 100`}
                       >
                         {art.relevancia_pct}%
                       </span>
                     </div>
-                    <h3 className="font-heading text-lg md:text-xl font-bold text-text-primary leading-snug">
-                      {art.titulo}
-                    </h3>
                   </div>
 
                   {/* Authors and Affiliations */}
