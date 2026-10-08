@@ -18,6 +18,7 @@ import logo from "../../assets/brand/logo/TheBridge_Logo_Horizontal.svg";
 import { authService, calculateProfileTier } from "../../services/auth";
 import { connectionsService, type NotificationItem } from "../../services/connections";
 import { getCompanyLogoUrl } from "../../services/brasilApi";
+import { adminAuditService } from "../../services/adminAudit";
 import { Container } from "../ui/Container";
 import { Icon } from "../ui/Icon";
 
@@ -75,13 +76,12 @@ export function DashboardLayout({
     user?.logoUrl ||
     (!isResearcher && user?.website ? getCompanyLogoUrl(user.website) : undefined);
 
-  const isAdmin =
-    user?.systemRole === "ADMIN" ||
-    location.pathname.startsWith("/dashboard/admin") ||
-    location.pathname === "/admin";
+  const isUserAdmin = adminAuditService.isAdmin(user?.email);
+  const pendingCount = isUserAdmin ? adminAuditService.getPendingTotalCount() : 0;
+  const pendingBadge = pendingCount > 99 ? "99+" : pendingCount.toString();
 
   // Dedicated navigation links separated strictly per profile
-  const baseLinks = isResearcher
+  const navLinks = isResearcher
     ? [
         {
           label: "Painel Geral",
@@ -128,18 +128,6 @@ export function DashboardLayout({
           active: location.pathname === "/dashboard/conexoes",
         },
       ];
-
-  const navLinks = isAdmin
-    ? [
-        ...baseLinks,
-        {
-          label: "Auditoria TI",
-          href: "/dashboard/admin/validacoes",
-          icon: ShieldCheck,
-          active: location.pathname.startsWith("/dashboard/admin") || location.pathname === "/admin",
-        },
-      ]
-    : baseLinks;
 
   return (
     <div className="min-h-screen bg-[#F8F9FA] text-text-primary flex flex-col justify-between">
@@ -325,18 +313,25 @@ export function DashboardLayout({
               </span>
             </Link>
 
-            {/* Admin Audit Button for TI / Curadoria */}
-            <Link
-              to="/dashboard/admin/validacoes"
-              title="Painel de Auditoria & Validação de Perfis (TI / Curadoria)"
-              className={`inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border-subtle transition-colors cursor-pointer ${
-                location.pathname.startsWith("/dashboard/admin") || location.pathname === "/admin"
-                  ? "bg-brand-green-dark text-white border-brand-green-dark"
-                  : "bg-surface-white text-emerald-800 hover:text-emerald-950 hover:bg-emerald-50"
-              }`}
-            >
-              <Icon icon={ShieldCheck} size={16} />
-            </Link>
+            {/* Admin Shield Button (visível apenas para admins, com selo de notificações até 99+) */}
+            {isUserAdmin && (
+              <Link
+                to="/dashboard/admin/validacoes"
+                title="Painel de Admin"
+                className={`relative inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border-subtle transition-colors cursor-pointer ${
+                  location.pathname.startsWith("/dashboard/admin") || location.pathname === "/admin"
+                    ? "bg-brand-green-dark text-white border-brand-green-dark shadow-xs"
+                    : "bg-surface-white text-emerald-800 hover:text-emerald-950 hover:bg-emerald-50"
+                }`}
+              >
+                <Icon icon={ShieldCheck} size={16} />
+                {pendingCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-600 px-1 text-[9px] font-bold text-white shadow-xs animate-in zoom-in">
+                    {pendingBadge}
+                  </span>
+                )}
+              </Link>
+            )}
 
             {/* Logout button */}
             <button
@@ -493,10 +488,14 @@ export function DashboardLayout({
               <Link to="/conteudos" className="hover:text-brand-green-moss">
                 Conteúdos
               </Link>
-              <span>•</span>
-              <Link to="/dashboard/admin/validacoes" className="hover:text-brand-green-moss text-emerald-800 font-bold">
-                Painel TI (Curadoria)
-              </Link>
+              {isUserAdmin && (
+                <>
+                  <span>•</span>
+                  <Link to="/dashboard/admin/validacoes" className="hover:text-brand-green-moss text-emerald-800 font-bold">
+                    Painel de Admin
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </Container>

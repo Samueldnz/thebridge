@@ -224,6 +224,67 @@ export const discordWebhookService = {
   },
 
   /**
+   * Envia notificação sobre decisão de solicitação de usuário (troca de email ou perfil)
+   */
+  async notifyUserRequestDecision(
+    userName: string,
+    requestType: string,
+    decision: "ACEITA" | "RECUSADA",
+    details?: string
+  ): Promise<boolean> {
+    const isAccepted = decision === "ACEITA";
+    const body = {
+      username: "The Bridge Auditoria",
+      avatar_url: "https://thebridge-platform.com/favicon.ico",
+      embeds: [
+        {
+          title: isAccepted
+            ? `✅ Solicitação Aceita: ${userName}`
+            : `❌ Solicitação Recusada: ${userName}`,
+          description: `A solicitação de **${requestType}** do usuário **${userName}** foi ${isAccepted ? "atendida com sucesso" : "recusada"}.\n\n${details ? `**Parecer:** ${details}` : ""}`,
+          color: isAccepted ? 0x059669 : 0xef4444, // Green or Red
+          fields: [
+            {
+              name: "Tipo de Solicitação",
+              value: requestType,
+              inline: true,
+            },
+            {
+              name: "Decisão",
+              value: isAccepted ? "APROVADA" : "RECUSADA",
+              inline: true,
+            },
+            {
+              name: "Horário",
+              value: new Date().toLocaleString("pt-BR"),
+              inline: true,
+            },
+          ],
+          footer: {
+            text: "The Bridge • Gestão de Solicitações de Usuários",
+          },
+          timestamp: new Date().toISOString(),
+        },
+      ],
+    };
+
+    try {
+      const response = await fetch(DISCORD_WEBHOOK_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+
+      return response.ok;
+    } catch (err) {
+      console.warn("Falha ao enviar decisão de solicitação ao Discord:", err);
+      return false;
+    }
+  },
+
+  /**
    * Dispara um teste rápido do webhook
    */
   async sendTestMessage(): Promise<boolean> {
