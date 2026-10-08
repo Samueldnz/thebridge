@@ -275,14 +275,12 @@ export const scientificMatchingService = {
     }
 
     const hfUrl = env.hfMatchingUrl.replace(/\/+$/, "");
-    const token = env.hfToken;
+    const token = env.hfToken.trim();
 
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
     };
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
-    }
 
     try {
       // Etapa 1: Iniciar execução na fila do Gradio no Hugging Face ZeroGPU
@@ -304,10 +302,9 @@ export const scientificMatchingService = {
         return generateFallbackMatches(trimmed, topK);
       }
 
-      const getHeaders: Record<string, string> = {};
-      if (token) {
-        getHeaders["Authorization"] = `Bearer ${token}`;
-      }
+      const getHeaders: Record<string, string> = {
+        "Authorization": `Bearer ${token}`,
+      };
 
       // Etapa 2: Recuperar fluxo de resultado via SSE
       const getRes = await fetch(`${hfUrl}/gradio_api/call/matchmaking/${event_id}`, {
@@ -326,6 +323,7 @@ export const scientificMatchingService = {
         const reader = getRes.body.getReader();
         const decoder = new TextDecoder();
         let buffer = "";
+        let currentEvent = "";
 
         try {
           while (true) {
@@ -336,7 +334,6 @@ export const scientificMatchingService = {
             const lines = buffer.split("\n");
             buffer = lines.pop() || "";
 
-            let currentEvent = "";
             for (const rawLine of lines) {
               const line = rawLine.trim();
               if (line.startsWith("event:")) {
