@@ -471,33 +471,6 @@ export function SubmitOpportunityPage() {
                 )}
               </div>
 
-              {/* Botões rápidos de 1 a 9 */}
-              <div className="pt-1">
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="font-heading text-[11px] text-text-secondary font-medium">
-                    Seleção rápida por botão:
-                  </span>
-                </div>
-                <div className="grid grid-cols-9 gap-1 sm:gap-2">
-                  {TRL_OPTIONS.map((opt) => (
-                    <button
-                      key={opt.level}
-                      type="button"
-                      onClick={() => setMinTrl(opt.level)}
-                      className={[
-                        "h-10 rounded-xl font-mono text-xs font-bold transition-all flex flex-col items-center justify-center border",
-                        minTrl === opt.level
-                          ? "bg-brand-green-dark text-white border-brand-green-dark shadow-sm scale-105"
-                          : "bg-surface-primary text-text-secondary border-border-subtle hover:bg-surface-secondary hover:text-text-primary",
-                      ].join(" ")}
-                      title={`${opt.label}: ${opt.name}`}
-                    >
-                      <span>{opt.level}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
               {/* Exibição detalhada do nível atual */}
               <div className="rounded-xl bg-surface-primary/70 p-3 border border-border-subtle font-body text-xs text-text-secondary flex items-start gap-2">
                 <Icon icon={Info} size={15} className="text-brand-green-moss mt-0.5 shrink-0" />
@@ -608,33 +581,6 @@ export function SubmitOpportunityPage() {
                     </div>
                   </div>
                 )}
-              </div>
-
-              {/* Botões rápidos de 1 a 9 */}
-              <div className="pt-1">
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="font-heading text-[11px] text-text-secondary font-medium">
-                    Seleção rápida por botão:
-                  </span>
-                </div>
-                <div className="grid grid-cols-9 gap-1 sm:gap-2">
-                  {CRL_OPTIONS.map((opt) => (
-                    <button
-                      key={opt.level}
-                      type="button"
-                      onClick={() => setDesiredCrl(opt.level)}
-                      className={[
-                        "h-10 rounded-xl font-mono text-xs font-bold transition-all flex flex-col items-center justify-center border",
-                        desiredCrl === opt.level
-                          ? "bg-brand-earth text-white border-brand-earth shadow-sm scale-105"
-                          : "bg-surface-primary text-text-secondary border-border-subtle hover:bg-surface-secondary hover:text-text-primary",
-                      ].join(" ")}
-                      title={`${opt.label}: ${opt.name}`}
-                    >
-                      <span>{opt.level}</span>
-                    </button>
-                  ))}
-                </div>
               </div>
 
               {/* Exibição detalhada do nível atual */}

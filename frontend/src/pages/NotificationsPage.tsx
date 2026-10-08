@@ -16,20 +16,22 @@ import {
 import { DashboardLayout } from "../components/layout/DashboardLayout";
 import { Icon } from "../components/ui/Icon";
 import { Button } from "../components/ui/Button";
+import { authService } from "../services/auth";
 import {
   connectionsService,
   type NotificationItem,
 } from "../services/connections";
 
 export function NotificationsPage() {
+  const [user] = useState(authService.getStoredUser());
   const [searchParams] = useSearchParams();
   const idFromUrl = searchParams.get("id");
 
   const [notifications, setNotifications] = useState<NotificationItem[]>(() =>
-    connectionsService.getNotifications()
+    connectionsService.getNotifications(user?.email)
   );
   const [selectedId, setSelectedId] = useState<string>(() => {
-    const list = connectionsService.getNotifications();
+    const list = connectionsService.getNotifications(user?.email);
     if (idFromUrl && list.some((n) => n.id === idFromUrl)) {
       return idFromUrl;
     }
@@ -38,27 +40,35 @@ export function NotificationsPage() {
   const [categoryFilter, setCategoryFilter] = useState<string>("TODAS");
 
   useEffect(() => {
+    const list = connectionsService.getNotifications(user?.email);
+    setNotifications(list);
+    if (!selectedId && list.length > 0) {
+      setSelectedId(list[0].id);
+    }
+  }, [user?.email]);
+
+  useEffect(() => {
     if (idFromUrl) {
       setSelectedId(idFromUrl);
-      connectionsService.markNotificationAsRead(idFromUrl);
+      connectionsService.markNotificationAsRead(idFromUrl, user?.email);
       setNotifications((prev) =>
         prev.map((n) => (n.id === idFromUrl ? { ...n, read: true } : n))
       );
     }
-  }, [idFromUrl]);
+  }, [idFromUrl, user?.email]);
 
   const selectedNotification = notifications.find((n) => n.id === selectedId) || null;
 
   const handleSelect = (id: string) => {
     setSelectedId(id);
-    connectionsService.markNotificationAsRead(id);
+    connectionsService.markNotificationAsRead(id, user?.email);
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, read: true } : n))
     );
   };
 
   const handleMarkAllRead = () => {
-    connectionsService.markAllAsRead();
+    connectionsService.markAllAsRead(user?.email);
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   };
 

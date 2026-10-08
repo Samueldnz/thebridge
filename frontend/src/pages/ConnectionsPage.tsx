@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   Building2,
@@ -27,13 +27,17 @@ export function ConnectionsPage() {
   const isResearcher = user?.profileType === "RESEARCHER";
 
   const [connections, setConnections] = useState<ConnectionItem[]>(() =>
-    connectionsService.getConnections()
+    connectionsService.getConnections(user?.email)
   );
   const [statusFilter, setStatusFilter] = useState<string>("TODAS");
 
+  useEffect(() => {
+    setConnections(connectionsService.getConnections(user?.email));
+  }, [user?.email]);
+
   const handleUpdateStatus = (id: string, newStatus: ConnectionItem["status"]) => {
-    connectionsService.updateConnectionStatus(id, newStatus);
-    setConnections(connectionsService.getConnections());
+    connectionsService.updateConnectionStatus(id, newStatus, user?.email);
+    setConnections(connectionsService.getConnections(user?.email));
   };
 
   const filtered =

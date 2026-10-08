@@ -1,3 +1,5 @@
+import { authService } from "./auth";
+
 export interface ConnectionItem {
   id: string;
   companyName: string;
@@ -27,6 +29,30 @@ export interface NotificationItem {
 
 const STORAGE_CONNECTIONS_KEY = "thebridge_connections";
 const STORAGE_NOTIFICATIONS_KEY = "thebridge_notifications";
+
+/**
+ * Contas autorizadas para visualização dos dados simulados de verificação e teste de funcionalidade.
+ * Todas as demais contas iniciam com o painel de Conexões e Notificações totalmente zerado.
+ */
+export const VERIFICATION_DEMO_EMAILS = [
+  "pclipe00@gmail.com",
+  "felipepc@poli.ufrj.br",
+];
+
+export function isVerificationAccount(email?: string): boolean {
+  if (!email) return false;
+  return VERIFICATION_DEMO_EMAILS.includes(email.toLowerCase().trim());
+}
+
+function getConnectionsStorageKey(email?: string): string {
+  const norm = (email || "").toLowerCase().trim();
+  return norm ? `${STORAGE_CONNECTIONS_KEY}_${norm}` : `${STORAGE_CONNECTIONS_KEY}_guest`;
+}
+
+function getNotificationsStorageKey(email?: string): string {
+  const norm = (email || "").toLowerCase().trim();
+  return norm ? `${STORAGE_NOTIFICATIONS_KEY}_${norm}` : `${STORAGE_NOTIFICATIONS_KEY}_guest`;
+}
 
 const INITIAL_CONNECTIONS: ConnectionItem[] = [
   {
@@ -121,27 +147,59 @@ const INITIAL_NOTIFICATIONS: NotificationItem[] = [
 ];
 
 export const connectionsService = {
-  getConnections(): ConnectionItem[] {
+  getConnections(userEmail?: string): ConnectionItem[] {
+    const email = (userEmail || authService.getStoredUser()?.email || "").toLowerCase().trim();
+    const isDemo = isVerificationAccount(email);
+    const key = getConnectionsStorageKey(email);
+
     try {
-      const stored = localStorage.getItem(STORAGE_CONNECTIONS_KEY);
+      const stored = localStorage.getItem(key);
       if (stored) return JSON.parse(stored);
     } catch {
       // fallback
     }
-    localStorage.setItem(STORAGE_CONNECTIONS_KEY, JSON.stringify(INITIAL_CONNECTIONS));
-    return INITIAL_CONNECTIONS;
+
+    if (isDemo) {
+      // Para as contas de teste homologadas (pclipe00@gmail.com / felipepc@poli.ufrj.br)
+      // Carrega dados simulados de verificação funcional se ainda não houver dados gravados
+      try {
+        const legacy = localStorage.getItem(STORAGE_CONNECTIONS_KEY);
+        if (legacy) {
+          const parsed = JSON.parse(legacy);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            localStorage.setItem(key, JSON.stringify(parsed));
+            return parsed;
+          }
+        }
+      } catch {}
+
+      localStorage.setItem(key, JSON.stringify(INITIAL_CONNECTIONS));
+      return INITIAL_CONNECTIONS;
+    }
+
+    // Para todas as outras contas: inicia com lista vazia (zerada)
+    if (email) {
+      localStorage.setItem(key, JSON.stringify([]));
+    }
+    return [];
   },
 
-  requestConnection(data: {
-    articleTitle: string;
-    articleEvent: string;
-    matchScore: number;
-    message: string;
-    companyName?: string;
-    researcherName?: string;
-    opportunityTitle?: string;
-  }): ConnectionItem {
-    const connections = this.getConnections();
+  requestConnection(
+    data: {
+      articleTitle: string;
+      articleEvent: string;
+      matchScore: number;
+      message: string;
+      companyName?: string;
+      researcherName?: string;
+      opportunityTitle?: string;
+    },
+    userEmail?: string
+  ): ConnectionItem {
+    const email = (userEmail || authService.getStoredUser()?.email || "").toLowerCase().trim();
+    const key = getConnectionsStorageKey(email);
+    const connections = this.getConnections(email);
+
     const newConn: ConnectionItem = {
       id: `conn-${Date.now()}`,
       companyName: data.companyName || "Empresa Parceira Registrada",
@@ -157,41 +215,77 @@ export const connectionsService = {
     };
 
     connections.unshift(newConn);
-    localStorage.setItem(STORAGE_CONNECTIONS_KEY, JSON.stringify(connections));
+    try {
+      localStorage.setItem(key, JSON.stringify(connections));
+    } catch {}
 
-    // Also inject a notification
-    this.addNotification({
-      title: `Solicitação de conexão enviada: ${data.articleTitle.slice(0, 45)}...`,
-      sender: "The Bridge Matchmaking",
-      category: "CONEXAO",
-      preview: "Sua solicitação de conexão foi registrada com sucesso.",
-      body: `Você enviou uma solicitação de conexão para a pesquisa:\n"${data.articleTitle}"\n\nMensagem enviada:\n"${data.message}"\n\nAssim que o pesquisador avaliar a solicitação, você receberá uma notificação aqui.`,
-      actionUrl: "/dashboard/conexoes",
-    });
+    // Injeta notificação de confirmação para a própria conta
+    this.addNotification(
+      {
+        title: `Solicitação de conexão enviada: ${data.articleTitle.slice(0, 45)}...`,
+        sender: "The Bridge Matchmaking",
+        category: "CONEXAO",
+        preview: "Sua solicitação de conexão foi registrada com sucesso.",
+        body: `Você enviou uma solicitação de conexão para a pesquisa:\n"${data.articleTitle}"\n\nMensagem enviada:\n"${data.message}"\n\nAssim que o pesquisador avaliar a solicitação, você receberá uma notificação aqui.`,
+        actionUrl: "/dashboard/conexoes",
+      },
+      email
+    );
 
     return newConn;
   },
 
-  updateConnectionStatus(id: string, status: ConnectionItem["status"]) {
-    const connections = this.getConnections().map((c) =>
+  updateConnectionStatus(id: string, status: ConnectionItem["status"], userEmail?: string) {
+    const email = (userEmail || authService.getStoredUser()?.email || "").toLowerCase().trim();
+    const key = getConnectionsStorageKey(email);
+    const connections = this.getConnections(email).map((c) =>
       c.id === id ? { ...c, status, updatedAt: "Hoje" } : c
     );
-    localStorage.setItem(STORAGE_CONNECTIONS_KEY, JSON.stringify(connections));
+    try {
+      localStorage.setItem(key, JSON.stringify(connections));
+    } catch {}
   },
 
-  getNotifications(): NotificationItem[] {
+  getNotifications(userEmail?: string): NotificationItem[] {
+    const email = (userEmail || authService.getStoredUser()?.email || "").toLowerCase().trim();
+    const isDemo = isVerificationAccount(email);
+    const key = getNotificationsStorageKey(email);
+
     try {
-      const stored = localStorage.getItem(STORAGE_NOTIFICATIONS_KEY);
+      const stored = localStorage.getItem(key);
       if (stored) return JSON.parse(stored);
     } catch {
       // fallback
     }
-    localStorage.setItem(STORAGE_NOTIFICATIONS_KEY, JSON.stringify(INITIAL_NOTIFICATIONS));
-    return INITIAL_NOTIFICATIONS;
+
+    if (isDemo) {
+      // Para as contas de teste homologadas (pclipe00@gmail.com / felipepc@poli.ufrj.br)
+      try {
+        const legacy = localStorage.getItem(STORAGE_NOTIFICATIONS_KEY);
+        if (legacy) {
+          const parsed = JSON.parse(legacy);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            localStorage.setItem(key, JSON.stringify(parsed));
+            return parsed;
+          }
+        }
+      } catch {}
+
+      localStorage.setItem(key, JSON.stringify(INITIAL_NOTIFICATIONS));
+      return INITIAL_NOTIFICATIONS;
+    }
+
+    // Para todas as outras contas: inicia com lista vazia (zerada)
+    if (email) {
+      localStorage.setItem(key, JSON.stringify([]));
+    }
+    return [];
   },
 
-  addNotification(item: Omit<NotificationItem, "id" | "date" | "read">) {
-    const notifications = this.getNotifications();
+  addNotification(item: Omit<NotificationItem, "id" | "date" | "read">, userEmail?: string) {
+    const email = (userEmail || authService.getStoredUser()?.email || "").toLowerCase().trim();
+    const key = getNotificationsStorageKey(email);
+    const notifications = this.getNotifications(email);
     const newNotif: NotificationItem = {
       id: `notif-${Date.now()}`,
       ...item,
@@ -199,18 +293,28 @@ export const connectionsService = {
       read: false,
     };
     notifications.unshift(newNotif);
-    localStorage.setItem(STORAGE_NOTIFICATIONS_KEY, JSON.stringify(notifications));
+    try {
+      localStorage.setItem(key, JSON.stringify(notifications));
+    } catch {}
   },
 
-  markNotificationAsRead(id: string) {
-    const notifications = this.getNotifications().map((n) =>
+  markNotificationAsRead(id: string, userEmail?: string) {
+    const email = (userEmail || authService.getStoredUser()?.email || "").toLowerCase().trim();
+    const key = getNotificationsStorageKey(email);
+    const notifications = this.getNotifications(email).map((n) =>
       n.id === id ? { ...n, read: true } : n
     );
-    localStorage.setItem(STORAGE_NOTIFICATIONS_KEY, JSON.stringify(notifications));
+    try {
+      localStorage.setItem(key, JSON.stringify(notifications));
+    } catch {}
   },
 
-  markAllAsRead() {
-    const notifications = this.getNotifications().map((n) => ({ ...n, read: true }));
-    localStorage.setItem(STORAGE_NOTIFICATIONS_KEY, JSON.stringify(notifications));
+  markAllAsRead(userEmail?: string) {
+    const email = (userEmail || authService.getStoredUser()?.email || "").toLowerCase().trim();
+    const key = getNotificationsStorageKey(email);
+    const notifications = this.getNotifications(email).map((n) => ({ ...n, read: true }));
+    try {
+      localStorage.setItem(key, JSON.stringify(notifications));
+    } catch {}
   },
 };
