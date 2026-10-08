@@ -19,6 +19,7 @@ import { Button } from "../components/ui/Button";
 import { Icon } from "../components/ui/Icon";
 import { authService, type User } from "../services/auth";
 import { connectionsService } from "../services/connections";
+import { adminAuditService } from "../services/adminAudit";
 import { formatCPF, formatPhone } from "../utils/formatters";
 
 export function ResearcherProfilePage() {
@@ -80,6 +81,9 @@ export function ResearcherProfilePage() {
       setCurrentUser(updated);
       setVerificationStatus("EM_ANALISE");
       setVerificationSuccess(true);
+
+      // Despacha para a fila de auditoria e envia notificação no Discord do TI
+      await adminAuditService.submitProfileForAudit(updated);
 
       connectionsService.addNotification({
         title: "Perfil do pesquisador submetido para análise de veracidade",

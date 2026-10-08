@@ -27,6 +27,7 @@ import {
   type BrasilApiCnpjData,
 } from "../services/brasilApi";
 import { connectionsService } from "../services/connections";
+import { adminAuditService } from "../services/adminAudit";
 
 export function CompanyProfilePage() {
   const [currentUser, setCurrentUser] = useState<User | null>(authService.getStoredUser());
@@ -169,6 +170,9 @@ export function CompanyProfilePage() {
       setCurrentUser(updated);
       setVerificationStatus("EM_ANALISE");
       setVerificationSuccess(true);
+
+      // Despacha para a fila de auditoria e envia notificação no Discord do TI
+      await adminAuditService.submitProfileForAudit(updated);
 
       connectionsService.addNotification({
         title: "Perfil corporativo submetido para análise de veracidade",

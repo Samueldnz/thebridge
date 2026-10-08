@@ -19,6 +19,7 @@ import { NotificationsPage } from "../pages/NotificationsPage";
 import FoundationDemo from "../pages/FoundationDemo";
 import { HomePage } from "../pages/HomePage";
 import { PreviewLayoutPage } from "../pages/PreviewLayoutPage";
+import { AdminVerificationPage } from "../pages/AdminVerificationPage";
 
 function RootLayout() {
   const { pathname, hash } = useLocation();
@@ -104,6 +105,14 @@ export const router = createBrowserRouter([
   {
     path: "/dashboard/perfil",
     element: <ProfilePage />,
+  },
+  {
+    path: "/dashboard/admin/validacoes",
+    element: <AdminVerificationPage />,
+  },
+  {
+    path: "/admin",
+    element: <AdminVerificationPage />,
   },
   {
     path: "/conteudos",
