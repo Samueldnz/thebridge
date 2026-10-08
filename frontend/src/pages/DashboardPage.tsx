@@ -2,15 +2,10 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowRight,
-  Award,
-  Building2,
   Edit3,
   FilePlus2,
-  FolderGit2,
-  GraduationCap,
   PlusCircle,
   ShieldAlert,
-  ShieldCheck,
   Sparkles,
   Ticket,
 } from "lucide-react";
@@ -18,7 +13,7 @@ import {
 import { DashboardLayout } from "../components/layout/DashboardLayout";
 import { Button } from "../components/ui/Button";
 import { Icon } from "../components/ui/Icon";
-import { authService, calculateProfileTier } from "../services/auth";
+import { authService } from "../services/auth";
 import { projectsService, type Project } from "../services/projects";
 import { opportunitiesService, type Opportunity } from "../services/opportunities";
 import { matchingService, type MatchItem } from "../services/matching";
@@ -53,7 +48,6 @@ export function DashboardPage() {
 
   const submissionCount = isResearcher ? myProjects.length : myOpportunities.length;
   const isLimitReached = submissionCount >= 5;
-  const tierResult = calculateProfileTier(user);
 
   return (
     <DashboardLayout
@@ -140,99 +134,7 @@ export function DashboardPage() {
           </div>
         )}
 
-        {/* Metric Cards Banner */}
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-3xl border border-border-subtle bg-surface-white p-6 shadow-xs">
-            <div className="flex items-center justify-between">
-              <span className="font-heading text-xs font-semibold uppercase text-text-secondary">
-                {isResearcher ? "Meus Projetos Submetidos" : "Minhas Demandas Ativas"}
-              </span>
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-green-moss/10 text-brand-green-moss">
-                <Icon icon={isResearcher ? GraduationCap : Building2} size={18} />
-              </div>
-            </div>
-            <div className="mt-3 flex items-baseline gap-2">
-              <span className="font-display text-3xl font-bold text-text-primary">
-                {submissionCount}
-              </span>
-              <span className="font-heading text-xs text-text-secondary font-semibold">
-                de 5 permitidos
-              </span>
-            </div>
-            <div className="mt-2 h-1.5 w-full bg-border-subtle rounded-full overflow-hidden">
-              <div
-                className={[
-                  "h-full rounded-full transition-all duration-500",
-                  isLimitReached ? "bg-amber-600" : "bg-brand-green-dark",
-                ].join(" ")}
-                style={{ width: `${(submissionCount / 5) * 100}%` }}
-              />
-            </div>
-          </div>
 
-          <div className="rounded-3xl border border-border-subtle bg-surface-white p-6 shadow-xs">
-            <div className="flex items-center justify-between">
-              <span className="font-heading text-xs font-semibold uppercase text-text-secondary">
-                Matches das Minhas Submissões
-              </span>
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
-                <Icon icon={Sparkles} size={18} />
-              </div>
-            </div>
-            <p className="mt-3 font-display text-3xl font-bold text-emerald-900">
-              {myMatches.length}
-            </p>
-            <span className="mt-1 block text-xs font-body text-text-secondary">
-              {isResearcher ? "Demandas de mercado compatíveis" : "Projetos acadêmicos compatíveis"}
-            </span>
-          </div>
-
-          <div className="rounded-3xl border border-border-subtle bg-surface-white p-6 shadow-xs">
-            <div className="flex items-center justify-between">
-              <span className="font-heading text-xs font-semibold uppercase text-text-secondary">
-                Afinidade Máxima
-              </span>
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
-                <Icon icon={Award} size={18} />
-              </div>
-            </div>
-            <p className="mt-3 font-display text-3xl font-bold text-blue-900">
-              {myMatches.length > 0 ? `${myMatches[0].percentage}%` : "--"}
-            </p>
-            <span className="mt-1 block text-xs font-body text-text-secondary">
-              Maior score ponderado atual
-            </span>
-          </div>
-
-          <div className="rounded-3xl border border-border-subtle bg-surface-white p-6 shadow-xs flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between">
-                <span className="font-heading text-xs font-semibold uppercase text-text-secondary">
-                  Nível do Perfil
-                </span>
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
-                  <Icon icon={ShieldCheck} size={18} />
-                </div>
-              </div>
-              <p className="mt-3 font-display text-lg font-bold text-text-primary flex items-center gap-1.5">
-                <span>{tierResult.tier === "OURO" ? "🥇 Ouro" : tierResult.tier === "PRATA" ? "🥈 Prata" : "🥉 Bronze"}</span>
-                <span className="text-xs font-mono font-normal text-text-secondary">({tierResult.score}%)</span>
-              </p>
-              <span className="mt-1 block text-xs font-body text-text-secondary">
-                {tierResult.nextTier
-                  ? `Faltam ${tierResult.pointsToNextTier} pts p/ ${tierResult.nextTier === "OURO" ? "Ouro 🥇" : "Prata 🥈"}`
-                  : "Nível Máximo Verificado ⭐"}
-              </span>
-            </div>
-            <Link
-              to="/dashboard/perfil"
-              className="mt-3 inline-flex items-center gap-1 text-xs font-heading font-semibold text-brand-green-moss hover:underline"
-            >
-              <span>Editar dados do perfil</span>
-              <Icon icon={ArrowRight} size={13} />
-            </Link>
-          </div>
-        </div>
 
         {/* Quota Exceeded Alert Banner */}
         {isLimitReached && (
@@ -273,42 +175,36 @@ export function DashboardPage() {
               {isResearcher ? (
                 <Button
                   size="md"
+                  variant="inverse"
                   disabled={isLimitReached}
                   onClick={() => navigate("/dashboard/projetos/novo")}
+                  style={{ color: "#002025" }}
                   className={
                     isLimitReached
-                      ? "bg-brand-off-white/40 text-brand-green-dark cursor-not-allowed"
-                      : "bg-brand-off-white text-brand-green-dark hover:bg-surface-secondary"
+                      ? "bg-brand-off-white/40 !text-[#002025] cursor-not-allowed font-bold"
+                      : "bg-brand-off-white !text-[#002025] font-bold hover:bg-surface-secondary shadow-xs"
                   }
                 >
-                  <Icon icon={FilePlus2} size={16} />
-                  {isLimitReached ? "Limite de 5 Projetos Atingido" : "Submeter Novo Projeto"}
+                  <Icon icon={FilePlus2} size={16} className="!text-[#002025]" />
+                  <span>{isLimitReached ? "Limite de 5 Projetos Atingido" : "Submeter Novo Projeto"}</span>
                 </Button>
               ) : (
                 <Button
                   size="md"
+                  variant="inverse"
                   disabled={isLimitReached}
                   onClick={() => navigate("/dashboard/demandas/nova")}
+                  style={{ color: "#002025" }}
                   className={
                     isLimitReached
-                      ? "bg-brand-off-white/40 text-brand-green-dark cursor-not-allowed"
-                      : "bg-brand-off-white text-brand-green-dark hover:bg-surface-secondary"
+                      ? "bg-brand-off-white/40 !text-[#002025] cursor-not-allowed font-bold"
+                      : "bg-brand-off-white !text-[#002025] font-bold hover:bg-surface-secondary shadow-xs"
                   }
                 >
-                  <Icon icon={PlusCircle} size={16} />
-                  {isLimitReached ? "Limite de 5 Demandas Atingido" : "Cadastrar Nova Demanda"}
+                  <Icon icon={PlusCircle} size={16} className="!text-[#002025]" />
+                  <span>{isLimitReached ? "Limite de 5 Demandas Atingido" : "Cadastrar Nova Demanda"}</span>
                 </Button>
               )}
-
-              <Button
-                variant="secondary"
-                size="md"
-                onClick={() => navigate(isResearcher ? "/dashboard/projetos" : "/dashboard/demandas")}
-                className="border-brand-off-white/30 text-brand-off-white hover:bg-brand-off-white/10"
-              >
-                <Icon icon={FolderGit2} size={16} />
-                {isResearcher ? "Ver Meus Projetos" : "Ver Minhas Demandas"}
-              </Button>
             </div>
           </div>
         </div>

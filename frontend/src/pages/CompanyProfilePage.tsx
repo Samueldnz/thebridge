@@ -23,6 +23,7 @@ import { DashboardLayout } from "../components/layout/DashboardLayout";
 import { Button } from "../components/ui/Button";
 import { Icon } from "../components/ui/Icon";
 import { authService, calculateProfileTier, type User } from "../services/auth";
+import { formatCNPJ, formatPhone } from "../utils/formatters";
 
 export function CompanyProfilePage() {
   const navigate = useNavigate();
@@ -361,7 +362,9 @@ export function CompanyProfilePage() {
                 <input
                   type="text"
                   value={formData.cnpj}
-                  onChange={(e) => handleChange("cnpj", e.target.value)}
+                  onChange={(e) => handleChange("cnpj", formatCNPJ(e.target.value))}
+                  onBlur={() => handleChange("cnpj", formatCNPJ(formData.cnpj))}
+                  maxLength={18}
                   placeholder="00.000.000/0001-00"
                   className="w-full rounded-xl border border-border-subtle bg-surface-primary px-3.5 py-2.5 text-xs text-text-primary focus:border-brand-green-moss focus:outline-none font-mono"
                 />
@@ -475,7 +478,9 @@ export function CompanyProfilePage() {
                   <input
                     type="text"
                     value={formData.phone}
-                    onChange={(e) => handleChange("phone", e.target.value)}
+                    onChange={(e) => handleChange("phone", formatPhone(e.target.value))}
+                    onBlur={() => handleChange("phone", formatPhone(formData.phone))}
+                    maxLength={15}
                     placeholder="(11) 3000-0000"
                     className="w-full rounded-xl border border-border-subtle bg-surface-primary pl-9 pr-3.5 py-2.5 text-xs text-text-primary focus:border-brand-green-moss focus:outline-none"
                   />

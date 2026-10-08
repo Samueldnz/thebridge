@@ -24,6 +24,7 @@ import { DashboardLayout } from "../components/layout/DashboardLayout";
 import { Button } from "../components/ui/Button";
 import { Icon } from "../components/ui/Icon";
 import { authService, calculateProfileTier, type User } from "../services/auth";
+import { formatCPF, formatPhone } from "../utils/formatters";
 
 export function ResearcherProfilePage() {
   const navigate = useNavigate();
@@ -362,7 +363,9 @@ export function ResearcherProfilePage() {
                 <input
                   type="text"
                   value={formData.cpf}
-                  onChange={(e) => handleChange("cpf", e.target.value)}
+                  onChange={(e) => handleChange("cpf", formatCPF(e.target.value))}
+                  onBlur={() => handleChange("cpf", formatCPF(formData.cpf))}
+                  maxLength={14}
                   placeholder="000.000.000-00"
                   className="w-full rounded-xl border border-border-subtle bg-surface-primary px-3.5 py-2.5 text-xs text-text-primary focus:border-brand-green-moss focus:outline-none font-mono"
                 />
@@ -398,7 +401,9 @@ export function ResearcherProfilePage() {
                   <input
                     type="text"
                     value={formData.phone}
-                    onChange={(e) => handleChange("phone", e.target.value)}
+                    onChange={(e) => handleChange("phone", formatPhone(e.target.value))}
+                    onBlur={() => handleChange("phone", formatPhone(formData.phone))}
+                    maxLength={15}
                     placeholder="(11) 98765-4321"
                     className="w-full rounded-xl border border-border-subtle bg-surface-primary pl-9 pr-3.5 py-2.5 text-xs text-text-primary focus:border-brand-green-moss focus:outline-none"
                   />

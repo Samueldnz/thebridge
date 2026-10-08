@@ -6,7 +6,6 @@ import {
   Home,
   LogOut,
   Menu,
-  PlusCircle,
   Sparkles,
   Ticket,
   X,
@@ -96,12 +95,6 @@ export function DashboardLayout({
           href: "/dashboard/demandas",
           icon: FolderGit2,
           active: location.pathname === "/dashboard/demandas",
-        },
-        {
-          label: "Cadastrar Demanda",
-          href: "/dashboard/demandas/nova",
-          icon: PlusCircle,
-          active: location.pathname === "/dashboard/demandas/nova",
         },
         {
           label: "Meus Matches",
