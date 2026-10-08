@@ -52,6 +52,24 @@ function getCleanAbstract(rawText: string): string {
   return cleanScientificAbstract(rawText);
 }
 
+/**
+ * Separa autores e vínculos institucionais a partir do separador ponto e vírgula (;)
+ */
+function splitAuthorsAndAffiliations(rawAutores?: string): { authors: string; affiliations: string | null } {
+  if (!rawAutores) return { authors: "Não informado", affiliations: null };
+  const parts = rawAutores.split(";").map((p) => p.trim()).filter(Boolean);
+  if (parts.length > 1) {
+    return {
+      authors: parts[0],
+      affiliations: parts.slice(1).join("; "),
+    };
+  }
+  return {
+    authors: rawAutores.trim(),
+    affiliations: null,
+  };
+}
+
 export function MatchingResultsPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -278,7 +296,7 @@ export function MatchingResultsPage() {
             className="bg-brand-green-dark !text-white hover:bg-brand-green-moss cursor-pointer font-bold shadow-xs"
           >
             <Icon icon={RefreshCw} size={15} className={loading || recalculating ? "animate-spin" : ""} />
-            {loading || recalculating ? "Recalculando..." : "Recalcular Matches 🔄"}
+            {loading || recalculating ? "Recalculando..." : "Recalcular Matches"}
           </Button>
         </div>
       }
@@ -359,51 +377,31 @@ export function MatchingResultsPage() {
           </div>
         </div>
 
-        {/* Banner de Status de Matches Salvos e Recálculo */}
+        {/* Banner de Status de Matches Salvos */}
         {articles.length > 0 && !loading && (
-          <div className="rounded-2xl border border-border-subtle bg-surface-white p-3.5 shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs animate-in fade-in duration-300">
-            <div className="flex items-center gap-2.5">
-              <div
-                className={`flex h-8 w-8 items-center justify-center rounded-xl shrink-0 ${
-                  isFromCache ? "bg-emerald-100 text-emerald-800" : "bg-blue-100 text-blue-800"
-                }`}
-              >
-                <Icon icon={isFromCache ? CheckCircle2 : Sparkles} size={16} />
-              </div>
-              <div>
-                <span className="font-heading font-bold text-text-primary block sm:inline">
-                  {isFromCache ? "Matches salvos da última análise" : "Nova análise calculada e salva"}
-                </span>
-                {lastCalculatedAt && (
-                  <span className="font-body text-text-secondary sm:ml-1.5 text-[11px]">
-                    (calculado em {new Date(lastCalculatedAt).toLocaleDateString("pt-BR")} às{" "}
-                    {new Date(lastCalculatedAt).toLocaleTimeString("pt-BR", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                    )
-                  </span>
-                )}
-              </div>
-            </div>
-
-            <Button
-              type="button"
-              size="sm"
-              variant="secondary"
-              onClick={() => {
-                if (selectedOpportunity) {
-                  loadOpportunityMatches(selectedOpportunity, true);
-                } else {
-                  executeMatching(searchQuery, null, true);
-                }
-              }}
-              disabled={loading || recalculating}
-              className="text-xs font-semibold text-brand-green-moss hover:bg-emerald-50 border-emerald-600/30 cursor-pointer shadow-xs"
+          <div className="rounded-2xl border border-border-subtle bg-surface-white p-3.5 shadow-xs flex items-center gap-2.5 text-xs animate-in fade-in duration-300">
+            <div
+              className={`flex h-8 w-8 items-center justify-center rounded-xl shrink-0 ${
+                isFromCache ? "bg-emerald-100 text-emerald-800" : "bg-blue-100 text-blue-800"
+              }`}
             >
-              <Icon icon={RefreshCw} size={13} className={recalculating ? "animate-spin" : ""} />
-              {recalculating ? "Recalculando..." : "Recalcular Matches 🔄"}
-            </Button>
+              <Icon icon={isFromCache ? CheckCircle2 : Sparkles} size={16} />
+            </div>
+            <div>
+              <span className="font-heading font-bold text-text-primary block sm:inline">
+                {isFromCache ? "Matches salvos da última análise" : "Nova análise calculada e salva"}
+              </span>
+              {lastCalculatedAt && (
+                <span className="font-body text-text-secondary sm:ml-1.5 text-[11px]">
+                  (calculado em {new Date(lastCalculatedAt).toLocaleDateString("pt-BR")} às{" "}
+                  {new Date(lastCalculatedAt).toLocaleTimeString("pt-BR", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                  )
+                </span>
+              )}
+            </div>
           </div>
         )}
 
@@ -493,7 +491,6 @@ export function MatchingResultsPage() {
           <div className="space-y-6">
             {filteredArticles.map((art, idx) => {
               const isHigh = art.relevancia_pct >= 80;
-              const isMed = art.relevancia_pct >= 50 && art.relevancia_pct < 80;
               const isExpanded = expandedAbstractId === art.id;
               const cleanAbstract = getCleanAbstract(art.resumo);
 
@@ -505,67 +502,42 @@ export function MatchingResultsPage() {
                     isHigh ? "border-emerald-300 ring-1 ring-emerald-100" : "border-border-subtle",
                   ].join(" ")}
                 >
-                  <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 pb-4 border-b border-border-subtle">
-                    <div className="space-y-2 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="rounded-full bg-brand-green-dark !text-white px-2.5 py-0.5 text-xs font-mono font-bold">
-                          #{idx + 1}
-                        </span>
-                        <span className="rounded-full bg-surface-secondary text-text-primary px-3 py-0.5 text-xs font-heading font-semibold border border-border-subtle">
-                          🏛️ {art.evento} ({art.ano}) • {art.edicao}
-                        </span>
-                        {art.codigo && (
-                          <span className="rounded-full bg-blue-50 text-blue-800 px-2.5 py-0.5 text-[11px] font-mono font-medium">
-                            Cod: {art.codigo}
+                  <div className="pb-4 border-b border-border-subtle space-y-2">
+                    <span className="rounded-full bg-brand-green-dark !text-white px-2.5 py-0.5 text-xs font-mono font-bold inline-block w-fit">
+                      #{idx + 1}
+                    </span>
+                    <h3 className="font-heading text-lg md:text-xl font-bold text-text-primary leading-snug">
+                      {art.titulo}
+                    </h3>
+                  </div>
+
+                  {/* Authors and Affiliations */}
+                  {(() => {
+                    const parsedAuthors = splitAuthorsAndAffiliations(art.autores);
+                    return (
+                      <div className="py-4 space-y-3">
+                        <div>
+                          <span className="text-[11px] font-heading font-bold uppercase text-text-secondary">
+                            Autores:
                           </span>
+                          <p className="mt-0.5 font-body text-xs md:text-sm text-text-primary font-medium">
+                            {parsedAuthors.authors}
+                          </p>
+                        </div>
+
+                        {parsedAuthors.affiliations && (
+                          <div>
+                            <span className="text-[11px] font-heading font-bold uppercase text-text-secondary">
+                              Vínculos de Pesquisa:
+                            </span>
+                            <p className="mt-0.5 font-body text-xs md:text-sm text-text-secondary leading-relaxed">
+                              {parsedAuthors.affiliations}
+                            </p>
+                          </div>
                         )}
                       </div>
-                      <h3 className="font-heading text-lg md:text-xl font-bold text-text-primary leading-snug">
-                        {art.titulo}
-                      </h3>
-                    </div>
-
-                    {/* Calculated Relevance Badge with Formula Tooltip */}
-                    <div className="shrink-0 flex md:flex-col items-center md:items-end justify-between gap-1">
-                      <div
-                        className={[
-                          "inline-flex items-center gap-1.5 rounded-2xl px-4 py-2 font-display text-xl font-bold shadow-xs",
-                          isHigh
-                            ? "bg-emerald-100 text-emerald-900 border border-emerald-300"
-                            : isMed
-                            ? "bg-blue-100 text-blue-900 border border-blue-300"
-                            : "bg-amber-100 text-amber-900 border border-amber-300",
-                        ].join(" ")}
-                        title={`Score Cosseno: ${art.score_cosseno.toFixed(4)} | Fórmula: ((score - 0.35) / 0.40) × 100`}
-                      >
-                        <Icon icon={Sparkles} size={17} />
-                        <span>{art.relevancia_pct}%</span>
-                      </div>
-                      <span className="text-[10px] font-mono text-text-secondary uppercase">
-                        {isHigh ? "Alta Afinidade" : isMed ? "Boa Compatibilidade" : "Afinidade Moderada"}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Authors and Session */}
-                  <div className="py-4 space-y-2">
-                    <div>
-                      <span className="text-[11px] font-heading font-bold uppercase text-text-secondary">
-                        Autores e Vínculos de Pesquisa:
-                      </span>
-                      <p className="mt-0.5 font-body text-xs md:text-sm text-text-primary font-medium">
-                        {art.autores}
-                      </p>
-                    </div>
-
-                    {(art.area || art.sessao) && (
-                      <div className="flex flex-wrap gap-2 pt-1 text-[11px] text-text-secondary">
-                        <span className="bg-surface-primary px-2.5 py-1 rounded-md border border-border-subtle">
-                          <strong>Área:</strong> {art.area || art.sessao}
-                        </span>
-                      </div>
-                    )}
-                  </div>
+                    );
+                  })()}
 
                   {/* Abstract Section - Starts right after "Resumo :" */}
                   {cleanAbstract && (
@@ -705,36 +677,6 @@ export function MatchingResultsPage() {
                       {selectedArticleForAudit.relevancia_pct}%
                     </span>
                   </div>
-                </div>
-              </div>
-
-              {/* Research Metadata */}
-              <div className="space-y-3">
-                <h4 className="font-heading text-xs font-bold uppercase tracking-wider text-text-primary">
-                  Metadados do Trabalho Científico:
-                </h4>
-                <div className="rounded-2xl border border-border-subtle bg-surface-primary p-4 text-xs space-y-2">
-                  <p>
-                    <strong>Título:</strong> {selectedArticleForAudit.titulo}
-                  </p>
-                  <p>
-                    <strong>Evento:</strong> {selectedArticleForAudit.evento} ({selectedArticleForAudit.ano}) •{" "}
-                    {selectedArticleForAudit.edicao}
-                  </p>
-                  <p>
-                    <strong>Autores:</strong> {selectedArticleForAudit.autores}
-                  </p>
-                  {selectedArticleForAudit.area && (
-                    <p>
-                      <strong>Área:</strong> {selectedArticleForAudit.area}
-                    </p>
-                  )}
-                  <p>
-                    <strong>Canal de Contato:</strong>{" "}
-                    <span className="text-text-secondary">
-                      Protegido pela plataforma (intermediação via Solicitar Conexão)
-                    </span>
-                  </p>
                 </div>
               </div>
 

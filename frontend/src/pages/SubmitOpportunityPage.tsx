@@ -470,14 +470,6 @@ export function SubmitOpportunityPage() {
                   </div>
                 )}
               </div>
-
-              {/* Exibição detalhada do nível atual */}
-              <div className="rounded-xl bg-surface-primary/70 p-3 border border-border-subtle font-body text-xs text-text-secondary flex items-start gap-2">
-                <Icon icon={Info} size={15} className="text-brand-green-moss mt-0.5 shrink-0" />
-                <span>
-                  <strong>TRL {selectedTrlObj.level}:</strong> {selectedTrlObj.description}
-                </span>
-              </div>
             </div>
 
             {/* CRL Selector (Menu e Botões Expansíveis) */}
@@ -582,14 +574,6 @@ export function SubmitOpportunityPage() {
                   </div>
                 )}
               </div>
-
-              {/* Exibição detalhada do nível atual */}
-              <div className="rounded-xl bg-surface-primary/70 p-3 border border-border-subtle font-body text-xs text-text-secondary flex items-start gap-2">
-                <Icon icon={Info} size={15} className="text-brand-earth mt-0.5 shrink-0" />
-                <span>
-                  <strong>CRL {selectedCrlObj.level}:</strong> {selectedCrlObj.description}
-                </span>
-              </div>
             </div>
 
             {/* Patent Requirement Filter */}
@@ -668,11 +652,7 @@ export function SubmitOpportunityPage() {
                 className="bg-brand-green-dark text-brand-off-white"
               >
                 <Icon icon={CheckCircle2} size={16} />
-                {loading
-                  ? "Salvando..."
-                  : isEditing
-                  ? "Salvar Alterações da Demanda"
-                  : "Salvar e Publicar Demanda"}
+                {loading ? "Salvando..." : "Salvar Demanda"}
               </Button>
             </div>
           </div>
