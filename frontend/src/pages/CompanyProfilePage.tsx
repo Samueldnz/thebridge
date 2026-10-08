@@ -10,9 +10,12 @@ import {
   MapPin,
   Phone,
   Save,
+  Send,
   ShieldAlert,
   ShieldCheck,
   UserCheck,
+  X,
+  ArrowRightLeft,
 } from "lucide-react";
 
 import { DashboardLayout } from "../components/layout/DashboardLayout";
@@ -73,11 +76,96 @@ export function CompanyProfilePage() {
   const [submittingVerification, setSubmittingVerification] = useState(false);
   const [verificationSuccess, setVerificationSuccess] = useState(false);
 
+  // User change requests states (Email & Profile Type)
+  const [emailModalOpen, setEmailModalOpen] = useState(false);
+  const [newEmailInput, setNewEmailInput] = useState("");
+  const [emailJustification, setEmailJustification] = useState("");
+  const [submittingEmailReq, setSubmittingEmailReq] = useState(false);
+
+  const [profileTypeModalOpen, setProfileTypeModalOpen] = useState(false);
+  const [profileTypeJustification, setProfileTypeJustification] = useState("");
+  const [submittingProfileTypeReq, setSubmittingProfileTypeReq] = useState(false);
+
+  const [requestSuccessMessage, setRequestSuccessMessage] = useState<string | null>(null);
+
   const detectedLogoUrl = formData.website ? getCompanyLogoUrl(formData.website) : "";
 
   const handleChange = (field: keyof typeof formData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     setSaveSuccess(false);
+  };
+
+  const handleSendEmailRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newEmailInput.trim() || !newEmailInput.includes("@")) return;
+    setSubmittingEmailReq(true);
+    try {
+      await adminAuditService.submitUserRequest({
+        userId: currentUser?.id || `usr-${Date.now()}`,
+        userName: formData.companyName || formData.name || "Empresa",
+        currentEmail: formData.email,
+        requestedEmail: newEmailInput.trim().toLowerCase(),
+        currentProfileType: "COMPANY",
+        type: "ALTERACAO_EMAIL",
+        title: "Solicitação de Alteração de E-mail Corporativo",
+        justification: emailJustification.trim() || "Solicitação de alteração cadastral de e-mail institucional.",
+      });
+
+      connectionsService.addNotification({
+        title: "Solicitação de alteração de e-mail enviada",
+        sender: "Administração The Bridge",
+        category: "SISTEMA",
+        preview: `Seu pedido para alterar o e-mail para "${newEmailInput}" foi encaminhado para análise.`,
+        body: `Prezado(a) gestor(a),\n\nRecebemos sua solicitação para alterar o e-mail de acesso da empresa "${formData.companyName}" para ${newEmailInput}.\n\nNossa equipe irá verificar as informações e homologar a alteração em breve.`,
+        actionUrl: "/dashboard/perfil",
+      });
+
+      setEmailModalOpen(false);
+      setNewEmailInput("");
+      setEmailJustification("");
+      setRequestSuccessMessage("Solicitação de alteração de e-mail enviada para a administração com sucesso!");
+      setTimeout(() => setRequestSuccessMessage(null), 5000);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSubmittingEmailReq(false);
+    }
+  };
+
+  const handleSendProfileTypeRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!profileTypeJustification.trim()) return;
+    setSubmittingProfileTypeReq(true);
+    try {
+      await adminAuditService.submitUserRequest({
+        userId: currentUser?.id || `usr-${Date.now()}`,
+        userName: formData.companyName || formData.name || "Empresa",
+        currentEmail: formData.email,
+        currentProfileType: "COMPANY",
+        requestedProfileType: "RESEARCHER",
+        type: "MUDANCA_PERFIL",
+        title: "Solicitação de Migração de Perfil: Empresa ➔ Pesquisador",
+        justification: profileTypeJustification.trim(),
+      });
+
+      connectionsService.addNotification({
+        title: "Solicitação de mudança de tipo de perfil enviada",
+        sender: "Administração The Bridge",
+        category: "SISTEMA",
+        preview: "Seu pedido de migração para Pesquisador foi encaminhado para análise.",
+        body: `Prezado(a) usuário(a),\n\nRecebemos sua solicitação para migração de conta de Empresa para Pesquisador.\n\nA equipe administrativa da The Bridge analisará seu pedido em breve.`,
+        actionUrl: "/dashboard/perfil",
+      });
+
+      setProfileTypeModalOpen(false);
+      setProfileTypeJustification("");
+      setRequestSuccessMessage("Solicitação de migração de perfil enviada para a administração com sucesso!");
+      setTimeout(() => setRequestSuccessMessage(null), 5000);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSubmittingProfileTypeReq(false);
+    }
   };
 
   const handleValidateCnpj = async (inputCnpj = formData.cnpj) => {
@@ -270,6 +358,45 @@ export function CompanyProfilePage() {
           </div>
         )}
 
+        {/* Request Success Alert */}
+        {requestSuccessMessage && (
+          <div className="rounded-2xl border border-emerald-300 bg-emerald-50 p-4 text-emerald-950 flex items-center justify-between shadow-xs animate-in fade-in duration-300">
+            <div className="flex items-center gap-2.5">
+              <Icon icon={CheckCircle2} size={18} className="text-emerald-700 shrink-0" />
+              <p className="font-heading text-xs font-bold">{requestSuccessMessage}</p>
+            </div>
+            <button
+              onClick={() => setRequestSuccessMessage(null)}
+              className="text-emerald-800 hover:text-emerald-950 p-1 cursor-pointer"
+            >
+              <Icon icon={X} size={14} />
+            </button>
+          </div>
+        )}
+
+        {/* Profile Type Badge & Request Link Banner */}
+        <div className="rounded-2xl border border-border-subtle bg-surface-white p-4 shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-100 text-emerald-800">
+              <Icon icon={Building2} size={16} />
+            </div>
+            <div>
+              <span className="font-heading font-semibold text-text-secondary block text-[11px]">Tipo de Conta Atual:</span>
+              <span className="font-heading text-xs font-bold text-text-primary">
+                Empresa (Pessoa Jurídica)
+              </span>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setProfileTypeModalOpen(true)}
+            className="rounded-xl border border-border-subtle bg-surface-primary px-3 py-1.5 font-heading text-xs font-bold text-brand-green-moss hover:bg-emerald-50 transition-colors cursor-pointer flex items-center gap-1.5"
+          >
+            <Icon icon={ArrowRightLeft} size={13} />
+            Solicitar mudança de tipo de perfil ↗
+          </button>
+        </div>
+
         {/* The Company Editing Form */}
         <form onSubmit={handleSave} className="space-y-6">
           {/* Section 1: Dados da Organização (Pessoa Jurídica) */}
@@ -452,9 +579,18 @@ export function CompanyProfilePage() {
               </div>
 
               <div>
-                <label className="block text-xs font-heading font-semibold text-text-primary mb-1">
-                  E-mail Corporativo de Contato
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-heading font-semibold text-text-primary">
+                    E-mail Corporativo de Contato
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setEmailModalOpen(true)}
+                    className="text-[11px] font-heading font-bold text-brand-green-moss hover:underline cursor-pointer"
+                  >
+                    Solicitar mudança de e-mail ↗
+                  </button>
+                </div>
                 <div className="relative">
                   <Icon icon={Mail} size={14} className="absolute left-3 top-3 text-text-secondary" />
                   <input
@@ -464,6 +600,16 @@ export function CompanyProfilePage() {
                     className="w-full rounded-xl border border-border-subtle bg-surface-secondary pl-9 pr-3.5 py-2.5 text-xs text-text-secondary cursor-not-allowed"
                   />
                 </div>
+                <p className="mt-1 text-[11px] text-text-secondary flex items-center justify-between">
+                  <span>E-mail institucional fixo para login.</span>
+                  <button
+                    type="button"
+                    onClick={() => setEmailModalOpen(true)}
+                    className="text-brand-green-moss hover:underline font-semibold cursor-pointer"
+                  >
+                    Enviar solicitação de troca
+                  </button>
+                </p>
               </div>
 
               <div>
@@ -617,6 +763,163 @@ export function CompanyProfilePage() {
             </Button>
           </div>
         </form>
+
+        {/* Modal: Solicitar Mudança de E-mail */}
+        {emailModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+            <div className="w-full max-w-lg rounded-3xl bg-surface-white p-6 md:p-8 shadow-xl border border-border-subtle space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-100 text-blue-800">
+                    <Icon icon={Mail} size={18} />
+                  </div>
+                  <div>
+                    <h3 className="font-heading text-base font-bold text-text-primary">
+                      Solicitar Alteração de E-mail
+                    </h3>
+                    <p className="font-body text-xs text-text-secondary">
+                      E-mail atual: {formData.email}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setEmailModalOpen(false)}
+                  className="rounded-lg p-1.5 text-text-secondary hover:bg-surface-secondary cursor-pointer"
+                >
+                  <Icon icon={X} size={18} />
+                </button>
+              </div>
+
+              <form onSubmit={handleSendEmailRequest} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-heading font-semibold text-text-primary mb-1">
+                    Novo E-mail Corporativo Desejado *
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={newEmailInput}
+                    onChange={(e) => setNewEmailInput(e.target.value)}
+                    placeholder="novo.email@empresa.com.br"
+                    className="w-full rounded-xl border border-border-subtle bg-surface-primary px-3.5 py-2.5 text-xs text-text-primary focus:border-brand-green-moss focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-heading font-semibold text-text-primary mb-1">
+                    Justificativa para a Alteração *
+                  </label>
+                  <textarea
+                    rows={3}
+                    required
+                    value={emailJustification}
+                    onChange={(e) => setEmailJustification(e.target.value)}
+                    placeholder="Descreva o motivo da troca de e-mail (ex: mudança de gestor, reestruturação de domínio corporativo)..."
+                    className="w-full rounded-2xl border border-border-subtle bg-surface-primary p-3.5 text-xs text-text-primary focus:border-brand-green-moss focus:outline-none resize-y"
+                  />
+                </div>
+
+                <div className="flex items-center justify-end gap-3 pt-3 border-t border-border-subtle">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setEmailModalOpen(false)}
+                    className="cursor-pointer"
+                  >
+                    Cancelar
+                  </Button>
+
+                  <Button
+                    type="submit"
+                    size="sm"
+                    disabled={!newEmailInput.trim() || submittingEmailReq}
+                    className="bg-brand-green-dark text-white font-bold cursor-pointer"
+                  >
+                    <Icon icon={Send} size={14} />
+                    {submittingEmailReq ? "Enviando..." : "Enviar Solicitação"}
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Modal: Solicitar Mudança de Tipo de Perfil */}
+        {profileTypeModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+            <div className="w-full max-w-lg rounded-3xl bg-surface-white p-6 md:p-8 shadow-xl border border-border-subtle space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-100 text-purple-800">
+                    <Icon icon={ArrowRightLeft} size={18} />
+                  </div>
+                  <div>
+                    <h3 className="font-heading text-base font-bold text-text-primary">
+                      Solicitar Migração de Perfil
+                    </h3>
+                    <p className="font-body text-xs text-text-secondary">
+                      De: Empresa (Pessoa Jurídica) ➔ Para: Pesquisador (Pessoa Física)
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setProfileTypeModalOpen(false)}
+                  className="rounded-lg p-1.5 text-text-secondary hover:bg-surface-secondary cursor-pointer"
+                >
+                  <Icon icon={X} size={18} />
+                </button>
+              </div>
+
+              <form onSubmit={handleSendProfileTypeRequest} className="space-y-4">
+                <div className="rounded-2xl border border-border-subtle bg-surface-primary/40 p-3.5 text-xs text-text-secondary space-y-1">
+                  <span className="font-heading font-bold text-text-primary block">Atenção sobre a migração de perfil:</span>
+                  <p>
+                    A migração altera o escopo da sua conta para submissão de artigos científicos, patentes acadêmicas e competências de pesquisa.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-heading font-semibold text-text-primary mb-1">
+                    Justificativa para a Migração de Perfil *
+                  </label>
+                  <textarea
+                    rows={4}
+                    required
+                    value={profileTypeJustification}
+                    onChange={(e) => setProfileTypeJustification(e.target.value)}
+                    placeholder="Descreva por que deseja migrar sua conta para Pesquisador (ex: descontinuação de pessoa jurídica e retorno para pesquisa acadêmica)..."
+                    className="w-full rounded-2xl border border-border-subtle bg-surface-primary p-3.5 text-xs text-text-primary focus:border-brand-green-moss focus:outline-none resize-y"
+                  />
+                </div>
+
+                <div className="flex items-center justify-end gap-3 pt-3 border-t border-border-subtle">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setProfileTypeModalOpen(false)}
+                    className="cursor-pointer"
+                  >
+                    Cancelar
+                  </Button>
+
+                  <Button
+                    type="submit"
+                    size="sm"
+                    disabled={!profileTypeJustification.trim() || submittingProfileTypeReq}
+                    className="bg-brand-green-dark text-white font-bold cursor-pointer"
+                  >
+                    <Icon icon={Send} size={14} />
+                    {submittingProfileTypeReq ? "Enviando..." : "Enviar Solicitação"}
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );

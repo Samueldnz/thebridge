@@ -285,6 +285,74 @@ export const discordWebhookService = {
   },
 
   /**
+   * Envia notificação quando um usuário envia solicitação de troca de email ou perfil
+   */
+  async notifyUserRequestSubmitted(
+    userName: string,
+    currentEmail: string,
+    requestType: string,
+    requestedValue: string,
+    justification: string
+  ): Promise<boolean> {
+    const auditPanelUrl = typeof window !== "undefined"
+      ? `${window.location.origin}/dashboard/admin/validacoes`
+      : "https://thebridge-platform.com/dashboard/admin/validacoes";
+
+    const body = {
+      username: "The Bridge Auditoria",
+      avatar_url: "https://thebridge-platform.com/favicon.ico",
+      embeds: [
+        {
+          title: `📩 Nova Solicitação de Usuário: ${requestType}`,
+          description: `O usuário **${userName}** enviou uma solicitação de **${requestType}** na plataforma.`,
+          color: 0x3b82f6, // Blue
+          fields: [
+            {
+              name: "👤 Usuário / E-mail Atual",
+              value: `${userName} (${currentEmail})`,
+              inline: false,
+            },
+            {
+              name: "🔄 Alteração Solicitada",
+              value: requestedValue,
+              inline: false,
+            },
+            {
+              name: "📝 Justificativa do Usuário",
+              value: justification.length > 250 ? justification.slice(0, 247) + "..." : justification,
+              inline: false,
+            },
+            {
+              name: "⚡ Ação para o Admin",
+              value: `👉 [**Abrir Painel de Admin**](${auditPanelUrl}) para aprovar ou recusar.`,
+              inline: false,
+            },
+          ],
+          footer: {
+            text: "The Bridge • Central de Solicitações",
+          },
+          timestamp: new Date().toISOString(),
+        },
+      ],
+    };
+
+    try {
+      const response = await fetch(DISCORD_WEBHOOK_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+
+      return response.ok;
+    } catch (err) {
+      console.warn("Falha ao enviar webhook do Discord:", err);
+      return false;
+    }
+  },
+
+  /**
    * Dispara um teste rápido do webhook
    */
   async sendTestMessage(): Promise<boolean> {

@@ -388,6 +388,45 @@ export const adminAuditService = {
     }
   },
 
+  async submitUserRequest(data: {
+    userId: string;
+    userName: string;
+    currentEmail: string;
+    requestedEmail?: string;
+    currentProfileType: "COMPANY" | "RESEARCHER";
+    requestedProfileType?: "COMPANY" | "RESEARCHER";
+    type: UserRequestType;
+    title: string;
+    justification: string;
+  }): Promise<UserRequestItem> {
+    const list = this.getUserRequests();
+    const newItem: UserRequestItem = {
+      ...data,
+      id: `ureq-${Date.now()}`,
+      status: "PENDENTE",
+      submittedAt: new Date().toLocaleString("pt-BR"),
+    };
+    list.unshift(newItem);
+    this.saveUserRequests(list);
+
+    const typeDesc =
+      data.type === "ALTERACAO_EMAIL"
+        ? `Alteração de E-mail para "${data.requestedEmail}"`
+        : `Mudança de Perfil para "${data.requestedProfileType === "COMPANY" ? "Empresa" : "Pesquisador"}"`;
+
+    await discordWebhookService.notifyUserRequestSubmitted(
+      data.userName,
+      data.currentEmail,
+      typeDesc,
+      data.type === "ALTERACAO_EMAIL"
+        ? `De: ${data.currentEmail} ➔ Para: ${data.requestedEmail}`
+        : `De: ${data.currentProfileType === "COMPANY" ? "Empresa" : "Pesquisador"} ➔ Para: ${data.requestedProfileType === "COMPANY" ? "Empresa" : "Pesquisador"}`,
+      data.justification
+    );
+
+    return newItem;
+  },
+
   async acceptUserRequest(requestId: string, notes: string = "Solicitação aprovada pela equipe de administração The Bridge."): Promise<boolean> {
     const list = this.getUserRequests();
     const item = list.find((r) => r.id === requestId);
