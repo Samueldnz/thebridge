@@ -1,16 +1,21 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import {
   Award,
   BarChart3,
   BrainCircuit,
   Building2,
+  Check,
   CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  Copy,
   Edit3,
   Filter,
   GraduationCap,
   Info,
   Layers,
+  Mail,
   MessageSquare,
   Plus,
   RefreshCw,
@@ -23,6 +28,7 @@ import { DashboardLayout } from "../components/layout/DashboardLayout";
 import { Button } from "../components/ui/Button";
 import { Icon } from "../components/ui/Icon";
 import { matchingService, type MatchItem } from "../services/matching";
+import { scientificMatchingService, type ScientificArticle } from "../services/scientificMatching";
 import { authService } from "../services/auth";
 import { projectsService } from "../services/projects";
 import { opportunitiesService } from "../services/opportunities";
@@ -37,7 +43,58 @@ export function MatchingResultsPage() {
   const [contactSuccessMatchId, setContactSuccessMatchId] = useState<string | null>(null);
   const [user] = useState(authService.getStoredUser());
 
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get("tab") === "internal" ? "INTERNAL" : "SCIENTIFIC";
+  const [activeTab, setActiveTab] = useState<"SCIENTIFIC" | "INTERNAL">(initialTab);
+
+  // Scientific Congress Matching State (12,531 embeddings via HF ZeroGPU)
+  const initialQuery = searchParams.get("query") || "";
+  const [scientificQuery, setScientificQuery] = useState(initialQuery);
+  const [scientificTopK, setScientificTopK] = useState(6);
+  const [scientificArticles, setScientificArticles] = useState<ScientificArticle[]>([]);
+  const [scientificLoading, setScientificLoading] = useState(false);
+  const [scientificResponseText, setScientificResponseText] = useState("");
+  const [scientificExecutionMs, setScientificExecutionMs] = useState<number | null>(null);
+  const [scientificError, setScientificError] = useState<string | null>(null);
+  const [hasSearchedScientific, setHasSearchedScientific] = useState(false);
+  const [expandedAbstractId, setExpandedAbstractId] = useState<string | null>(null);
+  const [copiedEmailId, setCopiedEmailId] = useState<string | null>(null);
+
   const isResearcher = user?.profileType === "RESEARCHER";
+
+  const handleSearchScientific = async (queryToSearch?: string) => {
+    const q = (queryToSearch !== undefined ? queryToSearch : scientificQuery).trim();
+    if (!q) {
+      setScientificError("Por favor, digite uma demanda tecnológica ou selecione uma submissão.");
+      return;
+    }
+    setScientificError(null);
+    setScientificLoading(true);
+    setHasSearchedScientific(true);
+    try {
+      const res = await scientificMatchingService.search(q, scientificTopK);
+      setScientificArticles(res.artigos);
+      setScientificResponseText(res.resposta);
+      setScientificExecutionMs(res.estatisticas.tempo_matchmaking_ms);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setScientificError(err.message);
+      } else {
+        setScientificError("Erro ao consultar o motor de IA no Hugging Face.");
+      }
+    } finally {
+      setScientificLoading(false);
+    }
+  };
+
+  const handleCopyEmail = (email: string, id: string) => {
+    if (!email) return;
+    navigator.clipboard.writeText(email);
+    setCopiedEmailId(id);
+    setTimeout(() => {
+      setCopiedEmailId(null);
+    }, 3000);
+  };
 
   const fetchMatches = async () => {
     setLoading(true);
@@ -63,6 +120,10 @@ export function MatchingResultsPage() {
         setUserSubmissions(opps.map((o) => ({ id: o.id, title: o.title })));
       });
     }
+
+    if (initialQuery) {
+      handleSearchScientific(initialQuery);
+    }
   }, [isResearcher, user]);
 
   const filteredMatches = matches.filter((item) => {
@@ -85,24 +146,442 @@ export function MatchingResultsPage() {
     }, 4000);
   };
 
+  const QUICK_TOPICS = [
+    { label: "Superligas de Níquel & Turbinas", query: "superligas de niquel para alta temperatura e turbinas aeronauticas" },
+    { label: "Biopolímeros & Embalagens", query: "biopolimeros e blendas polimericas biodegradaveis para embalagens sustentaveis" },
+    { label: "Nanomateriais & Baterias", query: "nanomateriais de carbono grafeno e oxidos para anodos de baterias de ion-litio" },
+    { label: "Filmes Finos & Solar", query: "filmes finos semicondutores e celulas solares fotovoltaicas" },
+    { label: "Biomateriais & Implantes", query: "biomateriais de titanio e revestimentos de hidroxiapatita para implantes osseos" },
+    { label: "Óxidos & Fotocatálise", query: "nanoparticulas de dioxido de titanio TiO2 para fotocatalise e purificacao de efluentes" },
+  ];
+
   return (
     <DashboardLayout
-      title="Motor de Matching &amp; Resultados"
-      subtitle="Inteligência Determinística Calibrada (Competências 60% • TRL 20% • CRL 20%)"
+      title={activeTab === "SCIENTIFIC" ? "Matchmaking Científico com Congressos" : "Motor de Matching & Resultados"}
+      subtitle={
+        activeTab === "SCIENTIFIC"
+          ? "IA Vetorial em ZeroGPU • 12.531 Pesquisas (SBPMat 2022-2026, CBPol 2025, ICSM 2026)"
+          : "Inteligência Determinística Calibrada (Competências 60% • TRL 20% • CRL 20%)"
+      }
       actions={
-        <Button
-          onClick={fetchMatches}
-          disabled={loading}
-          size="sm"
-          className="bg-brand-green-dark text-brand-off-white"
-        >
-          <Icon icon={RefreshCw} size={15} className={loading ? "animate-spin" : ""} />
-          {loading ? "Calculando Matches..." : "Recalcular Matching"}
-        </Button>
+        activeTab === "SCIENTIFIC" ? (
+          <Button
+            onClick={() => handleSearchScientific()}
+            disabled={scientificLoading}
+            size="sm"
+            className="bg-brand-green-dark text-brand-off-white"
+          >
+            <Icon icon={Sparkles} size={15} className={scientificLoading ? "animate-spin" : ""} />
+            {scientificLoading ? "Consultando ZeroGPU..." : "Executar Busca IA"}
+          </Button>
+        ) : (
+          <Button
+            onClick={fetchMatches}
+            disabled={loading}
+            size="sm"
+            className="bg-brand-green-dark text-brand-off-white"
+          >
+            <Icon icon={RefreshCw} size={15} className={loading ? "animate-spin" : ""} />
+            {loading ? "Calculando Matches..." : "Recalcular Matching"}
+          </Button>
+        )
       }
     >
       <div className="space-y-8">
-        {/* Metric Cards Banner */}
+        {/* Top View Selector Tabs */}
+        <div className="flex flex-wrap border-b border-border-subtle gap-2">
+          <button
+            type="button"
+            onClick={() => setActiveTab("SCIENTIFIC")}
+            className={[
+              "flex items-center gap-2.5 px-6 py-3.5 font-heading text-sm font-bold border-b-2 transition-all",
+              activeTab === "SCIENTIFIC"
+                ? "border-brand-green-moss text-brand-green-dark bg-brand-green-moss/5"
+                : "border-transparent text-text-secondary hover:text-text-primary hover:bg-surface-secondary/50",
+            ].join(" ")}
+          >
+            <Icon icon={Sparkles} size={18} className="text-amber-500" />
+            <span>Pesquisas em Congressos (12.500+ Trabalhos)</span>
+            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-mono font-bold text-emerald-800">
+              ZeroGPU Ativo
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab("INTERNAL")}
+            className={[
+              "flex items-center gap-2.5 px-6 py-3.5 font-heading text-sm font-bold border-b-2 transition-all",
+              activeTab === "INTERNAL"
+                ? "border-brand-green-moss text-brand-green-dark bg-brand-green-moss/5"
+                : "border-transparent text-text-secondary hover:text-text-primary hover:bg-surface-secondary/50",
+            ].join(" ")}
+          >
+            <Icon icon={Layers} size={18} />
+            <span>Demandas &amp; Projetos Internos</span>
+            <span className="rounded-full bg-surface-secondary px-2 py-0.5 text-[10px] font-mono font-bold text-text-secondary">
+              TRL • CRL
+            </span>
+          </button>
+        </div>
+
+        {activeTab === "SCIENTIFIC" ? (
+          <div className="space-y-8">
+            {/* Congress Header Card */}
+            <div className="rounded-3xl border border-brand-green-moss/20 bg-gradient-to-br from-brand-green-dark via-[#0a3832] to-[#04201c] p-6 md:p-8 text-brand-off-white shadow-xl relative overflow-hidden">
+              <div className="relative z-10 max-w-3xl">
+                <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3.5 py-1 text-xs font-semibold text-emerald-300 mb-4 backdrop-blur-xs">
+                  <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>Motor Vetorial ZeroGPU Ativo • 12.531 Pesquisas Indexadas</span>
+                </div>
+                <h3 className="font-display text-2xl md:text-3xl font-bold tracking-tight text-brand-off-white">
+                  Matchmaking com Acervos Científicos Oficiais
+                </h3>
+                <p className="mt-2 font-body text-xs md:text-sm text-brand-off-white/80 leading-relaxed">
+                  Conecte a necessidade tecnológica da sua empresa diretamente aos pesquisadores de ponta da <strong>SBPMat</strong> (2022 a 2026), <strong>CBPol</strong> (2025) e <strong>ICSM</strong> (2026). Nosso motor calcula a proximidade semântica em alta dimensão (1024d) e traz contatos e resumos instantaneamente.
+                </p>
+
+                {/* Submissions fast picker */}
+                {userSubmissions.length > 0 && (
+                  <div className="mt-5 flex flex-wrap items-center gap-2 pt-4 border-t border-brand-off-white/10">
+                    <span className="text-xs text-brand-off-white/70 font-medium">Preencher com minha demanda:</span>
+                    {userSubmissions.map((sub) => (
+                      <button
+                        key={sub.id}
+                        type="button"
+                        onClick={() => {
+                          setScientificQuery(sub.title);
+                          handleSearchScientific(sub.title);
+                        }}
+                        className="rounded-lg bg-surface-white/10 px-3 py-1 text-xs font-medium text-brand-off-white hover:bg-surface-white/20 transition-all border border-brand-off-white/15"
+                      >
+                        📌 {sub.title}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Search Box & Controls */}
+            <div className="rounded-3xl border border-border-subtle bg-surface-white p-6 md:p-8 shadow-xs space-y-5">
+              <div className="space-y-2">
+                <label className="block font-heading text-xs font-bold uppercase tracking-wider text-text-primary">
+                  Descreva o Desafio Tecnológico ou Demanda de P&amp;D
+                </label>
+                <div className="relative">
+                  <textarea
+                    rows={3}
+                    value={scientificQuery}
+                    onChange={(e) => setScientificQuery(e.target.value)}
+                    placeholder="Ex: Desenvolvimento de filmes finos poliméricos com alta condutividade para células solares, superligas para turbinas ou formulação de biopolímeros biodegradáveis..."
+                    className="w-full rounded-2xl border border-border-subtle bg-surface-primary p-4 font-body text-sm text-text-primary placeholder:text-text-muted focus:border-brand-green-moss focus:bg-surface-white focus:outline-none focus:ring-2 focus:ring-brand-green-moss/20"
+                  />
+                </div>
+              </div>
+
+              {/* Quick Topics Chips */}
+              <div className="space-y-1.5">
+                <span className="text-[11px] font-heading font-semibold uppercase text-text-secondary">
+                  Tópicos Rápidos em Alta nos Congressos:
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {QUICK_TOPICS.map((topic) => (
+                    <button
+                      key={topic.label}
+                      type="button"
+                      onClick={() => {
+                        setScientificQuery(topic.query);
+                        handleSearchScientific(topic.query);
+                      }}
+                      className="rounded-full border border-border-subtle bg-surface-primary px-3 py-1 text-xs font-medium text-text-secondary hover:border-brand-green-moss hover:bg-brand-green-moss/5 hover:text-brand-green-dark transition-all"
+                    >
+                      {topic.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Filter Row: Top K + Button */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4 border-t border-border-subtle">
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-semibold text-text-secondary">Resultados:</span>
+                  <div className="flex gap-1.5">
+                    {[3, 6, 10, 15].map((k) => (
+                      <button
+                        key={k}
+                        type="button"
+                        onClick={() => setScientificTopK(k)}
+                        className={[
+                          "h-8 w-8 rounded-lg text-xs font-mono font-bold transition-all",
+                          scientificTopK === k
+                            ? "bg-brand-green-dark text-brand-off-white"
+                            : "bg-surface-primary text-text-secondary hover:bg-surface-secondary",
+                        ].join(" ")}
+                      >
+                        {k}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <Button
+                  onClick={() => handleSearchScientific()}
+                  disabled={scientificLoading}
+                  size="lg"
+                  className="bg-brand-green-dark text-brand-off-white justify-center shadow-md hover:bg-brand-green-moss transition-all"
+                >
+                  <Icon icon={Sparkles} size={16} className={scientificLoading ? "animate-spin" : ""} />
+                  {scientificLoading ? "Consultando IA no ZeroGPU..." : "Calcular Matchmaking Semântico"}
+                </Button>
+              </div>
+
+              {scientificError && (
+                <div className="rounded-xl border border-red-300 bg-red-50 p-4 text-xs font-semibold text-red-800 flex items-center gap-2">
+                  <Icon icon={Info} size={16} className="shrink-0" />
+                  <span>{scientificError}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Results Section */}
+            {scientificLoading ? (
+              <div className="py-20 text-center rounded-3xl border border-dashed border-border-subtle bg-surface-white">
+                <Icon icon={RefreshCw} size={36} className="animate-spin text-brand-green-moss mx-auto mb-4" />
+                <h4 className="font-heading text-base font-bold text-text-primary">
+                  Executando Produto Escalar nos 12.531 Vetores...
+                </h4>
+                <p className="mt-1 font-body text-xs text-text-secondary max-w-md mx-auto">
+                  A GPU de ponta no Hugging Face está projetando sua demanda no espaço vetorial bge-m3 e ordenando os pesquisadores mais aderentes.
+                </p>
+              </div>
+            ) : scientificArticles.length > 0 ? (
+              <div className="space-y-6">
+                {/* AI Executive Summary Banner */}
+                <div className="rounded-2xl border border-emerald-300/60 bg-emerald-50/70 p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 text-xs font-bold font-heading text-emerald-900 uppercase tracking-wide">
+                      <Icon icon={Sparkles} size={15} className="text-emerald-700" />
+                      <span>Diagnóstico de Relevância</span>
+                    </div>
+                    <p className="font-body text-xs md:text-sm text-emerald-950 leading-relaxed">
+                      {scientificResponseText}
+                    </p>
+                  </div>
+                  {scientificExecutionMs !== null && (
+                    <div className="shrink-0 rounded-xl bg-surface-white border border-emerald-200 px-3.5 py-2 text-right">
+                      <p className="font-mono text-[10px] text-text-muted uppercase">Tempo de IA</p>
+                      <p className="font-mono text-sm font-bold text-emerald-800">
+                        {scientificExecutionMs} ms
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* List of Matched Congress Papers */}
+                <div className="grid gap-6">
+                  {scientificArticles.map((art, idx) => {
+                    const isHigh = art.relevancia_pct >= 70;
+                    const isMed = art.relevancia_pct >= 50 && art.relevancia_pct < 70;
+                    const isExpanded = expandedAbstractId === art.id;
+
+                    return (
+                      <div
+                        key={art.id || idx}
+                        className={[
+                          "rounded-3xl border bg-surface-white p-6 md:p-8 transition-all hover:shadow-lg",
+                          isHigh ? "border-emerald-300 ring-1 ring-emerald-100" : "border-border-subtle",
+                        ].join(" ")}
+                      >
+                        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 pb-4 border-b border-border-subtle">
+                          <div className="space-y-2 flex-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="rounded-full bg-brand-green-dark text-brand-off-white px-2.5 py-0.5 text-xs font-mono font-bold">
+                                #{idx + 1}
+                              </span>
+                              <span className="rounded-full bg-surface-secondary text-text-primary px-3 py-0.5 text-xs font-heading font-semibold border border-border-subtle">
+                                🏛️ {art.evento} ({art.ano}) • {art.edicao}
+                              </span>
+                              {art.codigo && (
+                                <span className="rounded-full bg-blue-50 text-blue-800 px-2.5 py-0.5 text-[11px] font-mono font-medium">
+                                  Cod: {art.codigo}
+                                </span>
+                              )}
+                            </div>
+                            <h4 className="font-heading text-lg md:text-xl font-bold text-text-primary leading-snug">
+                              {art.titulo}
+                            </h4>
+                          </div>
+
+                          {/* Score Pill */}
+                          <div className="shrink-0 flex md:flex-col items-center md:items-end justify-between gap-1">
+                            <span
+                              className={[
+                                "inline-flex items-center gap-1.5 rounded-2xl px-3.5 py-1.5 font-display text-lg font-bold shadow-xs",
+                                isHigh
+                                  ? "bg-emerald-100 text-emerald-900 border border-emerald-300"
+                                  : isMed
+                                  ? "bg-blue-100 text-blue-900 border border-blue-300"
+                                  : "bg-amber-100 text-amber-900 border border-amber-300",
+                              ].join(" ")}
+                            >
+                              <Icon icon={Sparkles} size={15} />
+                              {art.relevancia_pct}%
+                            </span>
+                            <span className="text-[10px] font-mono text-text-secondary uppercase">
+                              Similaridade Cosseno
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Authors & Institutions */}
+                        <div className="py-4 space-y-2">
+                          <div>
+                            <span className="text-[11px] font-heading font-bold uppercase text-text-secondary">
+                              Autores e Vínculos Acadêmicos:
+                            </span>
+                            <p className="mt-0.5 font-body text-xs md:text-sm text-text-primary font-medium">
+                              {art.autores}
+                            </p>
+                          </div>
+
+                          {(art.area || art.sessao) && (
+                            <div className="flex flex-wrap gap-2 pt-1 text-[11px] text-text-secondary">
+                              <span className="bg-surface-primary px-2.5 py-1 rounded-md border border-border-subtle">
+                                <strong>Área:</strong> {art.area}
+                              </span>
+                              {art.sessao && (
+                                <span className="bg-surface-primary px-2.5 py-1 rounded-md border border-border-subtle">
+                                  <strong>Sessão:</strong> {art.sessao}
+                                </span>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Abstract Preview / Accordion */}
+                          <div className="pt-2">
+                            <p className="font-body text-xs text-text-secondary leading-relaxed">
+                              {isExpanded ? art.resumo : `${art.resumo?.slice(0, 260)}...`}
+                            </p>
+                            {art.resumo && art.resumo.length > 260 && (
+                              <button
+                                type="button"
+                                onClick={() => setExpandedAbstractId(isExpanded ? null : art.id)}
+                                className="mt-1.5 inline-flex items-center gap-1 text-xs font-heading font-semibold text-brand-green-moss hover:underline"
+                              >
+                                {isExpanded ? (
+                                  <>
+                                    <span>Recolher resumo</span>
+                                    <Icon icon={ChevronUp} size={14} />
+                                  </>
+                                ) : (
+                                  <>
+                                    <span>Ler resumo completo da pesquisa</span>
+                                    <Icon icon={ChevronDown} size={14} />
+                                  </>
+                                )}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Card Actions Footer */}
+                        <div className="pt-4 border-t border-border-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                          <div className="text-xs text-text-secondary">
+                            {art.email ? (
+                              <span className="flex items-center gap-1.5 text-text-primary font-mono text-[11px]">
+                                <Icon icon={Mail} size={13} className="text-brand-green-moss" />
+                                {art.email}
+                              </span>
+                            ) : (
+                              <span className="text-text-muted italic text-[11px]">
+                                E-mail institucional disponível sob demanda
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            {art.email && (
+                              <Button
+                                type="button"
+                                variant="secondary"
+                                size="sm"
+                                onClick={() => handleCopyEmail(art.email, art.id)}
+                              >
+                                <Icon icon={copiedEmailId === art.id ? Check : Copy} size={13} />
+                                {copiedEmailId === art.id ? "E-mail Copiado!" : "Copiar E-mail"}
+                              </Button>
+                            )}
+
+                            {art.email ? (
+                              <a
+                                href={`mailto:${art.email}?subject=${encodeURIComponent(
+                                  `Interesse em Parceria via The Bridge: ${art.titulo}`
+                                )}&body=${encodeURIComponent(
+                                  `Olá,\n\nLocalizamos sua pesquisa intitulada "${art.titulo}" apresentada no ${art.evento} através da plataforma The Bridge.\n\nGostaríamos de conversar sobre possibilidades de cooperação tecnológica e projetos conjuntos de P&D.\n\nAtenciosamente,\n${user?.name || "Representante Corporativo"}`
+                                )}`}
+                                className="inline-flex items-center gap-1.5 rounded-xl bg-brand-green-dark px-4 py-2 font-heading text-xs font-semibold text-brand-off-white hover:bg-brand-green-moss transition-all shadow-xs"
+                              >
+                                <Icon icon={Mail} size={14} />
+                                Iniciar Contato Direto
+                              </a>
+                            ) : (
+                              <Button
+                                size="sm"
+                                className="bg-brand-green-dark text-brand-off-white"
+                                onClick={() => alert("Solicitação de contato enviada à equipe The Bridge para mediação.")}
+                              >
+                                <Icon icon={MessageSquare} size={14} />
+                                Solicitar Conexão
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : hasSearchedScientific ? (
+              <div className="py-16 text-center rounded-3xl border border-dashed border-border-subtle bg-surface-white p-8">
+                <Icon icon={Search} size={36} className="text-text-muted mx-auto mb-3" />
+                <h4 className="font-heading text-base font-bold text-text-primary">
+                  Nenhuma pesquisa encontrada para os termos digitados
+                </h4>
+                <p className="mt-1 font-body text-xs text-text-secondary max-w-sm mx-auto">
+                  Tente utilizar termos mais abrangentes ou selecione um dos tópicos rápidos recomendados acima.
+                </p>
+              </div>
+            ) : (
+              /* Initial Empty State */
+              <div className="rounded-3xl border border-dashed border-border-subtle bg-surface-white p-12 text-center">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-green-moss/10 text-brand-green-moss mb-4">
+                  <Icon icon={BrainCircuit} size={32} />
+                </div>
+                <h4 className="font-display text-xl font-bold text-text-primary">
+                  Pronto para Realizar o Matchmaking Científico
+                </h4>
+                <p className="mt-2 font-body text-xs md:text-sm text-text-secondary max-w-lg mx-auto leading-relaxed">
+                  Digite seu desafio tecnológico no campo acima ou selecione um dos tópicos rápidos em Ciência dos Materiais e Polímeros para explorar mais de 12.500 projetos acadêmicos em tempo real.
+                </p>
+                <div className="mt-6 flex justify-center">
+                  <Button
+                    onClick={() => {
+                      setScientificQuery("superligas de niquel para alta temperatura e turbinas aeronauticas");
+                      handleSearchScientific("superligas de niquel para alta temperatura e turbinas aeronauticas");
+                    }}
+                    className="bg-brand-green-dark text-brand-off-white"
+                  >
+                    <Icon icon={Sparkles} size={15} />
+                    Fazer Busca Demonstrativa
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-8">
+            {/* Metric Cards Banner */}
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="rounded-2xl border border-border-subtle bg-surface-white p-5 shadow-xs flex items-center justify-between">
             <div>
@@ -514,6 +993,8 @@ export function MatchingResultsPage() {
                 </div>
               );
             })}
+          </div>
+        )}
           </div>
         )}
       </div>

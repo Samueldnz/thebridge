@@ -14,4 +14,6 @@ function formatApiUrl(rawUrl?: string): string {
 
 export const env = {
   apiUrl: formatApiUrl(import.meta.env.VITE_API_URL),
+  hfMatchingUrl: import.meta.env.VITE_HF_MATCHING_URL || "https://farenrait-thebridge-matching.hf.space",
+  hfToken: (import.meta.env.VITE_HF_TOKEN || "").trim(),
 } as const;

@@ -295,12 +295,26 @@ export function SubmitOpportunityPage() {
               Ver Minhas Demandas Salvas
             </Button>
             <Button
-              variant="secondary"
               size="lg"
-              onClick={() => navigate("/dashboard/matching")}
+              onClick={() =>
+                navigate(
+                  `/dashboard/matching?tab=scientific&query=${encodeURIComponent(
+                    submittedOpportunity.title + (submittedOpportunity.desiredTechnology ? " " + submittedOpportunity.desiredTechnology : "")
+                  )}`
+                )
+              }
+              className="bg-brand-green-dark text-brand-off-white"
             >
               <Icon icon={Sparkles} size={16} />
-              Ver Resultados do Matching
+              Ver Matches em Congressos (IA ZeroGPU)
+            </Button>
+            <Button
+              variant="secondary"
+              size="lg"
+              onClick={() => navigate("/dashboard/matching?tab=internal")}
+            >
+              <Icon icon={Layers} size={16} />
+              Ver Projetos na Plataforma
             </Button>
           </div>
         </div>
