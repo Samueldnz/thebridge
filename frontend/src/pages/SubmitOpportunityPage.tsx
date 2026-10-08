@@ -1,15 +1,16 @@
-import { useState, useEffect, type FormEvent } from "react";
+import { useState, useEffect, useRef, type FormEvent } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import {
   ArrowLeft,
   Building2,
+  Check,
   CheckCircle2,
   ChevronDown,
   ChevronUp,
   FolderGit2,
   Info,
+  Layers,
   ShieldAlert,
-  SlidersHorizontal,
   Sparkles,
 } from "lucide-react";
 
@@ -19,6 +20,37 @@ import { Icon } from "../components/ui/Icon";
 import { authService } from "../services/auth";
 import { opportunitiesService, type PatentRequirement } from "../services/opportunities";
 import { matchingService } from "../services/matching";
+
+interface LevelOption {
+  level: number;
+  label: string;
+  name: string;
+  description: string;
+}
+
+const TRL_OPTIONS: LevelOption[] = [
+  { level: 1, label: "TRL 1", name: "Princípios Básicos Observados", description: "Princípios básicos observados e relatados na literatura científica." },
+  { level: 2, label: "TRL 2", name: "Conceito Tecnológico Formulado", description: "Conceito tecnológico ou aplicação formulada teoricamente." },
+  { level: 3, label: "TRL 3", name: "Prova de Conceito Experimental", description: "Prova de conceito analítica e experimental executada em bancada." },
+  { level: 4, label: "TRL 4", name: "Validação em Laboratório", description: "Validação de componentes em ambiente de laboratório." },
+  { level: 5, label: "TRL 5", name: "Validação em Ambiente Simulado", description: "Validação de componentes integrados em ambiente simulado." },
+  { level: 6, label: "TRL 6", name: "Protótipo em Ambiente Relevante", description: "Modelo de engenharia ou protótipo funcional em ambiente relevante." },
+  { level: 7, label: "TRL 7", name: "Demonstração em Ambiente Operacional", description: "Demonstração do protótipo do sistema em ambiente operacional real." },
+  { level: 8, label: "TRL 8", name: "Sistema Qualificado e Homologado", description: "Sistema real completado e qualificado através de testes normativos." },
+  { level: 9, label: "TRL 9", name: "Operação Comercial e Escala Plena", description: "Sistema real comprovado em operação comercial e escala industrial." },
+];
+
+const CRL_OPTIONS: LevelOption[] = [
+  { level: 1, label: "CRL 1", name: "Hipótese de Mercado", description: "Hipótese de mercado e necessidade não validada comercialmente." },
+  { level: 2, label: "CRL 2", name: "Proposta de Valor Mapeada", description: "Proposta de valor identificada e dores do setor mapeadas." },
+  { level: 3, label: "CRL 3", name: "Identificação de Clientes-Alvo", description: "Análise de concorrência e identificação de clientes-alvo primários." },
+  { level: 4, label: "CRL 4", name: "Interesse Industrial Manifestado", description: "Diálogo preliminar e interesse manifestado por parceiros industriais." },
+  { level: 5, label: "CRL 5", name: "Viabilidade Econômica Preliminar", description: "Modelo preliminar de precificação, custos e viabilidade econômica." },
+  { level: 6, label: "CRL 6", name: "Piloto ou Co-Desenvolvimento", description: "Parceria de co-desenvolvimento formalizada ou teste piloto contratado." },
+  { level: 7, label: "CRL 7", name: "Primeiras Vendas ou Licenciamento", description: "Primeiros acordos de licenciamento ou vendas iniciais formalizadas." },
+  { level: 8, label: "CRL 8", name: "Cadeia de Suprimentos Estruturada", description: "Cadeia de suprimentos estruturada e conformidade regulatória plena." },
+  { level: 9, label: "CRL 9", name: "Negócio Consolidado no Mercado", description: "Negócio comercialmente viável com tração e receita recorrente." },
+];
 
 const PATENT_LABELS: Record<PatentRequirement, string> = {
   NOT_REQUIRED: "Dispensável",
@@ -38,11 +70,31 @@ export function SubmitOpportunityPage() {
   const [description, setDescription] = useState("");
   const [keywords, setKeywords] = useState("");
 
-  // Maturidade & Patente (Expansível)
-  const [isMaturityExpanded, setIsMaturityExpanded] = useState(false);
+  // Maturidade & Patente
   const [minTrl, setMinTrl] = useState(3);
   const [desiredCrl, setDesiredCrl] = useState(3);
   const [patentRequirement, setPatentRequirement] = useState<PatentRequirement>("PENDING_ACCEPTED");
+
+  // Menus expansíveis de botões para TRL e CRL
+  const [isTrlMenuOpen, setIsTrlMenuOpen] = useState(false);
+  const [isCrlMenuOpen, setIsCrlMenuOpen] = useState(false);
+
+  const trlMenuRef = useRef<HTMLDivElement>(null);
+  const crlMenuRef = useRef<HTMLDivElement>(null);
+
+  // Fecha menus ao clicar fora
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (trlMenuRef.current && !trlMenuRef.current.contains(event.target as Node)) {
+        setIsTrlMenuOpen(false);
+      }
+      if (crlMenuRef.current && !crlMenuRef.current.contains(event.target as Node)) {
+        setIsCrlMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // UI state
   const [loading, setLoading] = useState(false);
@@ -135,6 +187,9 @@ export function SubmitOpportunityPage() {
       setLoading(false);
     }
   };
+
+  const selectedTrlObj = TRL_OPTIONS.find((t) => t.level === minTrl) || TRL_OPTIONS[2];
+  const selectedCrlObj = CRL_OPTIONS.find((c) => c.level === desiredCrl) || CRL_OPTIONS[2];
 
   return (
     <DashboardLayout
@@ -297,161 +352,354 @@ export function SubmitOpportunityPage() {
             </div>
           </div>
 
-          {/* Section 2: Expandable Maturity (TRL / CRL) & Intellectual Property */}
-          <div className="rounded-3xl border border-border-subtle bg-surface-white shadow-xs overflow-hidden transition-all">
-            <button
-              type="button"
-              onClick={() => setIsMaturityExpanded((prev) => !prev)}
-              className="w-full flex items-center justify-between p-6 md:p-8 text-left hover:bg-surface-primary/50 transition-colors focus:outline-none"
-            >
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-green-moss/10 text-brand-green-dark">
-                  <Icon icon={SlidersHorizontal} size={20} />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h2 className="font-heading font-bold text-base md:text-lg text-text-primary">
-                      2. Parâmetros de Maturidade (TRL / CRL) &amp; Patente
-                    </h2>
-                    <span className="rounded-full bg-surface-secondary px-2.5 py-0.5 font-heading text-[10px] font-semibold text-text-secondary uppercase tracking-wider">
-                      Opcional
-                    </span>
-                  </div>
-                  <p className="font-body text-xs text-text-secondary mt-0.5">
-                    {isMaturityExpanded
-                      ? "Oculte ou ajuste os limiares de maturidade tecnológica, comercial e patente."
-                      : `Configuração atual: TRL Mínimo ${minTrl} · CRL Alvo ${desiredCrl} · Patente: ${PATENT_LABELS[patentRequirement]}`}
-                  </p>
-                </div>
+          {/* Section 2: Maturity Parameters (TRL / CRL) & Intellectual Property */}
+          <div className="rounded-3xl border border-border-subtle bg-surface-white p-6 md:p-8 shadow-xs space-y-8">
+            <div className="flex items-center gap-3 pb-6 border-b border-border-subtle">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-green-moss/10 text-brand-green-dark">
+                <Icon icon={Layers} size={20} />
               </div>
+              <div>
+                <h2 className="font-heading font-bold text-lg text-text-primary">
+                  2. Parâmetros de Maturidade (TRL / CRL) &amp; Propriedade Intelectual
+                </h2>
+                <p className="font-body text-xs text-text-secondary">
+                  Selecione os limiares de prontidão tecnológica e comercial da sua demanda por meio dos menus e botões expansíveis.
+                </p>
+              </div>
+            </div>
 
-              <div className="flex items-center gap-2 pl-4 text-text-secondary">
-                <span className="hidden sm:inline font-heading text-xs font-semibold text-brand-green-moss">
-                  {isMaturityExpanded ? "Recolher opções" : "Expandir opções"}
+            {/* TRL Selector (Menu e Botões Expansíveis) */}
+            <div className="space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                <label className="font-heading text-xs font-bold text-text-primary uppercase tracking-wide">
+                  Maturidade Tecnológica Mínima (TRL Mínimo Exigido)
+                </label>
+                <span className="font-mono text-xs font-bold text-brand-green-dark bg-brand-green-moss/10 px-2.5 py-1 rounded-full w-fit">
+                  Selecionado: TRL {minTrl} de 9
                 </span>
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-surface-primary border border-border-subtle text-text-secondary">
-                  <Icon icon={isMaturityExpanded ? ChevronUp : ChevronDown} size={18} />
-                </div>
               </div>
-            </button>
 
-            {isMaturityExpanded && (
-              <div className="p-6 md:p-8 pt-2 border-t border-border-subtle/60 bg-surface-primary/20 space-y-8 animate-in fade-in duration-200">
-                <div className="flex items-center gap-2 text-xs text-text-secondary bg-blue-50/70 border border-blue-200/60 rounded-xl p-3.5">
-                  <Icon icon={Info} size={16} className="text-blue-600 shrink-0" />
-                  <span>
-                    Estes parâmetros definem os filtros de maturidade e propriedade intelectual para matching com vitrines tecnológicas e projetos cadastrados.
+              {/* Botão Expansível de TRL */}
+              <div className="relative" ref={trlMenuRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsTrlMenuOpen((prev) => !prev)}
+                  className={[
+                    "w-full flex items-center justify-between p-3.5 rounded-2xl border text-left transition-all",
+                    isTrlMenuOpen
+                      ? "border-brand-green-dark bg-brand-green-moss/5 ring-2 ring-brand-green-dark/20"
+                      : "border-border-subtle bg-surface-primary hover:border-brand-green-moss hover:bg-surface-white",
+                  ].join(" ")}
+                >
+                  <div className="flex items-center gap-3 min-w-0 pr-2">
+                    <span className="flex-shrink-0 flex items-center justify-center h-8 w-14 rounded-lg bg-brand-green-dark text-white font-mono text-xs font-bold">
+                      TRL {selectedTrlObj.level}
+                    </span>
+                    <div className="truncate">
+                      <p className="font-heading text-xs md:text-sm font-bold text-text-primary truncate">
+                        {selectedTrlObj.name}
+                      </p>
+                      <p className="font-body text-[11px] text-text-secondary truncate">
+                        {selectedTrlObj.description}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 flex-shrink-0 text-text-secondary">
+                    <span className="text-[11px] font-heading font-medium hidden sm:inline">
+                      {isTrlMenuOpen ? "Fechar menu" : "Escolher nível"}
+                    </span>
+                    <Icon icon={isTrlMenuOpen ? ChevronUp : ChevronDown} size={18} />
+                  </div>
+                </button>
+
+                {/* Dropdown Menu Expansível com as 9 opções */}
+                {isTrlMenuOpen && (
+                  <div className="absolute top-full left-0 right-0 mt-2 z-30 max-h-80 overflow-y-auto rounded-2xl border border-border-subtle bg-surface-white p-2 shadow-xl animate-in fade-in slide-in-from-top-2 duration-150">
+                    <div className="p-2 border-b border-border-subtle/70 mb-1">
+                      <p className="font-heading text-[11px] font-semibold text-text-secondary uppercase tracking-wider">
+                        Selecione o nível de TRL desejado (1 a 9):
+                      </p>
+                    </div>
+
+                    <div className="space-y-1">
+                      {TRL_OPTIONS.map((opt) => {
+                        const isSelected = opt.level === minTrl;
+                        return (
+                          <button
+                            key={opt.level}
+                            type="button"
+                            onClick={() => {
+                              setMinTrl(opt.level);
+                              setIsTrlMenuOpen(false);
+                            }}
+                            className={[
+                              "w-full flex items-start gap-3 p-2.5 rounded-xl text-left transition-colors",
+                              isSelected
+                                ? "bg-brand-green-dark text-white shadow-xs"
+                                : "hover:bg-surface-primary text-text-primary",
+                            ].join(" ")}
+                          >
+                            <span
+                              className={[
+                                "flex-shrink-0 flex items-center justify-center h-6 w-12 rounded-md font-mono text-xs font-bold",
+                                isSelected
+                                  ? "bg-white/20 text-white"
+                                  : "bg-surface-secondary text-text-primary",
+                              ].join(" ")}
+                            >
+                              TRL {opt.level}
+                            </span>
+
+                            <div className="flex-1 min-w-0">
+                              <p className={["font-heading text-xs font-bold truncate", isSelected ? "text-white" : "text-text-primary"].join(" ")}>
+                                {opt.name}
+                              </p>
+                              <p className={["font-body text-[11px] line-clamp-2 mt-0.5", isSelected ? "text-white/80" : "text-text-secondary"].join(" ")}>
+                                {opt.description}
+                              </p>
+                            </div>
+
+                            {isSelected && (
+                              <Icon icon={Check} size={16} className="text-white shrink-0 mt-1" />
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Botões rápidos de 1 a 9 */}
+              <div className="pt-1">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="font-heading text-[11px] text-text-secondary font-medium">
+                    Seleção rápida por botão:
                   </span>
                 </div>
-
-                {/* Min TRL */}
-                <div>
-                  <div className="flex items-baseline justify-between">
-                    <label className="font-heading text-xs font-bold text-text-primary uppercase tracking-wide">
-                      Maturidade Tecnológica Mínima Exigida (TRL Mínimo)
-                    </label>
-                    <span className="font-mono text-sm font-bold text-brand-green-dark bg-brand-green-moss/15 px-3 py-1 rounded-full">
-                      TRL Mínimo: {minTrl} de 9
-                    </span>
-                  </div>
-
-                  <input
-                    type="range"
-                    min={1}
-                    max={9}
-                    step={1}
-                    value={minTrl}
-                    onChange={(e) => setMinTrl(Number(e.target.value))}
-                    className="mt-4 w-full accent-brand-green-dark cursor-pointer h-2 bg-border-subtle rounded-lg"
-                  />
-
-                  <p className="mt-2 font-body text-xs text-text-secondary">
-                    Nível 1 (Princípios básicos observados) até Nível 9 (Sistema testado e comprovado em ambiente operacional pleno).
-                  </p>
-                </div>
-
-                {/* Desired CRL */}
-                <div>
-                  <div className="flex items-baseline justify-between">
-                    <label className="font-heading text-xs font-bold text-text-primary uppercase tracking-wide">
-                      Maturidade Comercial Almejada (CRL Desejado)
-                    </label>
-                    <span className="font-mono text-sm font-bold text-brand-earth bg-brand-earth/15 px-3 py-1 rounded-full">
-                      CRL Alvo: {desiredCrl} de 9
-                    </span>
-                  </div>
-
-                  <input
-                    type="range"
-                    min={1}
-                    max={9}
-                    step={1}
-                    value={desiredCrl}
-                    onChange={(e) => setDesiredCrl(Number(e.target.value))}
-                    className="mt-4 w-full accent-brand-earth cursor-pointer h-2 bg-border-subtle rounded-lg"
-                  />
-
-                  <p className="mt-2 font-body text-xs text-text-secondary">
-                    Nível 1 (Proposta de valor preliminar) até Nível 9 (Negócio escalável e consolidado no mercado).
-                  </p>
-                </div>
-
-                {/* Patent Requirement Filter */}
-                <div>
-                  <label className="block font-heading text-xs font-bold text-text-primary uppercase tracking-wide mb-3">
-                    Requisito de Propriedade Intelectual (Patente)
-                  </label>
-
-                  <div className="grid gap-3 sm:grid-cols-3">
-                    {[
-                      {
-                        value: "NOT_REQUIRED",
-                        label: "Dispensável",
-                        desc: "Aceita projetos em segredo industrial, publicação aberta ou sem depósito.",
-                      },
-                      {
-                        value: "PENDING_ACCEPTED",
-                        label: "Aceita em Depósito",
-                        desc: "Aceita pedidos depositados no INPI ou patentes já concedidas.",
-                      },
-                      {
-                        value: "REQUIRED",
-                        label: "Obrigatória",
-                        desc: "Exige que o projeto possua patente concedida ou depositada.",
-                      },
-                    ].map((item) => (
-                      <label
-                        key={item.value}
-                        onClick={() => setPatentRequirement(item.value as PatentRequirement)}
-                        className={[
-                          "flex flex-col p-4 rounded-2xl border cursor-pointer transition-all",
-                          patentRequirement === item.value
-                            ? "border-blue-600 bg-blue-50 ring-2 ring-blue-600/20"
-                            : "border-border-subtle bg-surface-white hover:border-text-secondary",
-                        ].join(" ")}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="font-heading text-xs font-bold text-text-primary">
-                            {item.label}
-                          </span>
-                          <input
-                            type="radio"
-                            name="patentRequirement"
-                            value={item.value}
-                            checked={patentRequirement === item.value}
-                            onChange={() => {}}
-                            className="accent-blue-600"
-                          />
-                        </div>
-                        <span className="mt-1 font-body text-[11px] text-text-secondary">
-                          {item.desc}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
+                <div className="grid grid-cols-9 gap-1 sm:gap-2">
+                  {TRL_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.level}
+                      type="button"
+                      onClick={() => setMinTrl(opt.level)}
+                      className={[
+                        "h-10 rounded-xl font-mono text-xs font-bold transition-all flex flex-col items-center justify-center border",
+                        minTrl === opt.level
+                          ? "bg-brand-green-dark text-white border-brand-green-dark shadow-sm scale-105"
+                          : "bg-surface-primary text-text-secondary border-border-subtle hover:bg-surface-secondary hover:text-text-primary",
+                      ].join(" ")}
+                      title={`${opt.label}: ${opt.name}`}
+                    >
+                      <span>{opt.level}</span>
+                    </button>
+                  ))}
                 </div>
               </div>
-            )}
+
+              {/* Exibição detalhada do nível atual */}
+              <div className="rounded-xl bg-surface-primary/70 p-3 border border-border-subtle font-body text-xs text-text-secondary flex items-start gap-2">
+                <Icon icon={Info} size={15} className="text-brand-green-moss mt-0.5 shrink-0" />
+                <span>
+                  <strong>TRL {selectedTrlObj.level}:</strong> {selectedTrlObj.description}
+                </span>
+              </div>
+            </div>
+
+            {/* CRL Selector (Menu e Botões Expansíveis) */}
+            <div className="space-y-3 pt-4 border-t border-border-subtle">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                <label className="font-heading text-xs font-bold text-text-primary uppercase tracking-wide">
+                  Maturidade Comercial Almejada (CRL Alvo)
+                </label>
+                <span className="font-mono text-xs font-bold text-brand-earth bg-brand-earth/10 px-2.5 py-1 rounded-full w-fit">
+                  Selecionado: CRL {desiredCrl} de 9
+                </span>
+              </div>
+
+              {/* Botão Expansível de CRL */}
+              <div className="relative" ref={crlMenuRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsCrlMenuOpen((prev) => !prev)}
+                  className={[
+                    "w-full flex items-center justify-between p-3.5 rounded-2xl border text-left transition-all",
+                    isCrlMenuOpen
+                      ? "border-brand-earth bg-brand-earth/5 ring-2 ring-brand-earth/20"
+                      : "border-border-subtle bg-surface-primary hover:border-brand-earth hover:bg-surface-white",
+                  ].join(" ")}
+                >
+                  <div className="flex items-center gap-3 min-w-0 pr-2">
+                    <span className="flex-shrink-0 flex items-center justify-center h-8 w-14 rounded-lg bg-brand-earth text-white font-mono text-xs font-bold">
+                      CRL {selectedCrlObj.level}
+                    </span>
+                    <div className="truncate">
+                      <p className="font-heading text-xs md:text-sm font-bold text-text-primary truncate">
+                        {selectedCrlObj.name}
+                      </p>
+                      <p className="font-body text-[11px] text-text-secondary truncate">
+                        {selectedCrlObj.description}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 flex-shrink-0 text-text-secondary">
+                    <span className="text-[11px] font-heading font-medium hidden sm:inline">
+                      {isCrlMenuOpen ? "Fechar menu" : "Escolher nível"}
+                    </span>
+                    <Icon icon={isCrlMenuOpen ? ChevronUp : ChevronDown} size={18} />
+                  </div>
+                </button>
+
+                {/* Dropdown Menu Expansível com as 9 opções */}
+                {isCrlMenuOpen && (
+                  <div className="absolute top-full left-0 right-0 mt-2 z-30 max-h-80 overflow-y-auto rounded-2xl border border-border-subtle bg-surface-white p-2 shadow-xl animate-in fade-in slide-in-from-top-2 duration-150">
+                    <div className="p-2 border-b border-border-subtle/70 mb-1">
+                      <p className="font-heading text-[11px] font-semibold text-text-secondary uppercase tracking-wider">
+                        Selecione o nível de CRL desejado (1 a 9):
+                      </p>
+                    </div>
+
+                    <div className="space-y-1">
+                      {CRL_OPTIONS.map((opt) => {
+                        const isSelected = opt.level === desiredCrl;
+                        return (
+                          <button
+                            key={opt.level}
+                            type="button"
+                            onClick={() => {
+                              setDesiredCrl(opt.level);
+                              setIsCrlMenuOpen(false);
+                            }}
+                            className={[
+                              "w-full flex items-start gap-3 p-2.5 rounded-xl text-left transition-colors",
+                              isSelected
+                                ? "bg-brand-earth text-white shadow-xs"
+                                : "hover:bg-surface-primary text-text-primary",
+                            ].join(" ")}
+                          >
+                            <span
+                              className={[
+                                "flex-shrink-0 flex items-center justify-center h-6 w-12 rounded-md font-mono text-xs font-bold",
+                                isSelected
+                                  ? "bg-white/20 text-white"
+                                  : "bg-surface-secondary text-text-primary",
+                              ].join(" ")}
+                            >
+                              CRL {opt.level}
+                            </span>
+
+                            <div className="flex-1 min-w-0">
+                              <p className={["font-heading text-xs font-bold truncate", isSelected ? "text-white" : "text-text-primary"].join(" ")}>
+                                {opt.name}
+                              </p>
+                              <p className={["font-body text-[11px] line-clamp-2 mt-0.5", isSelected ? "text-white/80" : "text-text-secondary"].join(" ")}>
+                                {opt.description}
+                              </p>
+                            </div>
+
+                            {isSelected && (
+                              <Icon icon={Check} size={16} className="text-white shrink-0 mt-1" />
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Botões rápidos de 1 a 9 */}
+              <div className="pt-1">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="font-heading text-[11px] text-text-secondary font-medium">
+                    Seleção rápida por botão:
+                  </span>
+                </div>
+                <div className="grid grid-cols-9 gap-1 sm:gap-2">
+                  {CRL_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.level}
+                      type="button"
+                      onClick={() => setDesiredCrl(opt.level)}
+                      className={[
+                        "h-10 rounded-xl font-mono text-xs font-bold transition-all flex flex-col items-center justify-center border",
+                        desiredCrl === opt.level
+                          ? "bg-brand-earth text-white border-brand-earth shadow-sm scale-105"
+                          : "bg-surface-primary text-text-secondary border-border-subtle hover:bg-surface-secondary hover:text-text-primary",
+                      ].join(" ")}
+                      title={`${opt.label}: ${opt.name}`}
+                    >
+                      <span>{opt.level}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Exibição detalhada do nível atual */}
+              <div className="rounded-xl bg-surface-primary/70 p-3 border border-border-subtle font-body text-xs text-text-secondary flex items-start gap-2">
+                <Icon icon={Info} size={15} className="text-brand-earth mt-0.5 shrink-0" />
+                <span>
+                  <strong>CRL {selectedCrlObj.level}:</strong> {selectedCrlObj.description}
+                </span>
+              </div>
+            </div>
+
+            {/* Patent Requirement Filter */}
+            <div className="pt-4 border-t border-border-subtle">
+              <label className="block font-heading text-xs font-bold text-text-primary uppercase tracking-wide mb-3">
+                Requisito de Propriedade Intelectual (Patente)
+              </label>
+
+              <div className="grid gap-3 sm:grid-cols-3">
+                {[
+                  {
+                    value: "NOT_REQUIRED",
+                    label: "Dispensável",
+                    desc: "Aceita projetos em segredo industrial, publicação aberta ou sem depósito.",
+                  },
+                  {
+                    value: "PENDING_ACCEPTED",
+                    label: "Aceita em Depósito",
+                    desc: "Aceita pedidos depositados no INPI ou patentes já concedidas.",
+                  },
+                  {
+                    value: "REQUIRED",
+                    label: "Obrigatória",
+                    desc: "Exige que o projeto possua patente concedida ou depositada.",
+                  },
+                ].map((item) => (
+                  <label
+                    key={item.value}
+                    onClick={() => setPatentRequirement(item.value as PatentRequirement)}
+                    className={[
+                      "flex flex-col p-4 rounded-2xl border cursor-pointer transition-all",
+                      patentRequirement === item.value
+                        ? "border-blue-600 bg-blue-50 ring-2 ring-blue-600/20"
+                        : "border-border-subtle bg-surface-primary hover:border-text-secondary",
+                    ].join(" ")}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-heading text-xs font-bold text-text-primary">
+                        {item.label}
+                      </span>
+                      <input
+                        type="radio"
+                        name="patentRequirement"
+                        value={item.value}
+                        checked={patentRequirement === item.value}
+                        onChange={() => {}}
+                        className="accent-blue-600"
+                      />
+                    </div>
+                    <span className="mt-1 font-body text-[11px] text-text-secondary">
+                      {item.desc}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* Form Actions */}
