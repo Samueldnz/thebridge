@@ -67,10 +67,22 @@ export function cleanAbstract(raw: string): string {
     }
   }
 
-  // 4. Normalizar quebras de linha e múltiplos espaços
+  // 4. Cortar seções de encerramento acadêmico: Acknowledgments / References para frente
+  const endSectionRegex =
+    /(?:(?<=[\r\n.!?]|\s{2,}|^)\s*(?:acknowledgements?|acknowledgments?|agradecimentos?|references|referências|referencias)\s*[:\-–—]|(?<=[\r\n])\s*(?:acknowledgements?|acknowledgments?|agradecimentos?|references|referências|referencias)\s*(?:[\r\n]+|\s*(?:\[\d+|\d+[\.\)]|[A-Z][a-z]+,))|(?<=[.!?])\s*(?:acknowledgements?|acknowledgments?|agradecimentos?|references|referências|referencias)\s*(?:[\r\n]+|\s*[:\-–—]|\s+(?:\[\d+|\d+[\.\)]))|(?<=\s)(?:acknowledgements?|acknowledgments?|agradecimentos?|references|referências|referencias)\s*:)/i;
+
+  const endMatch = text.match(endSectionRegex);
+  if (endMatch && typeof endMatch.index === 'number') {
+    const cut = text.slice(0, endMatch.index).trim();
+    if (cut.length > 50) {
+      text = cut;
+    }
+  }
+
+  // 5. Normalizar quebras de linha e múltiplos espaços
   text = text.replace(/[\r\n]+/g, ' ').replace(/[ \t]{2,}/g, ' ').trim();
 
-  // 5. Tratar cortes abruptos no final do texto (caso truncado na borda de caracteres do Space)
+  // 6. Tratar cortes abruptos no final do texto (caso truncado na borda de caracteres do Space)
   if (!/[.!?]$/.test(text)) {
     const lastSpace = text.lastIndexOf(' ');
     if (lastSpace > text.length - 25) {
