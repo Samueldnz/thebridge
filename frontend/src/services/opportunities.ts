@@ -46,7 +46,7 @@ export interface CreateOpportunityPayload {
   currency?: string;
   timeline?: string;
   status?: OpportunityStatus;
-  competences: { competenceId: string; weight: number; name?: string }[];
+  competences?: { competenceId: string; weight: number; name?: string }[];
 }
 
 const STORAGE_KEY = "thebridge_demo_opportunities";
@@ -238,7 +238,7 @@ export const opportunitiesService = {
       currency: payload.currency || "BRL",
       timeline: payload.timeline,
       status: payload.status || "OPEN",
-      competences: payload.competences.map((c) => ({
+      competences: (payload.competences || []).map((c) => ({
         competenceId: c.competenceId,
         weight: c.weight,
         name: c.name || defaultCompetences.find((dc) => dc.id === c.competenceId)?.name || c.competenceId,
@@ -287,7 +287,7 @@ export const opportunitiesService = {
           this.saveStoredOpportunities(syncedList);
 
           // Associar competências no backend
-          for (const comp of payload.competences) {
+          for (const comp of (payload.competences || [])) {
             try {
               await fetch(`${env.apiUrl}/opportunities/${createdOpp.id}/competences/${comp.competenceId}`, {
                 method: "POST",
@@ -334,7 +334,7 @@ export const opportunitiesService = {
         timeline: payload.timeline !== undefined ? payload.timeline : existing.timeline,
         competences:
           payload.competences !== undefined
-            ? payload.competences.map((c) => ({
+            ? (payload.competences || []).map((c) => ({
                 competenceId: c.competenceId,
                 weight: c.weight,
                 name: c.name || defaultCompetences.find((dc) => dc.id === c.competenceId)?.name || c.competenceId,
