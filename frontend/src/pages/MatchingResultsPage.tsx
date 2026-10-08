@@ -503,9 +503,17 @@ export function MatchingResultsPage() {
                   ].join(" ")}
                 >
                   <div className="pb-4 border-b border-border-subtle space-y-2">
-                    <span className="rounded-full bg-brand-green-dark !text-white px-2.5 py-0.5 text-xs font-mono font-bold inline-block w-fit">
-                      #{idx + 1}
-                    </span>
+                    <div className="flex items-center gap-2.5">
+                      <span className="rounded-full bg-brand-green-dark !text-white px-2.5 py-0.5 text-xs font-mono font-bold">
+                        #{idx + 1}
+                      </span>
+                      <span
+                        className="font-mono text-base md:text-lg font-bold text-brand-green-dark"
+                        title={`Score Cosseno: ${art.score_cosseno.toFixed(4)}`}
+                      >
+                        {art.relevancia_pct}%
+                      </span>
+                    </div>
                     <h3 className="font-heading text-lg md:text-xl font-bold text-text-primary leading-snug">
                       {art.titulo}
                     </h3>
