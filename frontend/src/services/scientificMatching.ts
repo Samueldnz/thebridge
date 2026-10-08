@@ -38,6 +38,45 @@ export function calculateRelevance(score: number): number {
   return Math.max(0, Math.min(100, Math.round(rawPct)));
 }
 
+function parseEventData(dataStr: string): ScientificMatchResult | null {
+  const trimmed = dataStr.trim();
+  if (!trimmed || trimmed === "null" || trimmed === "undefined") {
+    return null;
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(trimmed);
+  } catch {
+    return null;
+  }
+
+  if (parsed && typeof parsed === "object") {
+    if ("error" in (parsed as Record<string, unknown>)) {
+      const errObj = parsed as { error: string; title?: string };
+      const msg = errObj.title ? `${errObj.title}: ${errObj.error}` : errObj.error;
+      throw new Error(msg);
+    }
+
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      const first = parsed[0];
+      if (first && typeof first === "object" && "artigos" in first) {
+        const rawResult = first as ScientificMatchResult;
+        const artigos = (rawResult.artigos || []).map((art) => ({
+          ...art,
+          relevancia_pct: calculateRelevance(art.score_cosseno),
+        }));
+        return {
+          ...rawResult,
+          artigos,
+        };
+      }
+    }
+  }
+
+  return null;
+}
+
 export const scientificMatchingService = {
   async search(query: string, topK: number = 6): Promise<ScientificMatchResult> {
     const trimmed = (query || "").trim();
@@ -96,30 +135,121 @@ export const scientificMatchingService = {
       throw new Error(`Erro ao aguardar resposta dos vetores (${getRes.status}).`);
     }
 
-    const textStream = await getRes.text();
-    const lines = textStream.split("\n");
+    let matchResult: ScientificMatchResult | null = null;
+    let streamErrorMessage: string | null = null;
 
-    for (const line of lines) {
-      if (line.startsWith("data:")) {
-        try {
-          const parsed = JSON.parse(line.slice(5).trim());
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            const rawResult = parsed[0] as ScientificMatchResult;
-            const artigos = (rawResult.artigos || []).map((art) => ({
-              ...art,
-              relevancia_pct: calculateRelevance(art.score_cosseno),
-            }));
-            return {
-              ...rawResult,
-              artigos,
-            };
+    if (getRes.body && typeof getRes.body.getReader === "function") {
+      const reader = getRes.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          // Deixa a última linha incompleta no buffer
+          buffer = lines.pop() || "";
+
+          let currentEvent = "";
+          for (const rawLine of lines) {
+            const line = rawLine.trim();
+            if (line.startsWith("event:")) {
+              currentEvent = line.slice(6).trim();
+            } else if (line.startsWith("data:")) {
+              const dataContent = line.slice(5).trim();
+              if (currentEvent === "error") {
+                try {
+                  const errJson = JSON.parse(dataContent);
+                  streamErrorMessage = errJson.error || errJson.title || dataContent;
+                } catch {
+                  streamErrorMessage = dataContent;
+                }
+                break;
+              }
+
+              try {
+                const res = parseEventData(dataContent);
+                if (res) {
+                  matchResult = res;
+                  break;
+                }
+              } catch (parseErr) {
+                if (parseErr instanceof Error) {
+                  streamErrorMessage = parseErr.message;
+                }
+                break;
+              }
+            }
           }
-        } catch {
-          // Continua para próxima linha
+
+          if (matchResult || streamErrorMessage) {
+            await reader.cancel().catch(() => {});
+            break;
+          }
+        }
+      } catch (streamErr) {
+        console.warn("[ScientificMatching] Aviso no fluxo SSE:", streamErr);
+        if (!matchResult && !streamErrorMessage && streamErr instanceof Error) {
+          streamErrorMessage = streamErr.message;
+        }
+      }
+    } else {
+      // Fallback para getRes.text() caso stream body não esteja acessível
+      const textStream = await getRes.text();
+      const lines = textStream.split("\n");
+      let currentEvent = "";
+
+      for (const rawLine of lines) {
+        const line = rawLine.trim();
+        if (line.startsWith("event:")) {
+          currentEvent = line.slice(6).trim();
+        } else if (line.startsWith("data:")) {
+          const dataContent = line.slice(5).trim();
+          if (currentEvent === "error") {
+            try {
+              const errJson = JSON.parse(dataContent);
+              streamErrorMessage = errJson.error || errJson.title || dataContent;
+            } catch {
+              streamErrorMessage = dataContent;
+            }
+            break;
+          }
+
+          try {
+            const res = parseEventData(dataContent);
+            if (res) {
+              matchResult = res;
+              break;
+            }
+          } catch (parseErr) {
+            if (parseErr instanceof Error) {
+              streamErrorMessage = parseErr.message;
+            }
+            break;
+          }
         }
       }
     }
 
-    throw new Error("Nenhum dado retornado no fluxo de matching.");
+    if (streamErrorMessage) {
+      if (
+        streamErrorMessage.includes("ZeroGPU runs limit") ||
+        streamErrorMessage.includes("quota exceeded")
+      ) {
+        throw new Error(
+          "Limite de processamento do ZeroGPU atingido. O motor no Hugging Face requer token ativo ou aguardar a liberação de cota."
+        );
+      }
+      throw new Error(streamErrorMessage);
+    }
+
+    if (matchResult) {
+      return matchResult;
+    }
+
+    throw new Error("Nenhum resultado retornado pelo motor de matching no Hugging Face.");
   },
 };
