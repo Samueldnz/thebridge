@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import {
   Bell,
   CheckCircle2,
@@ -22,13 +22,30 @@ import {
 } from "../services/connections";
 
 export function NotificationsPage() {
+  const [searchParams] = useSearchParams();
+  const idFromUrl = searchParams.get("id");
+
   const [notifications, setNotifications] = useState<NotificationItem[]>(() =>
     connectionsService.getNotifications()
   );
-  const [selectedId, setSelectedId] = useState<string>(() =>
-    notifications.length > 0 ? notifications[0].id : ""
-  );
+  const [selectedId, setSelectedId] = useState<string>(() => {
+    const list = connectionsService.getNotifications();
+    if (idFromUrl && list.some((n) => n.id === idFromUrl)) {
+      return idFromUrl;
+    }
+    return list.length > 0 ? list[0].id : "";
+  });
   const [categoryFilter, setCategoryFilter] = useState<string>("TODAS");
+
+  useEffect(() => {
+    if (idFromUrl) {
+      setSelectedId(idFromUrl);
+      connectionsService.markNotificationAsRead(idFromUrl);
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === idFromUrl ? { ...n, read: true } : n))
+      );
+    }
+  }, [idFromUrl]);
 
   const selectedNotification = notifications.find((n) => n.id === selectedId) || null;
 

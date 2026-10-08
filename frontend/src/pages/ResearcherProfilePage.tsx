@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   Award,
   CheckCircle2,
@@ -9,6 +8,7 @@ import {
   MapPin,
   Phone,
   Save,
+  ShieldCheck,
   User as UserIcon,
   FlaskConical,
   FileText,
@@ -18,10 +18,10 @@ import { DashboardLayout } from "../components/layout/DashboardLayout";
 import { Button } from "../components/ui/Button";
 import { Icon } from "../components/ui/Icon";
 import { authService, type User } from "../services/auth";
+import { connectionsService } from "../services/connections";
 import { formatCPF, formatPhone } from "../utils/formatters";
 
 export function ResearcherProfilePage() {
-  const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState<User | null>(authService.getStoredUser());
 
   const [formData, setFormData] = useState({
@@ -40,6 +40,13 @@ export function ResearcherProfilePage() {
 
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+
+  // Verification analysis state
+  const [verificationStatus, setVerificationStatus] = useState<string>(
+    currentUser?.verificationStatus || "NAO_SUBMETIDO"
+  );
+  const [submittingVerification, setSubmittingVerification] = useState(false);
+  const [verificationSuccess, setVerificationSuccess] = useState(false);
 
   const handleChange = (field: keyof typeof formData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -61,23 +68,86 @@ export function ResearcherProfilePage() {
     }
   };
 
+  const handleSubmitForVerification = async () => {
+    setSubmittingVerification(true);
+    try {
+      const payload = {
+        ...formData,
+        verificationStatus: "EM_ANALISE" as const,
+        verificationSubmittedAt: new Date().toLocaleDateString("pt-BR"),
+      };
+      const updated = await authService.updateProfile(payload);
+      setCurrentUser(updated);
+      setVerificationStatus("EM_ANALISE");
+      setVerificationSuccess(true);
+
+      connectionsService.addNotification({
+        title: "Perfil do pesquisador submetido para análise de veracidade",
+        sender: "Auditoria & Compliance The Bridge",
+        category: "SISTEMA",
+        preview: "Suas credenciais acadêmicas e CPF foram encaminhados para validação.",
+        body: `Prezado(a) pesquisador(a) ${formData.name || ""},\n\nRecebemos a submissão do seu perfil acadêmico para análise de veracidade.\n\nNossa curadoria científica irá verificar a titularidade institucional junto a ${formData.university || "sua universidade"} e conferir os registros informados do currículo Lattes.\n\nApós homologação, seu perfil receberá o selo oficial de verificação na plataforma The Bridge.`,
+        actionUrl: "/dashboard/perfil",
+      });
+
+      setTimeout(() => setVerificationSuccess(false), 5000);
+    } catch (err) {
+      console.error("Erro ao submeter perfil do pesquisador:", err);
+    } finally {
+      setSubmittingVerification(false);
+    }
+  };
+
   return (
     <DashboardLayout
       title="Perfil do Pesquisador (Pessoa Física)"
       actions={
-        <Button
-          onClick={() => handleSave()}
-          disabled={saving}
-          size="sm"
-          className="bg-brand-green-dark text-brand-off-white"
-        >
-          <Icon icon={Save} size={15} />
-          {saving ? "Salvando..." : "Salvar Dados Acadêmicos"}
-        </Button>
+        <div className="flex flex-wrap items-center gap-3">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={handleSubmitForVerification}
+            disabled={submittingVerification}
+            size="sm"
+            className="border-emerald-600 text-emerald-800 hover:bg-emerald-50 text-xs font-bold shadow-xs cursor-pointer"
+          >
+            <Icon icon={ShieldCheck} size={15} className="text-emerald-700" />
+            {submittingVerification
+              ? "Submetendo..."
+              : verificationStatus === "EM_ANALISE"
+              ? "Perfil em Análise ⏳"
+              : "SUBMETER PERFIL PARA ANÁLISE DE VERACIDADE"}
+          </Button>
+
+          <Button
+            onClick={() => handleSave()}
+            disabled={saving}
+            size="sm"
+            className="bg-brand-green-dark text-brand-off-white font-bold"
+          >
+            <Icon icon={Save} size={15} />
+            {saving ? "Salvando..." : "SALVAR PERFIL"}
+          </Button>
+        </div>
       }
     >
       <div className="space-y-8">
-        {/* Feedback Alert */}
+        {/* Verification Success Alert */}
+        {verificationSuccess && (
+          <div className="rounded-2xl border border-emerald-300 bg-emerald-50 p-4 text-emerald-950 flex items-center gap-3 shadow-xs animate-in fade-in duration-300">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100 text-emerald-800 shrink-0">
+              <Icon icon={ShieldCheck} size={20} />
+            </div>
+            <div>
+              <p className="font-heading text-sm font-bold">Perfil submetido para análise de veracidade!</p>
+              <p className="font-body text-xs text-emerald-900">
+                Nossa equipe irá confirmar as informações fornecidas e vínculos acadêmicos informados para certificar seu perfil na plataforma.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Feedback Alert - Without Voltar ao Painel */}
         {saveSuccess && (
           <div className="rounded-2xl border border-emerald-300 bg-emerald-50 p-4 text-emerald-900 flex items-center justify-between shadow-xs animate-in fade-in duration-300">
             <div className="flex items-center gap-3">
@@ -91,12 +161,19 @@ export function ResearcherProfilePage() {
                 </p>
               </div>
             </div>
-            <button
-              onClick={() => navigate("/dashboard")}
-              className="font-heading text-xs font-bold text-emerald-900 hover:underline"
-            >
-              Ir ao Painel →
-            </button>
+          </div>
+        )}
+
+        {/* Verification Status Banner if already in analysis */}
+        {verificationStatus === "EM_ANALISE" && !verificationSuccess && (
+          <div className="rounded-2xl border border-amber-300 bg-amber-50/70 p-4 text-amber-950 flex items-center gap-3 shadow-xs">
+            <Icon icon={ShieldCheck} size={20} className="text-amber-700 shrink-0" />
+            <div className="text-xs">
+              <span className="font-heading font-bold block">Status: Perfil em Análise de Veracidade ⏳</span>
+              <span className="font-body text-amber-900">
+                Suas informações acadêmicas e credenciais estão em processo de validação pela curadoria The Bridge.
+              </span>
+            </div>
           </div>
         )}
 
@@ -347,23 +424,32 @@ export function ResearcherProfilePage() {
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4">
+          {/* Action Buttons Footer */}
+          <div className="flex flex-wrap items-center justify-end gap-3 pt-2">
             <Button
               type="button"
               variant="secondary"
-              onClick={() => navigate("/dashboard")}
+              onClick={handleSubmitForVerification}
+              disabled={submittingVerification}
+              size="md"
+              className="border-emerald-600 text-emerald-800 hover:bg-emerald-50 text-xs font-bold cursor-pointer"
             >
-              Voltar ao Painel
+              <Icon icon={ShieldCheck} size={16} className="text-emerald-700" />
+              {submittingVerification
+                ? "Submetendo..."
+                : verificationStatus === "EM_ANALISE"
+                ? "Perfil em Análise ⏳"
+                : "SUBMETER PERFIL PARA ANÁLISE DE VERACIDADE"}
             </Button>
 
             <Button
               type="submit"
               disabled={saving}
-              className="w-full sm:w-auto bg-brand-green-dark text-brand-off-white"
+              size="md"
+              className="bg-brand-green-dark text-brand-off-white font-bold cursor-pointer"
             >
               <Icon icon={Save} size={16} />
-              {saving ? "Salvando Alterações..." : "Salvar Perfil do Pesquisador"}
+              {saving ? "Salvando..." : "SALVAR PERFIL"}
             </Button>
           </div>
         </form>

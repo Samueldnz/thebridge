@@ -16,6 +16,7 @@ import {
 import logo from "../../assets/brand/logo/TheBridge_Logo_Horizontal.svg";
 import { authService, calculateProfileTier } from "../../services/auth";
 import { connectionsService, type NotificationItem } from "../../services/connections";
+import { getCompanyLogoUrl } from "../../services/brasilApi";
 import { Container } from "../ui/Container";
 import { Icon } from "../ui/Icon";
 
@@ -69,6 +70,9 @@ export function DashboardLayout({
 
   const isResearcher = user?.profileType === "RESEARCHER";
   const userTier = user?.tier || calculateProfileTier(user).tier;
+  const effectiveLogo =
+    user?.logoUrl ||
+    (!isResearcher && user?.website ? getCompanyLogoUrl(user.website) : undefined);
 
   // Dedicated navigation links separated strictly per profile
   const navLinks = isResearcher
@@ -123,7 +127,7 @@ export function DashboardLayout({
     <div className="min-h-screen bg-[#F8F9FA] text-text-primary flex flex-col justify-between">
       {/* Top Navbar */}
       <header className="sticky top-0 z-50 border-b border-border-subtle bg-surface-primary/95 backdrop-blur-md shadow-xs">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 py-3.5">
+        <Container size="wide" className="flex items-center justify-between py-3.5">
           {/* Logo & Public Site Link */}
           <div className="flex items-center gap-6">
             <Link to="/dashboard" aria-label="The Bridge Painel" className="flex items-center">
@@ -227,7 +231,7 @@ export function DashboardLayout({
                             onClick={() => {
                               connectionsService.markNotificationAsRead(notif.id);
                               setNotificationsOpen(false);
-                              navigate(notif.actionUrl || "/dashboard/notificacoes");
+                              navigate(`/dashboard/notificacoes?id=${notif.id}`);
                             }}
                             className={`p-3.5 hover:bg-surface-secondary/70 transition-colors cursor-pointer text-left ${
                               !notif.read ? "bg-emerald-50/50 font-semibold" : ""
@@ -275,7 +279,7 @@ export function DashboardLayout({
               {/* Circular Avatar with Qualification Tier Border */}
               <div
                 className={[
-                  "flex h-8 w-8 items-center justify-center rounded-full bg-brand-green-dark text-[11px] font-bold text-white transition-transform group-hover:scale-105",
+                  "flex h-8 w-8 items-center justify-center rounded-full bg-brand-green-dark text-[11px] font-bold text-white transition-transform group-hover:scale-105 overflow-hidden",
                   userTier === "OURO"
                     ? "ring-2 ring-amber-400 border-2 border-amber-500 shadow-xs"
                     : userTier === "PRATA"
@@ -283,7 +287,20 @@ export function DashboardLayout({
                     : "ring-2 ring-[#cd7f32] border-2 border-[#b87333] shadow-xs", // Bronze
                 ].join(" ")}
               >
-                {user?.name ? user.name.slice(0, 2).toUpperCase() : "TB"}
+                {effectiveLogo ? (
+                  <img
+                    src={effectiveLogo}
+                    alt={user?.name || "Logo"}
+                    className="h-full w-full object-contain bg-white p-0.5"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLElement).style.display = "none";
+                    }}
+                  />
+                ) : user?.name ? (
+                  user.name.slice(0, 2).toUpperCase()
+                ) : (
+                  "TB"
+                )}
               </div>
               <span className="font-heading font-semibold text-text-primary max-w-[140px] truncate leading-tight group-hover:text-brand-green-moss transition-colors">
                 {user?.name || "Usuário"}
@@ -309,7 +326,7 @@ export function DashboardLayout({
               <Icon icon={mobileMenuOpen ? X : Menu} size={18} />
             </button>
           </div>
-        </div>
+        </Container>
 
         {/* Mobile Navigation Drawer */}
         {mobileMenuOpen && (
@@ -322,7 +339,7 @@ export function DashboardLayout({
               >
                 <div
                   className={[
-                    "flex h-8 w-8 items-center justify-center rounded-full bg-brand-green-dark text-xs font-bold text-white",
+                    "flex h-8 w-8 items-center justify-center rounded-full bg-brand-green-dark text-xs font-bold text-white overflow-hidden",
                     userTier === "OURO"
                       ? "ring-2 ring-amber-400 border-2 border-amber-500"
                       : userTier === "PRATA"
@@ -330,7 +347,20 @@ export function DashboardLayout({
                       : "ring-2 ring-[#cd7f32] border-2 border-[#b87333]",
                   ].join(" ")}
                 >
-                  {user?.name ? user.name.slice(0, 2).toUpperCase() : "TB"}
+                  {effectiveLogo ? (
+                    <img
+                      src={effectiveLogo}
+                      alt={user?.name || "Logo"}
+                      className="h-full w-full object-contain bg-white p-0.5"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLElement).style.display = "none";
+                      }}
+                    />
+                  ) : user?.name ? (
+                    user.name.slice(0, 2).toUpperCase()
+                  ) : (
+                    "TB"
+                  )}
                 </div>
                 <div>
                   <span className="font-heading text-xs font-bold text-text-primary block">

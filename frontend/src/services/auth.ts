@@ -10,6 +10,17 @@ export interface UserProfileFields {
   industrySector?: string;
   cpf?: string;
   cnpj?: string;
+  cnpjValidated?: boolean;
+  cnpjValidationData?: {
+    razaoSocial?: string;
+    nomeFantasia?: string;
+    situacao?: string;
+    municipio?: string;
+    uf?: string;
+  };
+  logoUrl?: string;
+  verificationStatus?: "NAO_SUBMETIDO" | "EM_ANALISE" | "VERIFICADO" | "RECUSADO";
+  verificationSubmittedAt?: string;
   linkedin?: string;
   lattes?: string;
   website?: string;
