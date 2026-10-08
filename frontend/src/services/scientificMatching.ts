@@ -26,6 +26,18 @@ export interface ScientificMatchResult {
   };
 }
 
+/**
+ * Calcula a porcentagem de relevância/matching calibrada:
+ * Relevância (%) = ((score - 0.35) / (0.75 - 0.35)) * 100
+ * Clipada no intervalo [0, 100] e arredondada.
+ */
+export function calculateRelevance(score: number): number {
+  const minScore = 0.35;
+  const maxScore = 0.75;
+  const rawPct = ((score - minScore) / (maxScore - minScore)) * 100;
+  return Math.max(0, Math.min(100, Math.round(rawPct)));
+}
+
 export const scientificMatchingService = {
   async search(query: string, topK: number = 6): Promise<ScientificMatchResult> {
     const trimmed = (query || "").trim();
@@ -92,7 +104,15 @@ export const scientificMatchingService = {
         try {
           const parsed = JSON.parse(line.slice(5).trim());
           if (Array.isArray(parsed) && parsed.length > 0) {
-            return parsed[0] as ScientificMatchResult;
+            const rawResult = parsed[0] as ScientificMatchResult;
+            const artigos = (rawResult.artigos || []).map((art) => ({
+              ...art,
+              relevancia_pct: calculateRelevance(art.score_cosseno),
+            }));
+            return {
+              ...rawResult,
+              artigos,
+            };
           }
         } catch {
           // Continua para próxima linha

@@ -288,33 +288,21 @@ export function SubmitOpportunityPage() {
           <div className="mt-10 flex flex-col sm:flex-row justify-center gap-4">
             <Button
               size="lg"
-              onClick={() => navigate("/dashboard/demandas")}
-              className="bg-brand-green-dark text-brand-off-white"
-            >
-              <Icon icon={FolderGit2} size={16} />
-              Ver Minhas Demandas Salvas
-            </Button>
-            <Button
-              size="lg"
               onClick={() =>
-                navigate(
-                  `/dashboard/matching?tab=scientific&query=${encodeURIComponent(
-                    submittedOpportunity.title + (submittedOpportunity.desiredTechnology ? " " + submittedOpportunity.desiredTechnology : "")
-                  )}`
-                )
+                navigate(`/dashboard/matching?opportunityId=${submittedOpportunity.id}`)
               }
-              className="bg-brand-green-dark text-brand-off-white"
+              className="bg-brand-green-dark text-brand-off-white hover:bg-brand-green-moss transition-all shadow-md"
             >
               <Icon icon={Sparkles} size={16} />
-              Ver Matches em Congressos (IA ZeroGPU)
+              Fazer Matching de Projetos com IA
             </Button>
             <Button
               variant="secondary"
               size="lg"
-              onClick={() => navigate("/dashboard/matching?tab=internal")}
+              onClick={() => navigate("/dashboard/demandas")}
             >
-              <Icon icon={Layers} size={16} />
-              Ver Projetos na Plataforma
+              <Icon icon={FolderGit2} size={16} />
+              Minhas Demandas Salvas
             </Button>
           </div>
         </div>
