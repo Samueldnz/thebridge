@@ -4,16 +4,14 @@ import {
   Award,
   BrainCircuit,
   Building2,
-  Check,
   ChevronDown,
   ChevronUp,
-  Copy,
   Filter,
   Info,
-  Mail,
   MessageSquare,
   RefreshCw,
   Search,
+  Send,
   Sparkles,
   X,
 } from "lucide-react";
@@ -24,6 +22,7 @@ import { Icon } from "../components/ui/Icon";
 import { scientificMatchingService, type ScientificArticle } from "../services/scientificMatching";
 import { authService } from "../services/auth";
 import { opportunitiesService, type Opportunity } from "../services/opportunities";
+import { connectionsService } from "../services/connections";
 
 function buildQueryFromOpportunity(opp: Opportunity): string {
   const parts: string[] = [];
@@ -77,8 +76,10 @@ export function MatchingResultsPage() {
   // UI Filters & Modals
   const [filterAffinity, setFilterAffinity] = useState<"ALL" | "HIGH" | "MEDIUM">("ALL");
   const [expandedAbstractId, setExpandedAbstractId] = useState<string | null>(null);
-  const [copiedEmailId, setCopiedEmailId] = useState<string | null>(null);
   const [selectedArticleForAudit, setSelectedArticleForAudit] = useState<ScientificArticle | null>(null);
+  const [selectedArticleForConnection, setSelectedArticleForConnection] = useState<ScientificArticle | null>(null);
+  const [connectionMessage, setConnectionMessage] = useState<string>("");
+  const [connectionSentSuccess, setConnectionSentSuccess] = useState<boolean>(false);
 
   // Always fetch at most 10 matches
   const topK = 10;
@@ -138,13 +139,32 @@ export function MatchingResultsPage() {
     }
   };
 
-  const handleCopyEmail = (email: string, id: string) => {
-    if (!email) return;
-    navigator.clipboard.writeText(email);
-    setCopiedEmailId(id);
+  const handleOpenConnectionModal = (art: ScientificArticle) => {
+    setSelectedArticleForConnection(art);
+    setConnectionMessage(
+      `Olá! Analisamos a pesquisa "${art.titulo}" (${art.evento}) através da plataforma The Bridge e identificamos alto grau de convergência técnica com a nossa demanda corporativa de P&D. Gostaríamos de solicitar uma conexão formal para avaliar a viabilidade técnica e possíveis modelos de cooperação.`
+    );
+    setConnectionSentSuccess(false);
+  };
+
+  const handleSendConnection = () => {
+    if (!selectedArticleForConnection) return;
+    connectionsService.requestConnection({
+      articleTitle: selectedArticleForConnection.titulo,
+      articleEvent: selectedArticleForConnection.evento,
+      matchScore: selectedArticleForConnection.relevancia_pct,
+      message: connectionMessage,
+      companyName: user?.companyName || user?.name || "Empresa Parceira Registrada",
+      researcherName: selectedArticleForConnection.autores
+        ? selectedArticleForConnection.autores.split(",")[0]
+        : "Grupo de Pesquisa",
+      opportunityTitle: selectedOpportunity?.title || "Demanda Tecnológica Corporativa",
+    });
+    setConnectionSentSuccess(true);
     setTimeout(() => {
-      setCopiedEmailId(null);
-    }, 3000);
+      setSelectedArticleForConnection(null);
+      setConnectionSentSuccess(false);
+    }, 1400);
   };
 
   // Filtered by affinity
@@ -485,40 +505,14 @@ export function MatchingResultsPage() {
                     </div>
 
                     <div className="flex items-center gap-2">
-                      {art.email && (
-                        <Button
-                          type="button"
-                          variant="secondary"
-                          size="sm"
-                          onClick={() => handleCopyEmail(art.email, art.id)}
-                        >
-                          <Icon icon={copiedEmailId === art.id ? Check : Copy} size={13} />
-                          {copiedEmailId === art.id ? "E-mail Copiado!" : "Copiar E-mail"}
-                        </Button>
-                      )}
-
-                      {art.email ? (
-                        <a
-                          href={`mailto:${art.email}?subject=${encodeURIComponent(
-                            `Interesse em Parceria via The Bridge: ${art.titulo}`
-                          )}&body=${encodeURIComponent(
-                            `Olá,\n\nLocalizamos sua pesquisa intitulada "${art.titulo}" apresentada no ${art.evento} através da plataforma The Bridge.\n\nGostaríamos de conversar sobre possibilidades de cooperação tecnológica e projetos conjuntos de P&D para atender ao nosso desafio corporativo.\n\nAtenciosamente,\n${user?.name || "Representante Corporativo"}`
-                          )}`}
-                          className="inline-flex items-center gap-1.5 rounded-xl bg-brand-green-dark px-4 py-2 font-heading text-xs font-semibold !text-white hover:bg-brand-green-moss transition-all shadow-xs"
-                        >
-                          <Icon icon={Mail} size={14} />
-                          Iniciar Contato Direto
-                        </a>
-                      ) : (
-                        <Button
-                          size="sm"
-                          className="bg-brand-green-dark !text-white"
-                          onClick={() => alert("Solicitação de contato enviada à equipe The Bridge para mediação.")}
-                        >
-                          <Icon icon={MessageSquare} size={14} />
-                          Solicitar Conexão
-                        </Button>
-                      )}
+                      <Button
+                        size="sm"
+                        onClick={() => handleOpenConnectionModal(art)}
+                        className="bg-brand-green-dark !text-white hover:bg-brand-green-moss transition-all shadow-xs"
+                      >
+                        <Icon icon={MessageSquare} size={14} />
+                        Solicitar Conexão
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -632,11 +626,12 @@ export function MatchingResultsPage() {
                       <strong>Área:</strong> {selectedArticleForAudit.area}
                     </p>
                   )}
-                  {selectedArticleForAudit.email && (
-                    <p>
-                      <strong>E-mail de Contato:</strong> {selectedArticleForAudit.email}
-                    </p>
-                  )}
+                  <p>
+                    <strong>Canal de Contato:</strong>{" "}
+                    <span className="text-text-secondary">
+                      Protegido pela plataforma (intermediação via Solicitar Conexão)
+                    </span>
+                  </p>
                 </div>
               </div>
 
@@ -654,6 +649,104 @@ export function MatchingResultsPage() {
             <div className="mt-8 flex justify-end">
               <Button onClick={() => setSelectedArticleForAudit(null)}>
                 Fechar Auditoria
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Connection Request Modal with soft fog background (efeito fog leve) */}
+      {selectedArticleForConnection && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="relative w-full max-w-lg rounded-3xl bg-surface-white p-6 md:p-8 shadow-2xl border border-border-subtle space-y-5 animate-in zoom-in-95 duration-150">
+            {/* Close button */}
+            <button
+              type="button"
+              onClick={() => setSelectedArticleForConnection(null)}
+              className="absolute right-5 top-5 inline-flex h-8 w-8 items-center justify-center rounded-full bg-surface-secondary text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
+            >
+              <Icon icon={X} size={18} />
+            </button>
+
+            <div className="flex items-center gap-2 font-heading text-xs font-bold text-brand-green-moss uppercase">
+              <Icon icon={MessageSquare} size={16} />
+              Intermediação de Parceria • The Bridge
+            </div>
+
+            <div>
+              <h3 className="font-display text-2xl font-bold text-text-primary">
+                Solicitar Conexão
+              </h3>
+              <p className="mt-1 font-body text-xs text-text-secondary">
+                Envie uma proposta de aproximação técnica intermediada com segurança pela plataforma.
+              </p>
+            </div>
+
+            {/* Target Research Card */}
+            <div className="rounded-2xl border border-border-subtle bg-surface-primary/70 p-4 space-y-2 text-xs">
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-heading font-bold text-text-primary text-[11px] uppercase text-brand-green-moss">
+                  Pesquisa Alvo
+                </span>
+                <span className="rounded-full bg-emerald-100 text-emerald-900 font-mono font-bold px-2 py-0.5 text-[10px]">
+                  {selectedArticleForConnection.relevancia_pct}% afinidade
+                </span>
+              </div>
+              <p className="font-heading text-xs font-semibold text-text-primary line-clamp-2">
+                {selectedArticleForConnection.titulo}
+              </p>
+              <p className="font-body text-[11px] text-text-secondary">
+                {selectedArticleForConnection.evento} ({selectedArticleForConnection.ano})
+              </p>
+            </div>
+
+            {/* IP Security Notice */}
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-3 text-[11px] text-emerald-950 font-body leading-relaxed flex items-start gap-2">
+              <Icon icon={Info} size={15} className="text-emerald-800 shrink-0 mt-0.5" />
+              <span>
+                As informações diretas de contato são preservadas pela The Bridge para garantir confidencialidade jurídica, salvaguarda de propriedade intelectual e celebração de acordos mútuos.
+              </span>
+            </div>
+
+            {/* Editable Message Box */}
+            <div className="space-y-1.5">
+              <label className="block font-heading text-xs font-semibold text-text-primary">
+                Mensagem de Apresentação (Editável):
+              </label>
+              <textarea
+                rows={4}
+                value={connectionMessage}
+                onChange={(e) => setConnectionMessage(e.target.value)}
+                placeholder="Descreva o interesse da sua empresa e contexto do desafio..."
+                className="w-full rounded-2xl border border-border-subtle bg-surface-primary p-3.5 text-xs text-text-primary focus:border-brand-green-moss focus:outline-none focus:bg-surface-white transition-all resize-none leading-relaxed"
+              />
+            </div>
+
+            {/* Feedback alert if sent */}
+            {connectionSentSuccess && (
+              <div className="rounded-xl border border-emerald-300 bg-emerald-100 p-3 text-xs font-heading font-bold text-emerald-950 text-center animate-in fade-in">
+                ✓ Solicitação de conexão enviada com sucesso! Acompanhe em &apos;Minhas Conexões&apos;.
+              </div>
+            )}
+
+            {/* Actions: CANCELAR & ENVIAR */}
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setSelectedArticleForConnection(null)}
+                disabled={connectionSentSuccess}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="button"
+                onClick={handleSendConnection}
+                disabled={connectionSentSuccess || !connectionMessage.trim()}
+                className="bg-brand-green-dark !text-white hover:bg-brand-green-moss shadow-xs"
+              >
+                <Icon icon={Send} size={14} />
+                Enviar
               </Button>
             </div>
           </div>

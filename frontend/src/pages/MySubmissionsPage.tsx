@@ -48,7 +48,6 @@ export function MySubmissionsPage() {
   return (
     <DashboardLayout
       title={isResearcher ? "Meus Projetos Científicos" : "Minhas Demandas Tecnológicas"}
-      subtitle={isResearcher ? "Gestão de Tecnologias & Patentes (Pesquisador)" : "Gestão de Desafios Corporativos (Empresa)"}
       actions={
         <div className="flex items-center gap-3">
           <Button
@@ -74,10 +73,10 @@ export function MySubmissionsPage() {
           <Button
             variant="secondary"
             size="sm"
-            onClick={() => navigate("/dashboard/matching")}
+            onClick={() => navigate(isResearcher ? "/dashboard/conexoes" : "/dashboard/matching")}
           >
             <Icon icon={Sparkles} size={15} />
-            Ver Matches
+            {isResearcher ? "Minhas Conexões" : "Ver Matches"}
           </Button>
         </div>
       }

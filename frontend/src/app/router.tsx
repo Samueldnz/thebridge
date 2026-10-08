@@ -14,6 +14,8 @@ import { SubmitOpportunityPage } from "../pages/SubmitOpportunityPage";
 import { MySubmissionsPage } from "../pages/MySubmissionsPage";
 import { MatchingResultsPage } from "../pages/MatchingResultsPage";
 import { ProfilePage } from "../pages/ProfilePage";
+import { ConnectionsPage } from "../pages/ConnectionsPage";
+import { NotificationsPage } from "../pages/NotificationsPage";
 import FoundationDemo from "../pages/FoundationDemo";
 import { HomePage } from "../pages/HomePage";
 import { PreviewLayoutPage } from "../pages/PreviewLayoutPage";
@@ -90,6 +92,14 @@ export const router = createBrowserRouter([
   {
     path: "/dashboard/matching",
     element: <MatchingResultsPage />,
+  },
+  {
+    path: "/dashboard/conexoes",
+    element: <ConnectionsPage />,
+  },
+  {
+    path: "/dashboard/notificacoes",
+    element: <NotificationsPage />,
   },
   {
     path: "/dashboard/perfil",

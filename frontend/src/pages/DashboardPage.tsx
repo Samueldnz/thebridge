@@ -85,14 +85,25 @@ export function DashboardPage() {
             </Button>
           )}
 
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => navigate("/dashboard/matching")}
-          >
-            <Icon icon={Sparkles} size={15} />
-            Ver Meus Matches
-          </Button>
+          {isResearcher ? (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => navigate("/dashboard/conexoes")}
+            >
+              <Icon icon={Sparkles} size={15} />
+              Minhas Conexões
+            </Button>
+          ) : (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => navigate("/dashboard/matching")}
+            >
+              <Icon icon={Sparkles} size={15} />
+              Ver Meus Matches
+            </Button>
+          )}
         </div>
       }
     >

@@ -6,13 +6,16 @@ import {
   Home,
   LogOut,
   Menu,
+  MessageSquare,
   Sparkles,
   Ticket,
+  Users,
   X,
 } from "lucide-react";
 
 import logo from "../../assets/brand/logo/TheBridge_Logo_Horizontal.svg";
 import { authService, calculateProfileTier } from "../../services/auth";
+import { connectionsService, type NotificationItem } from "../../services/connections";
 import { Container } from "../ui/Container";
 import { Icon } from "../ui/Icon";
 
@@ -33,6 +36,9 @@ export function DashboardLayout({
   const location = useLocation();
   const [user, setUser] = useState(authService.getStoredUser());
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     const current = authService.getStoredUser();
@@ -41,6 +47,9 @@ export function DashboardLayout({
     } else {
       setUser(current);
     }
+    const notifs = connectionsService.getNotifications();
+    setNotifications(notifs);
+    setUnreadCount(notifs.filter((n) => !n.read).length);
   }, [navigate]);
 
   // Strict role guard: Researcher cannot access Company pages, Company cannot access Researcher pages
@@ -77,10 +86,10 @@ export function DashboardLayout({
           active: location.pathname === "/dashboard/projetos",
         },
         {
-          label: "Meus Matches",
-          href: "/dashboard/matching",
-          icon: Sparkles,
-          active: location.pathname === "/dashboard/matching",
+          label: "Minhas Conexões",
+          href: "/dashboard/conexoes",
+          icon: Users,
+          active: location.pathname === "/dashboard/conexoes",
         },
       ]
     : [
@@ -101,6 +110,12 @@ export function DashboardLayout({
           href: "/dashboard/matching",
           icon: Sparkles,
           active: location.pathname === "/dashboard/matching",
+        },
+        {
+          label: "Minhas Conexões",
+          href: "/dashboard/conexoes",
+          icon: Users,
+          active: location.pathname === "/dashboard/conexoes",
         },
       ];
 
@@ -161,6 +176,95 @@ export function DashboardLayout({
                 <span>Cortesia • 2 Meses Grátis</span>
               </div>
             )}
+
+            {/* Notifications / Messages Button & Popover (Immediately to the left of Profile Name) */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setNotificationsOpen(!notificationsOpen)}
+                title="Mensagens & Notificações"
+                className="relative inline-flex h-9 w-9 items-center justify-center rounded-full border border-border-subtle bg-surface-white text-text-secondary hover:text-brand-green-dark hover:border-brand-green-moss transition-all cursor-pointer"
+              >
+                <Icon icon={MessageSquare} size={16} />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-emerald-600 px-1 text-[10px] font-bold text-white shadow-2xs">
+                    {unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {/* Popover ("janelinha de notificações") */}
+              {notificationsOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setNotificationsOpen(false)}
+                  />
+                  <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl border border-border-subtle bg-surface-white shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                    <div className="flex items-center justify-between border-b border-border-subtle bg-surface-primary/60 px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <Icon icon={MessageSquare} size={15} className="text-brand-green-moss" />
+                        <span className="font-heading text-xs font-bold text-text-primary">
+                          Notificações &amp; Mensagens
+                        </span>
+                      </div>
+                      {unreadCount > 0 && (
+                        <span className="rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5">
+                          {unreadCount} novas
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="max-h-72 overflow-y-auto divide-y divide-border-subtle/60">
+                      {notifications.length === 0 ? (
+                        <div className="p-6 text-center text-xs text-text-secondary">
+                          Nenhuma notificação no momento.
+                        </div>
+                      ) : (
+                        notifications.slice(0, 4).map((notif) => (
+                          <div
+                            key={notif.id}
+                            onClick={() => {
+                              connectionsService.markNotificationAsRead(notif.id);
+                              setNotificationsOpen(false);
+                              navigate(notif.actionUrl || "/dashboard/notificacoes");
+                            }}
+                            className={`p-3.5 hover:bg-surface-secondary/70 transition-colors cursor-pointer text-left ${
+                              !notif.read ? "bg-emerald-50/50 font-semibold" : ""
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-2 mb-1">
+                              <span className="font-heading text-xs font-bold text-text-primary truncate">
+                                {notif.sender}
+                              </span>
+                              <span className="text-[10px] font-mono text-text-secondary shrink-0">
+                                {notif.date}
+                              </span>
+                            </div>
+                            <p className="font-heading text-xs text-text-primary line-clamp-1">
+                              {notif.title}
+                            </p>
+                            <p className="font-body text-[11px] text-text-secondary line-clamp-1 mt-0.5 font-normal">
+                              {notif.preview}
+                            </p>
+                          </div>
+                        ))
+                      )}
+                    </div>
+
+                    <div className="border-t border-border-subtle bg-surface-primary/40 p-2.5 text-center">
+                      <Link
+                        to="/dashboard/notificacoes"
+                        onClick={() => setNotificationsOpen(false)}
+                        className="inline-block font-heading text-xs font-bold text-brand-green-moss hover:text-brand-green-dark hover:underline transition-colors uppercase tracking-wider py-1 cursor-pointer"
+                      >
+                        VER TODAS AS NOTIFICAÇÕES →
+                      </Link>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
 
             {/* User Identity Chip - Clickable to Profile with Tier Border Avatar */}
             <Link
@@ -254,6 +358,21 @@ export function DashboardLayout({
                   <span className={item.active ? "!text-white font-bold" : ""}>{item.label}</span>
                 </Link>
               ))}
+              <Link
+                to="/dashboard/notificacoes"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center justify-between rounded-xl px-3 py-2 text-xs font-semibold text-text-primary hover:bg-surface-secondary"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Icon icon={MessageSquare} size={15} />
+                  <span>Notificações &amp; Mensagens</span>
+                </div>
+                {unreadCount > 0 && (
+                  <span className="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white">
+                    {unreadCount}
+                  </span>
+                )}
+              </Link>
               <Link
                 to="/"
                 onClick={() => setMobileMenuOpen(false)}
