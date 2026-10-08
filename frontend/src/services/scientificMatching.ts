@@ -232,37 +232,42 @@ export function cleanScientificAbstract(rawText: string): string {
   if (!rawText) return "";
   let text = rawText.trim();
 
-  // 1. Pular cabeçalho do template inicial (Título / Autores / Sessão / Evento / Resumo:)
+  // 1. Pular cabeçalho do template antigo se existir (Título / Autores / Sessão / Evento / Resumo:)
   const firstResumoIdx = text.search(/(?:^|\n)\s*resumo\s*:\s*/i);
   if (firstResumoIdx !== -1) {
     const afterMatch = text.slice(firstResumoIdx).replace(/^(?:\r?\n)?\s*resumo\s*:\s*/i, "");
     text = afterMatch.trim();
   }
 
-  // 2. Procurar se há marcador explícito 'Abstract -', 'Abstract:', 'Abstract\n', 'Resumo -'
-  const abstractMatch = text.match(/(?:^|\n)\s*(?:Abstract|Resumo)\s*[-:—]?\s*/i);
+  // 2. Se houver marcador explícito 'Abstract –', 'Abstract -', 'Abstract:', 'Resumo –', 'Resumo:'
+  const abstractMatch = text.match(/(?:^|\n)\s*(?:Abstract|Resumo)\s*[-:–—]\s*/i);
   if (abstractMatch && typeof abstractMatch.index === "number") {
     const candidate = text.slice(abstractMatch.index + abstractMatch[0].length).trim();
     if (candidate.length > 50) {
-      text = candidate;
+      return candidate.replace(/[\r\n]+/g, " ").replace(/[ \t]{2,}/g, " ").trim();
     }
   }
 
-  // 3. Os PDFs dos anais colocam título, autores e filiações antes do e-mail do autor correspondente
-  const emailRegex = /(?:e-?mail|email):\s*[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\s*/i;
+  // 3. Remover cabeçalho de conferência de anais (ex: 'Proceedings of the 18th Brazilian Polymer Conference...')
+  text = text.replace(/^Proceedings of the[^\n]+\n/i, "").trim();
+
+  // 4. Procurar e-mail de autor correspondente (com ou sem 'e-mail:' / 'email:')
+  // Nos anais SBPMat e CBPol, o bloco de autores e instituições SEMPRE finaliza no e-mail
+  const emailRegex = /(?:e-?mail:\s*)?[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/i;
   const matchEmail = text.match(emailRegex);
   if (matchEmail && typeof matchEmail.index === "number") {
     const candidate = text.slice(matchEmail.index + matchEmail[0].length).trim();
-    if (candidate.length > 50) {
-      text = candidate;
+    const cleaned = candidate.replace(/^[\s,;:-]+/, "").trim();
+    if (cleaned.length > 50) {
+      text = cleaned;
     }
   }
 
-  // 4. Normalizar quebras de linha e espaços duplos
+  // 5. Normalizar quebras de linha e espaços duplos
   text = text.replace(/[\r\n]+/g, " ").replace(/[ \t]{2,}/g, " ").trim();
 
-  // 5. Tratar cortes abruptos no final do texto caso truncado no limite de caracteres do Space
-  if (!/[.!?]$/.test(text)) {
+  // 6. Tratar cortes abruptos no final do texto caso truncado no limite de caracteres do Space
+  if (text.length > 80 && !/[.!?]$/.test(text)) {
     const lastSpace = text.lastIndexOf(" ");
     if (lastSpace > text.length - 25) {
       text = text.slice(0, lastSpace) + "...";

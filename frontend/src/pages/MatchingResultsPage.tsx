@@ -4,6 +4,7 @@ import {
   Award,
   BrainCircuit,
   Building2,
+  CheckCircle2,
   ChevronDown,
   ChevronUp,
   Filter,
@@ -20,6 +21,7 @@ import { DashboardLayout } from "../components/layout/DashboardLayout";
 import { Button } from "../components/ui/Button";
 import { Icon } from "../components/ui/Icon";
 import { scientificMatchingService, cleanScientificAbstract, type ScientificArticle } from "../services/scientificMatching";
+import { savedMatchesService } from "../services/savedMatches";
 import { authService } from "../services/auth";
 import { opportunitiesService, type Opportunity } from "../services/opportunities";
 import { connectionsService } from "../services/connections";
@@ -76,10 +78,40 @@ export function MatchingResultsPage() {
   const [connectionMessage, setConnectionMessage] = useState<string>("");
   const [connectionSentSuccess, setConnectionSentSuccess] = useState<boolean>(false);
 
+  // Cached / Saved Matches State
+  const [isFromCache, setIsFromCache] = useState(false);
+  const [lastCalculatedAt, setLastCalculatedAt] = useState<string | null>(null);
+  const [recalculating, setRecalculating] = useState(false);
+
   // Always fetch at most 10 matches
   const topK = 10;
 
-  const executeMatching = async (queryText: string) => {
+  const loadOpportunityMatches = async (opp: Opportunity, forceRecalculate = false) => {
+    const q = buildQueryFromOpportunity(opp);
+    setSearchQuery(q);
+
+    // Se não for recalculo forçado, busca no cache local salvo primeiro
+    if (!forceRecalculate) {
+      const cached = savedMatchesService.get(opp.id);
+      if (cached && cached.articles && cached.articles.length > 0) {
+        setArticles(cached.articles);
+        setLastCalculatedAt(cached.calculatedAt);
+        setIsFromCache(true);
+        setHasSearched(true);
+        setError(null);
+        return;
+      }
+    }
+
+    // Se não há cache ou se o usuário solicitou recalcular, dispara o motor de IA
+    await executeMatching(q, opp, forceRecalculate);
+  };
+
+  const executeMatching = async (
+    queryText: string,
+    targetOpp?: Opportunity | null,
+    isRecalculate = false
+  ) => {
     const trimmed = (queryText || "").trim();
     if (!trimmed) {
       setError("Nenhum parâmetro de busca encontrado para o desejo corporativo.");
@@ -87,10 +119,35 @@ export function MatchingResultsPage() {
     }
     setError(null);
     setLoading(true);
+    if (isRecalculate) setRecalculating(true);
     setHasSearched(true);
+
     try {
       const res = await scientificMatchingService.search(trimmed, topK);
-      setArticles(res.artigos || []);
+      const returnedArticles = res.artigos || [];
+      setArticles(returnedArticles);
+      const nowIso = new Date().toISOString();
+      setLastCalculatedAt(nowIso);
+      setIsFromCache(false);
+
+      // Salva imediatamente os matches calculados para esta oportunidade
+      const oppToSave = targetOpp || selectedOpportunity;
+      if (oppToSave) {
+        savedMatchesService.save({
+          opportunityId: oppToSave.id,
+          opportunityTitle: oppToSave.title,
+          queryText: trimmed,
+          articles: returnedArticles,
+          totalBase: res.estatisticas?.total_base,
+        });
+      } else {
+        savedMatchesService.save({
+          opportunityTitle: "Busca Direta",
+          queryText: trimmed,
+          articles: returnedArticles,
+          totalBase: res.estatisticas?.total_base,
+        });
+      }
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
@@ -99,6 +156,7 @@ export function MatchingResultsPage() {
       }
     } finally {
       setLoading(false);
+      setRecalculating(false);
     }
   };
 
@@ -115,9 +173,7 @@ export function MatchingResultsPage() {
           : opps[0];
         setSelectedSubmissionId(target.id);
         setSelectedOpportunity(target);
-        const q = buildQueryFromOpportunity(target);
-        setSearchQuery(q);
-        executeMatching(q);
+        loadOpportunityMatches(target, false);
       }
     });
   }, [isResearcher, user]);
@@ -127,10 +183,8 @@ export function MatchingResultsPage() {
     const opp = opportunities.find((o) => o.id === id);
     if (opp) {
       setSelectedOpportunity(opp);
-      const q = buildQueryFromOpportunity(opp);
-      setSearchQuery(q);
       setSearchParams({ opportunityId: opp.id });
-      executeMatching(q);
+      loadOpportunityMatches(opp, false);
     }
   };
 
@@ -212,13 +266,19 @@ export function MatchingResultsPage() {
       actions={
         <div className="flex items-center gap-3">
           <Button
-            onClick={() => executeMatching(searchQuery)}
-            disabled={loading}
+            onClick={() => {
+              if (selectedOpportunity) {
+                loadOpportunityMatches(selectedOpportunity, true);
+              } else {
+                executeMatching(searchQuery, null, true);
+              }
+            }}
+            disabled={loading || recalculating}
             size="sm"
-            className="bg-brand-green-dark !text-white hover:bg-brand-green-moss"
+            className="bg-brand-green-dark !text-white hover:bg-brand-green-moss cursor-pointer font-bold shadow-xs"
           >
-            <Icon icon={RefreshCw} size={15} className={loading ? "animate-spin" : ""} />
-            {loading ? "Calculando Matching..." : "Recalcular Matching"}
+            <Icon icon={RefreshCw} size={15} className={loading || recalculating ? "animate-spin" : ""} />
+            {loading || recalculating ? "Recalculando..." : "Recalcular Matches 🔄"}
           </Button>
         </div>
       }
@@ -298,6 +358,54 @@ export function MatchingResultsPage() {
             )}
           </div>
         </div>
+
+        {/* Banner de Status de Matches Salvos e Recálculo */}
+        {articles.length > 0 && !loading && (
+          <div className="rounded-2xl border border-border-subtle bg-surface-white p-3.5 shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs animate-in fade-in duration-300">
+            <div className="flex items-center gap-2.5">
+              <div
+                className={`flex h-8 w-8 items-center justify-center rounded-xl shrink-0 ${
+                  isFromCache ? "bg-emerald-100 text-emerald-800" : "bg-blue-100 text-blue-800"
+                }`}
+              >
+                <Icon icon={isFromCache ? CheckCircle2 : Sparkles} size={16} />
+              </div>
+              <div>
+                <span className="font-heading font-bold text-text-primary block sm:inline">
+                  {isFromCache ? "Matches salvos da última análise" : "Nova análise calculada e salva"}
+                </span>
+                {lastCalculatedAt && (
+                  <span className="font-body text-text-secondary sm:ml-1.5 text-[11px]">
+                    (calculado em {new Date(lastCalculatedAt).toLocaleDateString("pt-BR")} às{" "}
+                    {new Date(lastCalculatedAt).toLocaleTimeString("pt-BR", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                    )
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              onClick={() => {
+                if (selectedOpportunity) {
+                  loadOpportunityMatches(selectedOpportunity, true);
+                } else {
+                  executeMatching(searchQuery, null, true);
+                }
+              }}
+              disabled={loading || recalculating}
+              className="text-xs font-semibold text-brand-green-moss hover:bg-emerald-50 border-emerald-600/30 cursor-pointer shadow-xs"
+            >
+              <Icon icon={RefreshCw} size={13} className={recalculating ? "animate-spin" : ""} />
+              {recalculating ? "Recalculando..." : "Recalcular Matches 🔄"}
+            </Button>
+          </div>
+        )}
 
         {/* UNIFIED Matches & Filters Row */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-2xl border border-border-subtle bg-surface-white shadow-xs">
