@@ -2,17 +2,13 @@ import { type ReactNode, useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
-  Building2,
-  FilePlus2,
   FolderGit2,
-  GraduationCap,
   Home,
   LogOut,
   Menu,
   PlusCircle,
   Sparkles,
   Ticket,
-  User as UserIcon,
   X,
 } from "lucide-react";
 
@@ -82,22 +78,10 @@ export function DashboardLayout({
           active: location.pathname === "/dashboard/projetos",
         },
         {
-          label: "Submeter Projeto",
-          href: "/dashboard/projetos/novo",
-          icon: FilePlus2,
-          active: location.pathname === "/dashboard/projetos/novo",
-        },
-        {
-          label: "Matches dos Meus Projetos",
+          label: "Meus Matches",
           href: "/dashboard/matching",
           icon: Sparkles,
           active: location.pathname === "/dashboard/matching",
-        },
-        {
-          label: "Meu Perfil",
-          href: "/dashboard/perfil",
-          icon: UserIcon,
-          active: location.pathname === "/dashboard/perfil",
         },
       ]
     : [
@@ -120,16 +104,10 @@ export function DashboardLayout({
           active: location.pathname === "/dashboard/demandas/nova",
         },
         {
-          label: "Matches das Minhas Demandas",
+          label: "Meus Matches",
           href: "/dashboard/matching",
           icon: Sparkles,
           active: location.pathname === "/dashboard/matching",
-        },
-        {
-          label: "Meu Perfil",
-          href: "/dashboard/perfil",
-          icon: UserIcon,
-          active: location.pathname === "/dashboard/perfil",
         },
       ];
 
@@ -163,35 +141,23 @@ export function DashboardLayout({
                 <Link
                   key={item.href}
                   to={item.href}
+                  style={item.active ? { color: "#ffffff", backgroundColor: "#002025" } : undefined}
                   className={[
                     "relative inline-flex items-center gap-2 rounded-xl px-3.5 py-2 font-heading text-xs font-semibold transition-all",
                     item.active
-                      ? "bg-brand-green-dark text-brand-off-white shadow-xs"
+                      ? "bg-brand-green-dark !text-white shadow-xs font-bold"
                       : "text-text-secondary hover:bg-surface-secondary/70 hover:text-text-primary",
                   ].join(" ")}
                 >
-                  <Icon icon={IconComp} size={15} />
-                  <span>{item.label}</span>
+                  <Icon icon={IconComp} size={15} className={item.active ? "!text-white" : ""} />
+                  <span className={item.active ? "!text-white font-bold" : ""}>{item.label}</span>
                 </Link>
               );
             })}
           </nav>
 
-          {/* User Profile Info - IMMUTABLE BADGE & CLICKABLE PROFILE CHIP */}
+          {/* User Profile Info - CLICKABLE PROFILE CHIP WITH TIER BORDER */}
           <div className="flex items-center gap-3">
-            {/* Fixed Profile Badge (No toggle, cannot switch) */}
-            <div
-              className={[
-                "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-heading text-xs font-semibold select-none shadow-2xs",
-                isResearcher
-                  ? "border-emerald-300 bg-emerald-50 text-emerald-900"
-                  : "border-blue-300 bg-blue-50 text-blue-900",
-              ].join(" ")}
-            >
-              <Icon icon={isResearcher ? GraduationCap : Building2} size={14} />
-              <span>{isResearcher ? "Perfil: Pesquisador" : "Perfil: Empresa"}</span>
-            </div>
-
             {/* Active Coupon Badge */}
             {(user?.couponCode || user?.subscriptionStatus === "FREE_TRIAL") && (
               <div
@@ -203,34 +169,27 @@ export function DashboardLayout({
               </div>
             )}
 
-            {/* User Identity Chip - Clickable to Edit Profile & Level */}
+            {/* User Identity Chip - Clickable to Profile with Tier Border Avatar */}
             <Link
               to="/dashboard/perfil"
-              title="Clique para editar seus dados e ver o nível do perfil"
-              className="hidden md:flex items-center gap-2 rounded-full border border-border-subtle bg-surface-white pl-2 pr-3 py-1 text-xs hover:border-brand-green-moss hover:shadow-xs transition-all cursor-pointer group"
+              title="Clique para acessar seu perfil"
+              className="hidden md:flex items-center gap-2.5 rounded-full border border-border-subtle bg-surface-white pl-1.5 pr-3.5 py-1 text-xs hover:border-brand-green-moss hover:shadow-xs transition-all cursor-pointer group"
             >
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-green-dark text-[11px] font-bold text-brand-cream group-hover:scale-105 transition-transform">
-                {user?.name ? user.name.slice(0, 2).toUpperCase() : "TB"}
-              </div>
-              <div className="flex flex-col text-left">
-                <span className="font-heading font-semibold text-text-primary max-w-[120px] truncate leading-tight group-hover:text-brand-green-moss transition-colors">
-                  {user?.name || "Usuário"}
-                </span>
-                <span className="text-[10px] text-text-secondary leading-none">
-                  Editar perfil
-                </span>
-              </div>
-              <span
+              {/* Circular Avatar with Qualification Tier Border */}
+              <div
                 className={[
-                  "ml-1 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider shadow-2xs border",
+                  "flex h-8 w-8 items-center justify-center rounded-full bg-brand-green-dark text-[11px] font-bold text-white transition-transform group-hover:scale-105",
                   userTier === "OURO"
-                    ? "bg-amber-100 text-amber-900 border-amber-300"
+                    ? "ring-2 ring-amber-400 border-2 border-amber-500 shadow-xs"
                     : userTier === "PRATA"
-                    ? "bg-slate-100 text-slate-800 border-slate-300"
-                    : "bg-amber-50 text-amber-800 border-amber-200",
+                    ? "ring-2 ring-slate-300 border-2 border-slate-400 shadow-xs"
+                    : "ring-2 ring-[#cd7f32] border-2 border-[#b87333] shadow-xs", // Bronze
                 ].join(" ")}
               >
-                {userTier === "OURO" ? "🥇 Ouro" : userTier === "PRATA" ? "🥈 Prata" : "🥉 Bronze"}
+                {user?.name ? user.name.slice(0, 2).toUpperCase() : "TB"}
+              </div>
+              <span className="font-heading font-semibold text-text-primary max-w-[140px] truncate leading-tight group-hover:text-brand-green-moss transition-colors">
+                {user?.name || "Usuário"}
               </span>
             </Link>
 
@@ -264,40 +223,24 @@ export function DashboardLayout({
                 onClick={() => setMobileMenuOpen(false)}
                 className="flex items-center gap-2.5 hover:opacity-80 transition-opacity"
               >
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-green-dark text-xs font-bold text-brand-cream">
+                <div
+                  className={[
+                    "flex h-8 w-8 items-center justify-center rounded-full bg-brand-green-dark text-xs font-bold text-white",
+                    userTier === "OURO"
+                      ? "ring-2 ring-amber-400 border-2 border-amber-500"
+                      : userTier === "PRATA"
+                      ? "ring-2 ring-slate-300 border-2 border-slate-400"
+                      : "ring-2 ring-[#cd7f32] border-2 border-[#b87333]",
+                  ].join(" ")}
+                >
                   {user?.name ? user.name.slice(0, 2).toUpperCase() : "TB"}
                 </div>
                 <div>
                   <span className="font-heading text-xs font-bold text-text-primary block">
-                    {user?.name}
-                  </span>
-                  <span className="text-[10px] text-brand-green-moss font-medium">
-                    Editar dados &amp; nível →
+                    {user?.name || "Usuário"}
                   </span>
                 </div>
               </Link>
-              <div className="flex items-center gap-1.5">
-                <span
-                  className={[
-                    "text-[10px] font-bold uppercase rounded-full px-2 py-0.5 border shadow-2xs",
-                    userTier === "OURO"
-                      ? "bg-amber-100 text-amber-900 border-amber-300"
-                      : userTier === "PRATA"
-                      ? "bg-slate-100 text-slate-800 border-slate-300"
-                      : "bg-amber-50 text-amber-800 border-amber-200",
-                  ].join(" ")}
-                >
-                  {userTier === "OURO" ? "🥇 Ouro" : userTier === "PRATA" ? "🥈 Prata" : "🥉 Bronze"}
-                </span>
-                <span
-                  className={[
-                    "text-[10px] font-bold uppercase rounded-full px-2.5 py-0.5",
-                    isResearcher ? "bg-emerald-100 text-emerald-800" : "bg-blue-100 text-blue-800",
-                  ].join(" ")}
-                >
-                  {isResearcher ? "Pesquisador" : "Empresa"}
-                </span>
-              </div>
             </div>
 
             <div className="flex flex-col gap-1">
@@ -306,15 +249,16 @@ export function DashboardLayout({
                   key={item.href}
                   to={item.href}
                   onClick={() => setMobileMenuOpen(false)}
+                  style={item.active ? { color: "#ffffff", backgroundColor: "#002025" } : undefined}
                   className={[
                     "flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold transition-all",
                     item.active
-                      ? "bg-brand-green-dark text-brand-off-white"
+                      ? "bg-brand-green-dark !text-white font-bold"
                       : "text-text-primary hover:bg-surface-secondary",
                   ].join(" ")}
                 >
-                  <Icon icon={item.icon} size={15} />
-                  <span>{item.label}</span>
+                  <Icon icon={item.icon} size={15} className={item.active ? "!text-white" : ""} />
+                  <span className={item.active ? "!text-white font-bold" : ""}>{item.label}</span>
                 </Link>
               ))}
               <Link
