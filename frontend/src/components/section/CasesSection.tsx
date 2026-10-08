@@ -12,28 +12,28 @@ import { Section } from "../ui/Section";
 
 const matchingFeatures = [
   {
-    category: "Algoritmo de Compatibilidade",
-    title: "Matching Ponderado (Competências, TRL & CRL)",
+    category: "Inteligência Artificial",
+    title: "Busca Semântica Vetorial de Alta Precisão",
     description:
-      "Cálculo automatizado que avalia a aderência de competências técnicas (60%), prontidão tecnológica TRL (20%) e maturidade comercial CRL (20%), eliminando semanas de busca manual.",
+      "Modelos avançados de embeddings de linguagem analisam os desafios tecnológicos submetidos por empresas e identificam pesquisas científicas de alta compatibilidade com precisão conceitual.",
     image: energyImage,
     alt: "Infraestrutura tecnológica e científica representando matching inteligente",
     link: "/matching",
   },
   {
-    category: "Propriedade Intelectual",
-    title: "Curadoria & Homologação de Patentes",
+    category: "Engenharia Algorítmica",
+    title: "Calibração de Relevância & Top 10 Matches",
     description:
-      "Mapeamento rigoroso de patentes concedidas ou em depósito, requisitos regulatórios e áreas de pesquisa aplicada para empresas e corporações inovadoras.",
+      "Normalização matemática por similaridade de cosseno que entrega os 10 projetos científicos mais aderentes com índice auditável de 0 a 100% de relevância tecnológica.",
     image: agricultureImage,
     alt: "Pesquisa aplicada em biotecnologia e inovação sustentável",
     link: "/matching",
   },
   {
     category: "Transferência Tecnológica",
-    title: "Conexão Direta & Homologação Ágil",
+    title: "Conexão Direta & Homologação de P&D",
     description:
-      "Estruturação de parcerias estratégicas, licenciamento ágil de tecnologias e colaboração científica contínua entre grupos de pesquisa e o setor produtivo.",
+      "Acesso desintermediado aos autores, instituições de ensino e canais diretos de contato para formalização ágil de convênios de cooperação, licenciamento e testes em laboratório.",
     image: healthImage,
     alt: "Pesquisador trabalhando em laboratório de vanguarda",
     link: "/matching",

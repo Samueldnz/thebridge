@@ -41,7 +41,9 @@ export function ContentDetailPage() {
     );
   }
 
-  const relatedContents = contentsData.filter((item) => item.id !== content.id);
+  const relatedContents = contentsData
+    .filter((item) => item.id !== content.id)
+    .slice(0, 4);
 
   return (
     <div className="min-h-screen bg-surface-primary flex flex-col justify-between">

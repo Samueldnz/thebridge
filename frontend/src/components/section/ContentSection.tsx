@@ -66,7 +66,7 @@ export function ContentSection() {
           {/* Content cards */}
           <div className="lg:col-span-8">
             <div className="grid gap-6 md:grid-cols-3">
-              {contentsData.map((content) => (
+              {contentsData.slice(0, 3).map((content) => (
                 <Link
                   key={content.id}
                   to={`/conteudos/${content.slug}`}

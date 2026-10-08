@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Clock } from "lucide-react";
+import { ArrowRight, Clock, User, Calendar } from "lucide-react";
 
 import { PublicHeader } from "../components/layout/PublicHeader";
 import { PublicFooter } from "../components/layout/PublicFooter";
@@ -18,29 +18,24 @@ export function ContentsListPage() {
       ? contentsData
       : contentsData.filter((item) => item.type === selectedType);
 
-  const featured = contentsData[0];
-
   return (
     <div className="min-h-screen bg-surface-primary flex flex-col justify-between">
       <PublicHeader />
 
       <main className="pt-[84px] lg:pt-[96px] pb-24 flex-1">
-        {/* Page Header */}
-        <section className="border-b border-border-subtle bg-surface-secondary/40 py-16 md:py-20">
+        {/* Page Header (Sem a caixa de 'CONHECIMENTO APLICADO') */}
+        <section className="border-b border-border-subtle bg-surface-secondary/40 py-12 md:py-16">
           <Container size="wide">
             <div className="max-w-3xl">
-              <p className="font-heading text-xs font-semibold uppercase tracking-[0.08em] text-brand-green-moss">
-                Conhecimento Aplicado
-              </p>
-              <h1 className="mt-4 font-display text-4xl font-bold tracking-tight text-text-primary md:text-5xl lg:text-6xl">
+              <h1 className="font-display text-4xl font-bold tracking-tight text-text-primary md:text-5xl lg:text-6xl">
                 Conteúdos &amp; Insights
               </h1>
-              <p className="mt-6 font-body text-base md:text-lg leading-relaxed text-text-secondary">
+              <p className="mt-4 font-body text-base md:text-lg leading-relaxed text-text-secondary">
                 Artigos, eventos, análises e tendências sobre inovação aberta, transferência de tecnologia, prontidão científica (TRL/CRL) e parcerias estratégicas.
               </p>
 
               {/* Filter Tabs */}
-              <div className="mt-8 flex flex-wrap gap-2">
+              <div className="mt-8 flex flex-wrap items-center gap-2">
                 {types.map((type) => (
                   <button
                     key={type}
@@ -61,105 +56,114 @@ export function ContentsListPage() {
           </Container>
         </section>
 
-        {/* Featured Content (if on TODOS) */}
-        {selectedType === "TODOS" && featured && (
-          <section className="py-12 border-b border-border-subtle">
-            <Container size="wide">
-              <Link
-                to={`/conteudos/${featured.slug}`}
-                className="group grid gap-8 lg:grid-cols-12 overflow-hidden rounded-3xl border border-border-subtle bg-surface-primary p-6 md:p-8 hover:shadow-lg transition-all"
-              >
-                <div className="lg:col-span-7 aspect-[16/10] overflow-hidden rounded-2xl bg-brand-cream">
-                  <img
-                    src={featured.image}
-                    alt={featured.alt}
-                    className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                </div>
-                <div className="lg:col-span-5 flex flex-col justify-between py-2">
-                  <div>
-                    <div className="flex items-center gap-3">
-                      <span className="rounded-full bg-brand-green-moss/10 px-3 py-1 font-body text-xs font-semibold uppercase tracking-wider text-brand-green-dark">
-                        Destaque • {featured.type}
-                      </span>
-                      <span className="flex items-center gap-1 font-body text-xs text-text-secondary">
-                        <Icon icon={Clock} size={13} />
-                        {featured.readTime}
-                      </span>
+        {/* Contents List (Formato de Lista) */}
+        <section className="py-12 md:py-16">
+          <Container size="wide">
+            <div className="mb-6 flex items-center justify-between text-xs text-text-secondary font-mono">
+              <span>
+                Exibindo {filteredContents.length} {filteredContents.length === 1 ? "publicação" : "publicações"}
+                {selectedType !== "TODOS" && ` em "${selectedType}"`}
+              </span>
+            </div>
+
+            <div className="space-y-6">
+              {filteredContents.map((content) => (
+                <article
+                  key={content.id}
+                  className="group rounded-3xl border border-border-subtle bg-surface-white p-5 md:p-7 shadow-xs hover:shadow-lg hover:border-brand-green-moss/40 transition-all duration-300"
+                >
+                  <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-start">
+                    {/* Thumbnail Image */}
+                    <div className="w-full md:w-72 lg:w-80 aspect-[16/10] shrink-0 overflow-hidden rounded-2xl bg-brand-cream border border-border-subtle">
+                      <img
+                        src={content.image}
+                        alt={content.alt}
+                        className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        loading="lazy"
+                      />
                     </div>
 
-                    <h2 className="mt-4 font-display text-2xl md:text-3xl font-bold leading-snug text-text-primary group-hover:text-brand-green-moss transition-colors">
-                      {featured.title}
-                    </h2>
+                    {/* Information Body */}
+                    <div className="flex-1 flex flex-col justify-between self-stretch min-w-0">
+                      <div>
+                        {/* Meta Tags */}
+                        <div className="flex flex-wrap items-center gap-2.5 pb-2">
+                          <span className="rounded-full bg-brand-green-moss/10 px-3 py-0.5 font-body text-[11px] font-semibold uppercase tracking-wider text-brand-green-dark border border-brand-green-moss/20">
+                            {content.type}
+                          </span>
+                          <span className="text-text-secondary text-xs flex items-center gap-1 font-body">
+                            <Icon icon={Clock} size={13} />
+                            {content.readTime}
+                          </span>
+                          <span className="text-text-secondary/40 text-xs">•</span>
+                          <span className="text-text-secondary text-xs flex items-center gap-1 font-body">
+                            <Icon icon={Calendar} size={13} />
+                            {content.date}
+                          </span>
+                        </div>
 
-                    <p className="mt-4 font-body text-sm leading-relaxed text-text-secondary line-clamp-3">
-                      {featured.summary}
-                    </p>
-                  </div>
+                        {/* Title */}
+                        <Link to={`/conteudos/${content.slug}`}>
+                          <h2 className="font-heading text-xl md:text-2xl font-bold text-text-primary group-hover:text-brand-green-moss transition-colors leading-snug mt-1">
+                            {content.title}
+                          </h2>
+                        </Link>
 
-                  <div className="mt-8 flex items-center justify-between border-t border-border-subtle pt-4">
-                    <span className="font-body text-xs text-text-secondary">
-                      {featured.date}
-                    </span>
-                    <span className="inline-flex items-center gap-1 font-heading text-sm font-semibold text-brand-green-moss group-hover:translate-x-1 transition-transform">
-                      Ler na íntegra
-                      <Icon icon={ArrowRight} size={15} />
-                    </span>
-                  </div>
-                </div>
-              </Link>
-            </Container>
-          </section>
-        )}
+                        {/* Summary */}
+                        <p className="mt-3 font-body text-sm text-text-secondary leading-relaxed line-clamp-2 md:line-clamp-3">
+                          {content.summary}
+                        </p>
 
-        {/* Contents Grid */}
-        <section className="py-16">
-          <Container size="wide">
-            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-              {filteredContents.map((content) => (
-                <Link
-                  key={content.id}
-                  to={`/conteudos/${content.slug}`}
-                  className="group flex flex-col overflow-hidden rounded-2xl border border-border-subtle bg-surface-primary hover:shadow-md transition-all"
-                >
-                  <div className="aspect-[4/3] overflow-hidden bg-brand-cream">
-                    <img
-                      src={content.image}
-                      alt={content.alt}
-                      className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  </div>
-
-                  <div className="flex flex-1 flex-col justify-between p-6">
-                    <div>
-                      <div className="flex items-center justify-between">
-                        <span className="rounded-full bg-brand-green-moss/10 px-3 py-1 font-body text-[11px] font-semibold uppercase tracking-wider text-brand-green-dark">
-                          {content.type}
-                        </span>
-                        <span className="font-body text-xs text-text-muted">
-                          {content.readTime}
-                        </span>
+                        {/* Tag Pills */}
+                        {content.tags && content.tags.length > 0 && (
+                          <div className="mt-4 flex flex-wrap gap-1.5">
+                            {content.tags.map((tag) => (
+                              <span
+                                key={tag}
+                                className="rounded-md bg-surface-primary px-2 py-0.5 text-[11px] font-mono font-medium text-text-secondary border border-border-subtle"
+                              >
+                                #{tag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
 
-                      <h3 className="mt-4 font-heading text-lg font-semibold leading-snug text-text-primary group-hover:text-brand-green-moss transition-colors">
-                        {content.title}
-                      </h3>
+                      {/* Footer Actions */}
+                      <div className="mt-6 pt-4 border-t border-border-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div className="flex items-center gap-2 text-xs text-text-secondary">
+                          <Icon icon={User} size={14} className="text-brand-green-moss shrink-0" />
+                          <span>
+                            Por <strong className="text-text-primary font-medium">{content.author}</strong>
+                            {content.authorRole && (
+                              <span className="text-text-secondary/70"> ({content.authorRole})</span>
+                            )}
+                          </span>
+                        </div>
 
-                      <p className="mt-3 font-body text-xs leading-relaxed text-text-secondary line-clamp-2">
-                        {content.summary}
-                      </p>
-                    </div>
-
-                    <div className="mt-6 flex items-center justify-between border-t border-border-subtle pt-4 font-body text-xs text-text-secondary">
-                      <span>{content.date}</span>
-                      <span className="inline-flex items-center gap-1 font-heading font-semibold text-brand-green-moss group-hover:translate-x-1 transition-transform">
-                        Acessar
-                        <Icon icon={ArrowRight} size={14} />
-                      </span>
+                        <Link
+                          to={`/conteudos/${content.slug}`}
+                          className="inline-flex items-center gap-1.5 font-heading text-xs md:text-sm font-semibold text-brand-green-moss group-hover:translate-x-1 transition-transform self-start sm:self-auto"
+                        >
+                          Ler publicação completa
+                          <Icon icon={ArrowRight} size={15} />
+                        </Link>
+                      </div>
                     </div>
                   </div>
-                </Link>
+                </article>
               ))}
+
+              {filteredContents.length === 0 && (
+                <div className="rounded-3xl border border-dashed border-border-subtle bg-surface-white p-12 text-center">
+                  <p className="font-heading text-lg font-semibold text-text-primary">
+                    Nenhum conteúdo encontrado nesta categoria.
+                  </p>
+                  <p className="mt-2 font-body text-sm text-text-secondary">
+                    Tente selecionar outra categoria de filtro acima.
+                  </p>
+                </div>
+              )}
             </div>
           </Container>
         </section>

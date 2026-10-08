@@ -2,12 +2,14 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   ArrowRight,
+  BrainCircuit,
   Briefcase,
   CheckCircle2,
   GraduationCap,
   Network,
   Rocket,
   ShieldCheck,
+  Sparkles,
   Target,
   TrendingUp,
 } from "lucide-react";
@@ -66,16 +68,16 @@ export function SolutionsPage() {
                 Voltar para o início
               </Link>
 
-              <p className="font-heading text-xs font-semibold uppercase tracking-[0.08em] text-brand-green-moss">
-                Soluções Integradas
-              </p>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-green-moss/20 px-3 py-1 font-mono text-xs font-semibold uppercase tracking-wider text-brand-cream border border-brand-green-moss/30 mb-4 block w-fit">
+                Ecossistema Integrado de Inovação
+              </span>
 
-              <h1 className="mt-4 font-display text-4xl font-bold tracking-tight text-brand-off-white md:text-6xl leading-[1.1]">
+              <h1 className="font-display text-4xl font-bold tracking-tight text-brand-off-white md:text-6xl leading-[1.1]">
                 Nossas Soluções
               </h1>
 
               <p className="mt-6 font-body text-base md:text-lg leading-relaxed text-brand-off-white/80">
-                Uma suíte de ferramentas tecnológicas desenhadas para acelerar cada etapa da transferência de tecnologia entre pesquisadores de elite e corporações inovadoras.
+                Uma infraestrutura completa de transferência de tecnologia orientada por inteligência artificial, unindo a produção científica de ponta às demandas reais de inovação da indústria.
               </p>
 
               <div className="mt-8 flex flex-col sm:flex-row gap-4">
@@ -84,7 +86,7 @@ export function SolutionsPage() {
                   size="lg"
                   onClick={() => navigate("/cadastro")}
                 >
-                  Começar agora
+                  Criar Minha Conta
                   <Icon icon={ArrowRight} size={16} />
                 </Button>
                 <Button
@@ -93,7 +95,7 @@ export function SolutionsPage() {
                   className="border-brand-off-white/40 text-brand-off-white hover:bg-brand-off-white hover:text-brand-green-dark"
                   onClick={() => navigate("/matching")}
                 >
-                  Ver motor de matching
+                  Conhecer o Motor de Matching
                 </Button>
               </div>
             </div>
@@ -105,13 +107,13 @@ export function SolutionsPage() {
           <Container size="wide">
             <div className="text-center max-w-2xl mx-auto mb-16">
               <p className="font-heading text-xs font-semibold uppercase tracking-[0.08em] text-brand-green-moss">
-                Jornada Completa de Inovação
+                Jornada Completa de Inovação Aberta
               </p>
               <h2 className="mt-3 font-display text-3xl md:text-4xl font-bold text-text-primary">
                 Três pilares para o impacto real
               </h2>
               <p className="mt-4 font-body text-sm md:text-base text-text-secondary">
-                Do primeiro contato à formalização do contrato de cooperação técnico-científica.
+                Da submissão do desafio tecnológico até a formalização do convênio de P&amp;D.
               </p>
             </div>
 
@@ -126,16 +128,16 @@ export function SolutionsPage() {
                     1. Conectar
                   </h3>
                   <p className="mt-4 font-body text-sm text-text-secondary leading-relaxed">
-                    Aproximação baseada em dados: cientistas cadastram projetos, publicações e patentes, enquanto empresas publicam suas demandas e desafios tecnológicos de forma anônima ou aberta.
+                    Aproximação baseada em inteligência semântica: cientistas submetem seus projetos, publicações e patentes, enquanto empresas cadastram demandas tecnológicas para ativar o matching automatizado de alta precisão.
                   </p>
                   <ul className="mt-6 space-y-2.5 font-body text-xs text-text-secondary">
                     <li className="flex items-center gap-2">
                       <Icon icon={CheckCircle2} size={14} className="text-brand-green-moss" />
-                      <span>Motor de recomendação automatizado</span>
+                      <span>Motor de busca semântica por vetores</span>
                     </li>
                     <li className="flex items-center gap-2">
                       <Icon icon={CheckCircle2} size={14} className="text-brand-green-moss" />
-                      <span>Filtros avançados por setor industrial e área CAPES/CNPq</span>
+                      <span>Ranking dos Top 10 projetos científicos mais aderentes</span>
                     </li>
                   </ul>
                 </div>
@@ -151,16 +153,16 @@ export function SolutionsPage() {
                     2. Acelerar
                   </h3>
                   <p className="mt-4 font-body text-sm text-text-secondary leading-relaxed">
-                    Diagnóstico objetivo de maturidade científica e comercial. Avaliação nas escalas TRL e CRL para alinhar expectativas de investimento, prototipagem e testes de laboratório.
+                    Diagnóstico objetivo de maturidade científica e prontidão técnica (TRL). Alinhamento rigoroso entre as expectativas de investimento da empresa e os estágios reais de validação laboratorial da pesquisa.
                   </p>
                   <ul className="mt-6 space-y-2.5 font-body text-xs text-text-secondary">
                     <li className="flex items-center gap-2">
                       <Icon icon={CheckCircle2} size={14} className="text-brand-green-moss" />
-                      <span>Mapeamento de riscos tecnológicos</span>
+                      <span>Calibração matemática de relevância com explicabilidade</span>
                     </li>
                     <li className="flex items-center gap-2">
                       <Icon icon={CheckCircle2} size={14} className="text-brand-green-moss" />
-                      <span>Roteiro de desenvolvimento conjunto de P&amp;D</span>
+                      <span>Acesso imediato aos dados e contatos diretos dos autores</span>
                     </li>
                   </ul>
                 </div>
@@ -176,16 +178,16 @@ export function SolutionsPage() {
                     3. Escalar
                   </h3>
                   <p className="mt-4 font-body text-sm text-text-secondary leading-relaxed">
-                    Facilitamos a viabilização de convênios de cooperação, licenciamento de patentes, captação de recursos de subvenção econômica e conexão com fundos de venture capital.
+                    Viabilização ágil de contratos de cooperação técnico-científica, co-desenvolvimento, licenciamento de propriedade intelectual e enquadramento em incentivos fiscais da Lei do Bem.
                   </p>
                   <ul className="mt-6 space-y-2.5 font-body text-xs text-text-secondary">
                     <li className="flex items-center gap-2">
                       <Icon icon={CheckCircle2} size={14} className="text-brand-green-moss" />
-                      <span>Segurança jurídica e termos de confidencialidade</span>
+                      <span>Preservação de autoria e segurança jurídica</span>
                     </li>
                     <li className="flex items-center gap-2">
                       <Icon icon={CheckCircle2} size={14} className="text-brand-green-moss" />
-                      <span>Integração com ecossistemas de fomento</span>
+                      <span>Conexão direta com laboratórios de ponta em todo o país</span>
                     </li>
                   </ul>
                 </div>
@@ -199,38 +201,40 @@ export function SolutionsPage() {
           <Container size="wide">
             <div className="grid gap-12 lg:grid-cols-2">
               {/* For Academia */}
-              <div className="rounded-3xl border border-border-subtle bg-surface-primary p-8 md:p-12 shadow-sm">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-green-dark text-brand-off-white">
-                    <Icon icon={GraduationCap} size={24} />
+              <div className="rounded-3xl border border-border-subtle bg-surface-primary p-8 md:p-12 shadow-sm flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-green-dark text-brand-off-white">
+                      <Icon icon={GraduationCap} size={24} />
+                    </div>
+                    <div>
+                      <h3 className="font-heading text-2xl font-bold text-text-primary">
+                        Para a Comunidade Científica
+                      </h3>
+                      <p className="font-body text-xs text-text-secondary">
+                        Pesquisadores, bolsistas, laboratórios e institutos de ciência e tecnologia
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-heading text-2xl font-bold text-text-primary">
-                      Para a Comunidade Científica
-                    </h3>
-                    <p className="font-body text-xs text-text-secondary">
-                      Pesquisadores, bolsistas, NITs e laboratórios
-                    </p>
-                  </div>
-                </div>
 
-                <div className="space-y-4 font-body text-sm text-text-secondary">
-                  <div className="flex items-start gap-3">
-                    <Icon icon={Rocket} size={18} className="text-brand-green-moss shrink-0 mt-0.5" />
-                    <div>
-                      <strong className="text-text-primary">Monetização e Captação de Recursos:</strong> Encontre empresas dispostas a financiar bolsas, equipamentos e reagentes para projetos aplicados.
+                  <div className="space-y-4 font-body text-sm text-text-secondary">
+                    <div className="flex items-start gap-3">
+                      <Icon icon={Rocket} size={18} className="text-brand-green-moss shrink-0 mt-0.5" />
+                      <div>
+                        <strong className="text-text-primary">Captação de Recursos &amp; Financiamento:</strong> Encontre empresas dispostas a financiar bolsas, reagentes e infraestrutura de bancada para pesquisas com aplicação prática.
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <Icon icon={Briefcase} size={18} className="text-brand-green-moss shrink-0 mt-0.5" />
-                    <div>
-                      <strong className="text-text-primary">Transferência de Tecnologia Descomplicada:</strong> Apoio na tradução de especificações acadêmicas para linguagem de negócios.
+                    <div className="flex items-start gap-3">
+                      <Icon icon={BrainCircuit} size={18} className="text-brand-green-moss shrink-0 mt-0.5" />
+                      <div>
+                        <strong className="text-text-primary">Submissão Estruturada de Projetos:</strong> Cadastre suas pesquisas com competências técnicas e maturidade TRL para integrar o radar tecnológico corporativo.
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <Icon icon={ShieldCheck} size={18} className="text-brand-green-moss shrink-0 mt-0.5" />
-                    <div>
-                      <strong className="text-text-primary">Garantia de Crédito e Direitos Morais:</strong> Registro auditável de interações para proteger a autoria de seus grupos de pesquisa.
+                    <div className="flex items-start gap-3">
+                      <Icon icon={ShieldCheck} size={18} className="text-brand-green-moss shrink-0 mt-0.5" />
+                      <div>
+                        <strong className="text-text-primary">Qualificação com Selos de Perfil:</strong> Validação de credenciais acadêmicas (Bronze, Prata e Ouro checado com Lattes) para destacar seu grupo de pesquisa.
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -244,38 +248,40 @@ export function SolutionsPage() {
               </div>
 
               {/* For Companies */}
-              <div className="rounded-3xl border border-border-subtle bg-surface-primary p-8 md:p-12 shadow-sm">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-green-dark text-brand-off-white">
-                    <Icon icon={Briefcase} size={24} />
+              <div className="rounded-3xl border border-border-subtle bg-surface-primary p-8 md:p-12 shadow-sm flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-green-dark text-brand-off-white">
+                      <Icon icon={Briefcase} size={24} />
+                    </div>
+                    <div>
+                      <h3 className="font-heading text-2xl font-bold text-text-primary">
+                        Para o Setor Produtivo
+                      </h3>
+                      <p className="font-body text-xs text-text-secondary">
+                        Indústrias, corporações inovadoras, equipes de P&amp;D e investidores
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-heading text-2xl font-bold text-text-primary">
-                      Para o Setor Produtivo
-                    </h3>
-                    <p className="font-body text-xs text-text-secondary">
-                      Indústrias, corporações, P&amp;D e investidores
-                    </p>
-                  </div>
-                </div>
 
-                <div className="space-y-4 font-body text-sm text-text-secondary">
-                  <div className="flex items-start gap-3">
-                    <Icon icon={Target} size={18} className="text-brand-green-moss shrink-0 mt-0.5" />
-                    <div>
-                      <strong className="text-text-primary">Inovação Aberta com Rigor:</strong> Supere gargalos que equipes internas não conseguem resolver contratando laboratórios especializados.
+                  <div className="space-y-4 font-body text-sm text-text-secondary">
+                    <div className="flex items-start gap-3">
+                      <Icon icon={Sparkles} size={18} className="text-brand-green-moss shrink-0 mt-0.5" />
+                      <div>
+                        <strong className="text-text-primary">Acesso Exclusivo ao Matching por IA:</strong> Submeta seus desejos de projetos e receba instantaneamente as 10 pesquisas acadêmicas mais compatíveis.
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <Icon icon={Network} size={18} className="text-brand-green-moss shrink-0 mt-0.5" />
-                    <div>
-                      <strong className="text-text-primary">Radar Tecnológico Contínuo:</strong> Seja notificado sempre que um projeto aderente às suas teses for publicado por qualquer universidade parceira.
+                    <div className="flex items-start gap-3">
+                      <Icon icon={Target} size={18} className="text-brand-green-moss shrink-0 mt-0.5" />
+                      <div>
+                        <strong className="text-text-primary">Inovação Aberta com Rigor Científico:</strong> Supere gargalos tecnológicos contratando diretamente pesquisadores líderes e laboratórios homologados.
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <Icon icon={ShieldCheck} size={18} className="text-brand-green-moss shrink-0 mt-0.5" />
-                    <div>
-                      <strong className="text-text-primary">Incentivos Fiscais (Lei do Bem):</strong> Facilite a comprovação de investimentos em pesquisa básica e aplicada perante os órgãos reguladores.
+                    <div className="flex items-start gap-3">
+                      <Icon icon={ShieldCheck} size={18} className="text-brand-green-moss shrink-0 mt-0.5" />
+                      <div>
+                        <strong className="text-text-primary">Incentivos Fiscais (Lei do Bem):</strong> Facilite o enquadramento de investimentos em cooperação universidade-empresa perante os órgãos de fomento.
+                      </div>
                     </div>
                   </div>
                 </div>
