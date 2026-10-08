@@ -98,25 +98,12 @@ export function ContentDetailPage() {
               {content.summary}
             </p>
 
-            {/* Author info & Metadata */}
+            {/* Metadata Bar */}
             <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-y border-border-subtle py-4 font-body text-xs text-text-secondary">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-brand-green-dark text-brand-cream flex items-center justify-center font-heading font-bold text-sm">
-                  TB
-                </div>
-                <div>
-                  <p className="font-heading font-semibold text-text-primary text-sm">
-                    {content.author}
-                  </p>
-                  <p className="text-text-secondary">{content.authorRole}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4">
-                <span className="flex items-center gap-1.5">
-                  <Icon icon={Calendar} size={14} />
-                  {content.date}
-                </span>
+              <span className="flex items-center gap-1.5">
+                <Icon icon={Calendar} size={14} />
+                {content.date}
+              </span>
                 <button
                   type="button"
                   onClick={() => {
@@ -129,7 +116,6 @@ export function ContentDetailPage() {
                   Compartilhar
                 </button>
               </div>
-            </div>
           </Container>
 
           {/* Featured Image - Alinhado à largura do texto e centralizado */}

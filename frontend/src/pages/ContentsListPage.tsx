@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Clock, User, Calendar } from "lucide-react";
+import { ArrowRight, Clock, Calendar } from "lucide-react";
 
 import { PublicHeader } from "../components/layout/PublicHeader";
 import { PublicFooter } from "../components/layout/PublicFooter";
@@ -23,19 +23,25 @@ export function ContentsListPage() {
       <PublicHeader />
 
       <main className="pt-[84px] lg:pt-[96px] pb-24 flex-1">
-        {/* Page Header (Sem a caixa de 'CONHECIMENTO APLICADO') */}
-        <section className="border-b border-border-subtle bg-surface-secondary/40 py-12 md:py-16">
+        {/* Breadcrumb */}
+        <div className="border-b border-border-subtle bg-surface-primary py-4">
           <Container size="wide">
-            <div className="max-w-3xl">
-              <h1 className="font-display text-4xl font-bold tracking-tight text-text-primary md:text-5xl lg:text-6xl">
-                Conteúdos &amp; Insights
-              </h1>
-              <p className="mt-4 font-body text-base md:text-lg leading-relaxed text-text-secondary">
-                Artigos, eventos, análises e tendências sobre inovação aberta, transferência de tecnologia, prontidão científica (TRL/CRL) e parcerias estratégicas.
-              </p>
+            <div className="flex items-center gap-2 font-body text-xs text-text-secondary">
+              <Link to="/" className="hover:text-brand-green-moss">
+                Início
+              </Link>
+              <span>/</span>
+              <span className="text-text-primary font-medium">Conteúdos</span>
+            </div>
+          </Container>
+        </div>
 
-              {/* Filter Tabs */}
-              <div className="mt-8 flex flex-wrap items-center gap-2">
+        {/* Contents List (Formato de Lista) */}
+        <section className="py-8 md:py-12">
+          <Container size="wide">
+            {/* Filter Tabs & Counter */}
+            <div className="mb-8 flex flex-wrap items-center justify-between gap-4 border-b border-border-subtle pb-6">
+              <div className="flex flex-wrap items-center gap-2">
                 {types.map((type) => (
                   <button
                     key={type}
@@ -45,25 +51,18 @@ export function ContentsListPage() {
                       "rounded-full px-5 py-2 font-heading text-xs font-semibold uppercase tracking-wider transition-all",
                       selectedType === type
                         ? "bg-brand-green-dark text-brand-off-white shadow-sm"
-                        : "bg-surface-primary border border-border-subtle text-text-secondary hover:text-text-primary hover:border-brand-green-moss/50",
+                        : "bg-surface-white border border-border-subtle text-text-secondary hover:text-text-primary hover:border-brand-green-moss/50",
                     ].join(" ")}
                   >
                     {type}
                   </button>
                 ))}
               </div>
-            </div>
-          </Container>
-        </section>
 
-        {/* Contents List (Formato de Lista) */}
-        <section className="py-12 md:py-16">
-          <Container size="wide">
-            <div className="mb-6 flex items-center justify-between text-xs text-text-secondary font-mono">
-              <span>
+              <div className="text-xs text-text-secondary font-mono">
                 Exibindo {filteredContents.length} {filteredContents.length === 1 ? "publicação" : "publicações"}
                 {selectedType !== "TODOS" && ` em "${selectedType}"`}
-              </span>
+              </div>
             </div>
 
             <div className="space-y-6">
@@ -129,21 +128,11 @@ export function ContentsListPage() {
                         )}
                       </div>
 
-                      {/* Footer Actions */}
-                      <div className="mt-6 pt-4 border-t border-border-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                        <div className="flex items-center gap-2 text-xs text-text-secondary">
-                          <Icon icon={User} size={14} className="text-brand-green-moss shrink-0" />
-                          <span>
-                            Por <strong className="text-text-primary font-medium">{content.author}</strong>
-                            {content.authorRole && (
-                              <span className="text-text-secondary/70"> ({content.authorRole})</span>
-                            )}
-                          </span>
-                        </div>
-
+                      {/* Footer Actions (Sem 'Por ...') */}
+                      <div className="mt-6 pt-4 border-t border-border-subtle flex items-center justify-end">
                         <Link
                           to={`/conteudos/${content.slug}`}
-                          className="inline-flex items-center gap-1.5 font-heading text-xs md:text-sm font-semibold text-brand-green-moss group-hover:translate-x-1 transition-transform self-start sm:self-auto"
+                          className="inline-flex items-center gap-1.5 font-heading text-xs md:text-sm font-semibold text-brand-green-moss group-hover:translate-x-1 transition-transform"
                         >
                           Ler publicação completa
                           <Icon icon={ArrowRight} size={15} />

@@ -1,6 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
 import {
-  ArrowLeft,
   ArrowRight,
   BrainCircuit,
   Briefcase,
@@ -19,8 +18,6 @@ import { PublicFooter } from "../components/layout/PublicFooter";
 import { Container } from "../components/ui/Container";
 import { Button } from "../components/ui/Button";
 import { Icon } from "../components/ui/Icon";
-
-import solutionsHeroImg from "../assets/brand/photography/cases-energy.jpg";
 
 export function SolutionsPage() {
   const navigate = useNavigate();
@@ -43,75 +40,13 @@ export function SolutionsPage() {
           </Container>
         </div>
 
-        {/* Hero Section */}
-        <section className="relative overflow-hidden bg-brand-green-dark py-20 lg:py-28 text-brand-off-white">
-          <div className="absolute inset-0">
-            <img
-              src={solutionsHeroImg}
-              alt=""
-              aria-hidden="true"
-              className="h-full w-full object-cover opacity-20"
-            />
-            <div
-              aria-hidden="true"
-              className="absolute inset-0 bg-gradient-to-r from-brand-green-dark via-brand-green-dark/95 to-brand-green-dark/80"
-            />
-          </div>
-
-          <Container size="wide" className="relative z-10">
-            <div className="max-w-3xl">
-              <Link
-                to="/"
-                className="inline-flex items-center gap-1.5 font-heading text-xs font-semibold text-brand-cream hover:underline mb-6"
-              >
-                <Icon icon={ArrowLeft} size={14} />
-                Voltar para o início
-              </Link>
-
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-green-moss/20 px-3 py-1 font-mono text-xs font-semibold uppercase tracking-wider text-brand-cream border border-brand-green-moss/30 mb-4 block w-fit">
-                Ecossistema Integrado de Inovação
-              </span>
-
-              <h1 className="font-display text-4xl font-bold tracking-tight text-brand-off-white md:text-6xl leading-[1.1]">
-                Nossas Soluções
-              </h1>
-
-              <p className="mt-6 font-body text-base md:text-lg leading-relaxed text-brand-off-white/80">
-                Uma infraestrutura completa de transferência de tecnologia orientada por inteligência artificial, unindo a produção científica de ponta às demandas reais de inovação da indústria.
-              </p>
-
-              <div className="mt-8 flex flex-col sm:flex-row gap-4">
-                <Button
-                  variant="inverse"
-                  size="lg"
-                  onClick={() => navigate("/cadastro")}
-                >
-                  Criar Minha Conta
-                  <Icon icon={ArrowRight} size={16} />
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="lg"
-                  className="border-brand-off-white/40 text-brand-off-white hover:bg-brand-off-white hover:text-brand-green-dark"
-                  onClick={() => navigate("/matching")}
-                >
-                  Conhecer o Motor de Matching
-                </Button>
-              </div>
-            </div>
-          </Container>
-        </section>
-
         {/* The 3 Core Pillars */}
-        <section className="py-20 border-b border-border-subtle bg-surface-primary">
+        <section className="py-16 md:py-20 border-b border-border-subtle bg-surface-primary">
           <Container size="wide">
             <div className="text-center max-w-2xl mx-auto mb-16">
-              <p className="font-heading text-xs font-semibold uppercase tracking-[0.08em] text-brand-green-moss">
-                Jornada Completa de Inovação Aberta
-              </p>
-              <h2 className="mt-3 font-display text-3xl md:text-4xl font-bold text-text-primary">
+              <h1 className="font-display text-3xl md:text-5xl font-bold text-text-primary">
                 Três pilares para o impacto real
-              </h2>
+              </h1>
               <p className="mt-4 font-body text-sm md:text-base text-text-secondary">
                 Da submissão do desafio tecnológico até a formalização do convênio de P&amp;D.
               </p>

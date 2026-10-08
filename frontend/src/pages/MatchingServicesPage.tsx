@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowRight,
   BrainCircuit,
@@ -15,8 +15,6 @@ import { Container } from "../components/ui/Container";
 import { Button } from "../components/ui/Button";
 import { Icon } from "../components/ui/Icon";
 
-import heroMatchImg from "../assets/brand/photography/hero-science.jpg";
-
 export function MatchingServicesPage() {
   const navigate = useNavigate();
 
@@ -25,67 +23,26 @@ export function MatchingServicesPage() {
       <PublicHeader />
 
       <main className="pt-[84px] lg:pt-[96px] pb-24 flex-1">
-        {/* Hero Section */}
-        <section className="relative overflow-hidden bg-brand-green-dark py-20 lg:py-28 text-brand-off-white">
-          <div className="absolute inset-0">
-            <img
-              src={heroMatchImg}
-              alt=""
-              aria-hidden="true"
-              className="h-full w-full object-cover opacity-20"
-            />
-            <div
-              aria-hidden="true"
-              className="absolute inset-0 bg-gradient-to-r from-brand-green-dark via-brand-green-dark/95 to-brand-green-dark/80"
-            />
-          </div>
-
-          <Container size="wide" className="relative z-10">
-            <div className="max-w-3xl">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-green-moss/20 px-3 py-1 font-mono text-xs font-semibold uppercase tracking-wider text-brand-cream border border-brand-green-moss/30 mb-4">
-                Motor de Inteligência Artificial &amp; Deep Tech
-              </span>
-
-              <h1 className="font-display text-4xl font-bold tracking-tight text-brand-off-white md:text-6xl leading-[1.1]">
-                Serviços de Matching
-              </h1>
-
-              <p className="mt-6 font-body text-base md:text-lg leading-relaxed text-brand-off-white/80">
-                Aproximamos a vanguarda científica das universidades das reais demandas do mercado corporativo através de busca semântica vetorial por IA e calibração matemática de compatibilidade tecnológica.
-              </p>
-
-              <div className="mt-8 flex flex-col sm:flex-row gap-4">
-                <Button
-                  variant="inverse"
-                  size="lg"
-                  onClick={() => navigate("/cadastro")}
-                >
-                  Experimentar o Matching
-                  <Icon icon={ArrowRight} size={16} />
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="lg"
-                  className="border-brand-off-white/40 text-brand-off-white hover:bg-brand-off-white hover:text-brand-green-dark"
-                  onClick={() => navigate("/solucoes")}
-                >
-                  Ver Nossas Soluções
-                </Button>
-              </div>
+        {/* Breadcrumb */}
+        <div className="border-b border-border-subtle bg-surface-primary py-4">
+          <Container size="wide">
+            <div className="flex items-center gap-2 font-body text-xs text-text-secondary">
+              <Link to="/" className="hover:text-brand-green-moss">
+                Início
+              </Link>
+              <span>/</span>
+              <span className="text-text-primary font-medium">Matching</span>
             </div>
           </Container>
-        </section>
+        </div>
 
         {/* How Matching Works (The AI & Vector Search Engine) */}
-        <section className="py-20 border-b border-border-subtle bg-surface-primary">
+        <section className="py-16 md:py-20 border-b border-border-subtle bg-surface-primary">
           <Container size="wide">
             <div className="text-center max-w-2xl mx-auto mb-16">
-              <p className="font-heading text-xs font-semibold uppercase tracking-[0.08em] text-brand-green-moss">
-                Engenharia de Compatibilidade
-              </p>
-              <h2 className="mt-3 font-display text-3xl md:text-4xl font-bold text-text-primary">
+              <h1 className="font-display text-3xl md:text-5xl font-bold text-text-primary">
                 Como funciona o motor de matching
-              </h2>
+              </h1>
               <p className="mt-4 font-body text-sm md:text-base text-text-secondary">
                 Eliminamos centenas de horas de prospecção manual avaliando a aderência semântica e tecnológica entre desafios corporativos e a produção científica de excelência.
               </p>
@@ -157,10 +114,7 @@ export function MatchingServicesPage() {
         <section className="py-20 bg-surface-primary">
           <Container size="wide">
             <div className="text-center max-w-2xl mx-auto mb-16">
-              <p className="font-heading text-xs font-semibold uppercase tracking-[0.08em] text-brand-green-moss">
-                Perfis &amp; Funcionalidades
-              </p>
-              <h2 className="mt-3 font-display text-3xl md:text-4xl font-bold text-text-primary">
+              <h2 className="font-display text-3xl md:text-4xl font-bold text-text-primary">
                 Uma dinâmica sob medida para cada ator
               </h2>
             </div>

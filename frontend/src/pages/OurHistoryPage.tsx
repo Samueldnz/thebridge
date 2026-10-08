@@ -1,6 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
 import {
-  ArrowLeft,
   ArrowRight,
   Building2,
   Compass,
@@ -41,41 +40,13 @@ export function OurHistoryPage() {
           </Container>
         </div>
 
-        {/* Hero Section */}
-        <section className="py-16 md:py-24 border-b border-border-subtle bg-surface-secondary/30">
-          <Container size="wide">
-            <div className="max-w-3xl">
-              <Link
-                to="/"
-                className="inline-flex items-center gap-1.5 font-heading text-xs font-semibold text-brand-green-moss hover:underline mb-6"
-              >
-                <Icon icon={ArrowLeft} size={14} />
-                Voltar para o início
-              </Link>
-
-              <p className="font-heading text-xs font-semibold uppercase tracking-[0.08em] text-brand-green-moss">
-                Propósito que Conecta
-              </p>
-              <h1 className="mt-4 font-display text-4xl font-bold tracking-tight text-text-primary md:text-5xl lg:text-6xl">
-                Nossa História &amp; Quem Somos
-              </h1>
-              <p className="mt-6 font-body text-base md:text-xl leading-relaxed text-text-secondary">
-                A jornada de construir a ponte que transforma o conhecimento produzido nas universidades em soluções de impacto tangível para o mercado e para a sociedade.
-              </p>
-            </div>
-          </Container>
-        </section>
-
         {/* Quem Somos - Identity Block */}
         <section id="quem-somos" className="py-16 md:py-20 border-b border-border-subtle bg-surface-primary">
           <Container size="wide">
             <div className="max-w-3xl">
-              <p className="font-heading text-xs font-semibold uppercase tracking-[0.08em] text-brand-green-moss">
-                Quem Somos
-              </p>
-              <h2 className="mt-3 font-display text-3xl md:text-4xl font-bold tracking-tight text-text-primary">
+              <h1 className="font-display text-3xl md:text-5xl font-bold tracking-tight text-text-primary">
                 A ponte entre a excelência científica e a escala de mercado
-              </h2>
+              </h1>
               <p className="mt-4 font-body text-base md:text-lg leading-relaxed text-text-secondary">
                 Somos um ecossistema integrador que conecta pesquisadores, universidades, investidores e indústrias, transformando descobertas acadêmicas em negócios sustentáveis e soluções de alto impacto econômico e social.
               </p>
