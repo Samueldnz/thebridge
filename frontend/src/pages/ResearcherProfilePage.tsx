@@ -294,7 +294,7 @@ export function ResearcherProfilePage() {
               <Icon icon={GraduationCap} size={16} />
             </div>
             <div>
-              <span className="font-heading font-semibold text-text-secondary block text-[11px]">Tipo de Conta Atual:</span>
+              <span className="font-heading font-semibold text-text-secondary block text-[13px]">Tipo de Conta Atual:</span>
               <span className="font-heading text-xs font-bold text-text-primary">
                 Pesquisador (Pessoa Física)
               </span>
@@ -366,7 +366,7 @@ export function ResearcherProfilePage() {
                   <button
                     type="button"
                     onClick={() => setEmailModalOpen(true)}
-                    className="text-[11px] font-heading font-bold text-brand-green-moss hover:underline cursor-pointer"
+                    className="text-[13px] font-heading font-bold text-brand-green-moss hover:underline cursor-pointer"
                   >
                     Solicitar mudança de e-mail ↗
                   </button>
@@ -380,7 +380,7 @@ export function ResearcherProfilePage() {
                     className="w-full rounded-xl border border-border-subtle bg-surface-secondary pl-9 pr-3.5 py-2.5 text-xs text-text-secondary cursor-not-allowed"
                   />
                 </div>
-                <p className="mt-1 text-[11px] text-text-secondary flex items-center justify-between">
+                <p className="mt-1 text-[13px] text-text-secondary flex items-center justify-between">
                   <span>Identificador principal da conta no The Bridge.</span>
                   <button
                     type="button"
@@ -567,7 +567,7 @@ export function ResearcherProfilePage() {
                 placeholder="Descreva as principais linhas de pesquisa do laboratório, principais artigos publicados, patentes desenvolvidas e histórico de projetos cooperativos com a indústria..."
                 className="w-full rounded-2xl border border-border-subtle bg-surface-primary p-3.5 text-xs text-text-primary focus:border-brand-green-moss focus:outline-none resize-y"
               />
-              <div className="flex justify-between items-center mt-1 text-[11px] text-text-secondary">
+              <div className="flex justify-between items-center mt-1 text-[13px] text-text-secondary">
                 <span>Mínimo 15 caracteres para pontuação na barra de qualificação.</span>
                 <span>{formData.bio.length} caracteres</span>
               </div>

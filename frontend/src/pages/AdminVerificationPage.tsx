@@ -443,7 +443,7 @@ export function AdminVerificationPage() {
           >
             <span>MATCHES</span>
             <span
-              className={`rounded-full px-2 py-0.5 text-[11px] font-mono font-bold ${
+              className={`rounded-full px-2 py-0.5 text-[13px] font-mono font-bold ${
                 activeAdminTab === "MATCHES"
                   ? "bg-amber-300 text-amber-950"
                   : "bg-amber-100 text-amber-900"
@@ -464,7 +464,7 @@ export function AdminVerificationPage() {
           >
             <span>AUDITORIA DE PERFIS</span>
             <span
-              className={`rounded-full px-2 py-0.5 text-[11px] font-mono font-bold ${
+              className={`rounded-full px-2 py-0.5 text-[13px] font-mono font-bold ${
                 activeAdminTab === "AUDITORIA"
                   ? "bg-emerald-200 text-emerald-950"
                   : "bg-emerald-100 text-emerald-900"
@@ -485,7 +485,7 @@ export function AdminVerificationPage() {
           >
             <span>SOLICITAÇÕES DE CONTAS</span>
             <span
-              className={`rounded-full px-2 py-0.5 text-[11px] font-mono font-bold ${
+              className={`rounded-full px-2 py-0.5 text-[13px] font-mono font-bold ${
                 activeAdminTab === "SOLICITACOES"
                   ? "bg-blue-200 text-blue-950"
                   : "bg-blue-100 text-blue-900"
@@ -564,11 +564,11 @@ export function AdminVerificationPage() {
                             </span>
                           </div>
 
-                          <p className="font-body text-[11px] text-blue-900 font-semibold truncate">
+                          <p className="font-body text-[13px] text-blue-900 font-semibold truncate">
                             Demanda: {conn.opportunityTitle || "Demanda Corporativa"}
                           </p>
 
-                          <p className="font-body text-[11px] text-text-secondary line-clamp-2">
+                          <p className="font-body text-[13px] text-text-secondary line-clamp-2">
                             Projeto: {conn.articleTitle}
                           </p>
 
@@ -612,7 +612,7 @@ export function AdminVerificationPage() {
                       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border-subtle pb-4">
                         <div className="space-y-1">
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="font-mono text-[11px] text-text-secondary">
+                            <span className="font-mono text-[13px] text-text-secondary">
                               ID: {selectedAdminConn.id} • Criado em {selectedAdminConn.createdAt}
                             </span>
                           </div>
@@ -649,7 +649,7 @@ export function AdminVerificationPage() {
                           <div className="rounded-2xl border border-blue-200 bg-blue-50/35 p-4 flex flex-col justify-between space-y-3">
                             <div className="space-y-2.5">
                               <div className="flex items-center justify-between gap-2 border-b border-blue-200/70 pb-2">
-                                <span className="font-heading text-[11px] font-bold uppercase tracking-wider text-blue-950 flex items-center gap-1.5">
+                                <span className="font-heading text-[13px] font-bold uppercase tracking-wider text-blue-950 flex items-center gap-1.5">
                                   <Icon icon={Building2} size={14} className="text-blue-800" />
                                   Demanda Tecnológica da Empresa
                                 </span>
@@ -672,7 +672,7 @@ export function AdminVerificationPage() {
                               </div>
 
                               {/* Requisitos Técnicos da Demanda */}
-                              <div className="grid grid-cols-3 gap-2 pt-1 text-[11px]">
+                              <div className="grid grid-cols-3 gap-2 pt-1 text-[13px]">
                                 <div className="rounded-lg bg-white border border-blue-100 p-2">
                                   <span className="text-[9px] font-mono uppercase text-text-secondary block">TRL Mínimo</span>
                                   <span className="font-heading font-bold text-blue-950">
@@ -694,7 +694,7 @@ export function AdminVerificationPage() {
                               </div>
 
                               {selectedAdminConn.opportunityKeywords && (
-                                <div className="text-[11px]">
+                                <div className="text-[13px]">
                                   <span className="font-mono text-[10px] text-text-secondary">Palavras-chave da Demanda: </span>
                                   <span className="font-medium text-blue-950">{selectedAdminConn.opportunityKeywords}</span>
                                 </div>
@@ -716,7 +716,7 @@ export function AdminVerificationPage() {
                           <div className="rounded-2xl border border-emerald-200 bg-emerald-50/35 p-4 flex flex-col justify-between space-y-3">
                             <div className="space-y-2.5">
                               <div className="flex items-center justify-between gap-2 border-b border-emerald-200/70 pb-2">
-                                <span className="font-heading text-[11px] font-bold uppercase tracking-wider text-emerald-950 flex items-center gap-1.5">
+                                <span className="font-heading text-[13px] font-bold uppercase tracking-wider text-emerald-950 flex items-center gap-1.5">
                                   <Icon icon={GraduationCap} size={14} className="text-emerald-800" />
                                   Projeto Científico Selecionado no Match
                                 </span>
@@ -739,7 +739,7 @@ export function AdminVerificationPage() {
                               </div>
                             </div>
 
-                            <div className="pt-1 text-[11px]">
+                            <div className="pt-1 text-[13px]">
                               <div className="rounded-lg bg-white border border-emerald-100 p-2.5">
                                 <span className="text-[9px] font-mono uppercase text-text-secondary block">Área Temática</span>
                                 <span className="font-heading font-bold text-emerald-950">
@@ -766,7 +766,7 @@ export function AdminVerificationPage() {
                           {/* Perfil Empresa */}
                           <div className="rounded-2xl border border-border-subtle bg-surface-primary p-4 space-y-3">
                             <div className="flex items-center justify-between gap-2">
-                              <div className="flex items-center gap-2 font-heading font-bold uppercase text-[11px] text-blue-900">
+                              <div className="flex items-center gap-2 font-heading font-bold uppercase text-[13px] text-blue-900">
                                 <Icon icon={Building2} size={15} />
                                 Perfil Empresa
                               </div>
@@ -776,7 +776,7 @@ export function AdminVerificationPage() {
                               <p className="font-heading font-bold text-sm text-text-primary">
                                 {selectedAdminConn.companyName}
                               </p>
-                              <p className="font-mono text-[11px] text-text-secondary">
+                              <p className="font-mono text-[13px] text-text-secondary">
                                 <strong>CNPJ:</strong> {selectedAdminConn.companyCnpj || "Consulte na Auditoria de Perfis"}
                               </p>
                               <p className="text-text-secondary">
@@ -816,7 +816,7 @@ export function AdminVerificationPage() {
                                   href={selectedAdminConn.companyWebsite}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1.5 rounded-xl border border-border-subtle bg-white px-3 py-1.5 text-[11px] font-bold text-brand-green-moss hover:bg-emerald-50 transition-colors"
+                                  className="inline-flex items-center gap-1.5 rounded-xl border border-border-subtle bg-white px-3 py-1.5 text-[13px] font-bold text-brand-green-moss hover:bg-emerald-50 transition-colors"
                                 >
                                   <span>Site da Empresa</span>
                                   <Icon icon={ExternalLink} size={11} />
@@ -827,7 +827,7 @@ export function AdminVerificationPage() {
                                   href={selectedAdminConn.companyLinkedin}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1.5 rounded-xl border border-border-subtle bg-white px-3 py-1.5 text-[11px] font-bold text-blue-800 hover:bg-blue-50 transition-colors"
+                                  className="inline-flex items-center gap-1.5 rounded-xl border border-border-subtle bg-white px-3 py-1.5 text-[13px] font-bold text-blue-800 hover:bg-blue-50 transition-colors"
                                 >
                                   <span>LinkedIn Corporativo</span>
                                   <Icon icon={ExternalLink} size={11} />
@@ -839,7 +839,7 @@ export function AdminVerificationPage() {
                                 )}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1.5 rounded-xl border border-border-subtle bg-white px-3 py-1.5 text-[11px] font-medium text-text-secondary hover:text-text-primary transition-colors"
+                                className="inline-flex items-center gap-1.5 rounded-xl border border-border-subtle bg-white px-3 py-1.5 text-[13px] font-medium text-text-secondary hover:text-text-primary transition-colors"
                               >
                                 <span>Consultar Empresa no Google</span>
                                 <Icon icon={ExternalLink} size={11} />
@@ -850,7 +850,7 @@ export function AdminVerificationPage() {
                           {/* Perfil Pesquisador */}
                           <div className="rounded-2xl border border-border-subtle bg-surface-primary p-4 space-y-3">
                             <div className="flex items-center justify-between gap-2">
-                              <div className="flex items-center gap-2 font-heading font-bold uppercase text-[11px] text-emerald-900">
+                              <div className="flex items-center gap-2 font-heading font-bold uppercase text-[13px] text-emerald-900">
                                 <Icon icon={GraduationCap} size={15} />
                                 Perfil Pesquisador
                               </div>
@@ -891,7 +891,7 @@ export function AdminVerificationPage() {
                                   )}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1.5 rounded-xl border border-blue-300 bg-white px-3 py-1.5 text-[11px] font-bold text-blue-900 hover:bg-blue-100 transition-colors"
+                                  className="inline-flex items-center gap-1.5 rounded-xl border border-blue-300 bg-white px-3 py-1.5 text-[13px] font-bold text-blue-900 hover:bg-blue-100 transition-colors"
                                 >
                                   <span>Buscar no Lattes CNPq</span>
                                   <Icon icon={ExternalLink} size={11} />
@@ -903,7 +903,7 @@ export function AdminVerificationPage() {
                                   )}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-300 bg-white px-3 py-1.5 text-[11px] font-bold text-emerald-900 hover:bg-emerald-100 transition-colors"
+                                  className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-300 bg-white px-3 py-1.5 text-[13px] font-bold text-emerald-900 hover:bg-emerald-100 transition-colors"
                                 >
                                   <span>Google Scholar</span>
                                   <Icon icon={ExternalLink} size={11} />
@@ -917,7 +917,7 @@ export function AdminVerificationPage() {
                                   )}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1.5 rounded-xl border border-border-subtle bg-white px-3 py-1.5 text-[11px] font-bold text-text-primary hover:bg-surface-secondary transition-colors"
+                                  className="inline-flex items-center gap-1.5 rounded-xl border border-border-subtle bg-white px-3 py-1.5 text-[13px] font-bold text-text-primary hover:bg-surface-secondary transition-colors"
                                 >
                                   <span>Buscar no LinkedIn</span>
                                   <Icon icon={ExternalLink} size={11} />
@@ -935,7 +935,7 @@ export function AdminVerificationPage() {
                           <span className="font-heading font-bold text-purple-950">
                             Status do Termo de Responsabilidade:
                           </span>
-                          <div className="flex items-center gap-3 font-mono text-[11px]">
+                          <div className="flex items-center gap-3 font-mono text-[13px]">
                             <span className={selectedAdminConn.companySignedTerm ? "text-emerald-800 font-bold" : "text-amber-800"}>
                               Empresa: {selectedAdminConn.companySignedTerm ? "Assinado" : "Pendente"}
                             </span>
@@ -1123,7 +1123,7 @@ export function AdminVerificationPage() {
                               </span>
                             </div>
 
-                            <p className="text-[11px] font-mono text-text-secondary truncate mt-0.5">
+                            <p className="text-[13px] font-mono text-text-secondary truncate mt-0.5">
                               {isCompany ? item.cnpj || "Sem CNPJ" : item.cpf || "Sem CPF"}
                               {item.university && ` • ${item.university}`}
                             </p>
@@ -1243,7 +1243,7 @@ export function AdminVerificationPage() {
                               <span className="text-text-primary font-medium">{selectedVerif.university}</span>
                             </div>
                             {selectedVerif.department && (
-                              <p className="text-[11px] text-text-secondary">{selectedVerif.department}</p>
+                              <p className="text-[13px] text-text-secondary">{selectedVerif.department}</p>
                             )}
                           </>
                         )}
@@ -1479,7 +1479,7 @@ export function AdminVerificationPage() {
                               </span>
                             </div>
 
-                            <p className="text-[11px] text-text-secondary truncate mt-0.5">
+                            <p className="text-[13px] text-text-secondary truncate mt-0.5">
                               {isEmailChange ? `Novo: ${item.requestedEmail}` : `Novo: ${item.requestedProfileType === "COMPANY" ? "Empresa" : "Pesquisador"}`}
                             </p>
 
@@ -1564,26 +1564,26 @@ export function AdminVerificationPage() {
                       {selectedUserReq.type === "ALTERACAO_EMAIL" ? (
                         <div className="flex flex-col sm:flex-row sm:items-center gap-3 text-xs">
                           <div className="rounded-xl border border-border-subtle bg-white p-3 flex-1">
-                            <span className="text-text-secondary block text-[11px] mb-0.5">E-mail Atual Cadastrado:</span>
+                            <span className="text-text-secondary block text-[13px] mb-0.5">E-mail Atual Cadastrado:</span>
                             <span className="font-mono font-medium text-text-primary break-all">{selectedUserReq.currentEmail}</span>
                           </div>
                           <Icon icon={ArrowRight} size={18} className="text-text-secondary hidden sm:block shrink-0" />
                           <div className="rounded-xl border border-blue-200 bg-blue-50/80 p-3 flex-1">
-                            <span className="text-blue-900 block text-[11px] font-bold mb-0.5">Novo E-mail Solicitado:</span>
+                            <span className="text-blue-900 block text-[13px] font-bold mb-0.5">Novo E-mail Solicitado:</span>
                             <span className="font-mono font-bold text-blue-950 break-all">{selectedUserReq.requestedEmail}</span>
                           </div>
                         </div>
                       ) : (
                         <div className="flex flex-col sm:flex-row sm:items-center gap-3 text-xs">
                           <div className="rounded-xl border border-border-subtle bg-white p-3 flex-1">
-                            <span className="text-text-secondary block text-[11px] mb-0.5">Perfil Atual:</span>
+                            <span className="text-text-secondary block text-[13px] mb-0.5">Perfil Atual:</span>
                             <span className="font-bold text-text-primary">
                               {selectedUserReq.currentProfileType === "COMPANY" ? "Empresa (PJ)" : "Pesquisador (PF)"}
                             </span>
                           </div>
                           <Icon icon={ArrowRight} size={18} className="text-text-secondary hidden sm:block shrink-0" />
                           <div className="rounded-xl border border-purple-200 bg-purple-50/80 p-3 flex-1">
-                            <span className="text-purple-900 block text-[11px] font-bold mb-0.5">Novo Perfil Pretendido:</span>
+                            <span className="text-purple-900 block text-[13px] font-bold mb-0.5">Novo Perfil Pretendido:</span>
                             <span className="font-bold text-purple-950">
                               {selectedUserReq.requestedProfileType === "COMPANY" ? "Empresa (PJ)" : "Pesquisador (PF)"}
                             </span>

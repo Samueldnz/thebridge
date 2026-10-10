@@ -87,7 +87,7 @@ export function ContentsListPage() {
                       <div>
                         {/* Meta Tags */}
                         <div className="flex flex-wrap items-center gap-2.5 pb-2">
-                          <span className="rounded-full bg-brand-green-moss/10 px-3 py-0.5 font-body text-[11px] font-semibold uppercase tracking-wider text-brand-green-dark border border-brand-green-moss/20">
+                          <span className="rounded-full bg-brand-green-moss/10 px-3 py-0.5 font-body text-[13px] font-semibold uppercase tracking-wider text-brand-green-dark border border-brand-green-moss/20">
                             {content.type}
                           </span>
                           <span className="text-text-secondary text-xs flex items-center gap-1 font-body">
@@ -119,7 +119,7 @@ export function ContentsListPage() {
                             {content.tags.map((tag) => (
                               <span
                                 key={tag}
-                                className="rounded-md bg-surface-primary px-2 py-0.5 text-[11px] font-mono font-medium text-text-secondary border border-border-subtle"
+                                className="rounded-md bg-surface-primary px-2 py-0.5 text-[13px] font-mono font-medium text-text-secondary border border-border-subtle"
                               >
                                 #{tag}
                               </span>

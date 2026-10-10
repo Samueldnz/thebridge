@@ -190,7 +190,7 @@ export function NotificationsPage() {
                       <span className="font-heading font-bold text-text-primary truncate max-w-[200px]">
                         {item.sender}
                       </span>
-                      <span className="text-[11px] font-mono text-text-secondary whitespace-nowrap">
+                      <span className="text-[13px] font-mono text-text-secondary whitespace-nowrap">
                         {item.date}
                       </span>
                     </div>
@@ -211,7 +211,7 @@ export function NotificationsPage() {
                     </div>
 
                     {/* Snippet */}
-                    <p className="text-[11px] font-body text-text-secondary line-clamp-2 leading-relaxed">
+                    <p className="text-[13px] font-body text-text-secondary line-clamp-2 leading-relaxed">
                       {item.preview}
                     </p>
 

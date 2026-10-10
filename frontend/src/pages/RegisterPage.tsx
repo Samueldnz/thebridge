@@ -248,7 +248,7 @@ export function RegisterPage() {
                   <Icon icon={Sparkles} size={14} />
                   <span>Acesso Promocional</span>
                 </div>
-                <p className="mt-1 font-body text-[11px] text-brand-off-white/90 leading-snug">
+                <p className="mt-1 font-body text-[13px] text-brand-off-white/90 leading-snug">
                   Possui um cupom de congresso ou parceiro institucional? Insira o código no formulário ao lado para resgatar seu benefício de cortesia.
                 </p>
               </div>
@@ -320,7 +320,7 @@ export function RegisterPage() {
                     <span className="font-heading text-sm font-semibold text-text-primary">
                       Pesquisador
                     </span>
-                    <span className="font-body text-[11px] leading-tight text-text-secondary">
+                    <span className="font-body text-[13px] leading-tight text-text-secondary">
                       Academia, cientistas e laboratórios
                     </span>
                   </button>
@@ -341,7 +341,7 @@ export function RegisterPage() {
                     <span className="font-heading text-sm font-semibold text-text-primary">
                       Empresa
                     </span>
-                    <span className="font-body text-[11px] leading-tight text-text-secondary">
+                    <span className="font-body text-[13px] leading-tight text-text-secondary">
                       Indústria, corporações e investidores
                     </span>
                   </button>
@@ -464,7 +464,7 @@ export function RegisterPage() {
                   >
                     <Icon icon={Ticket} size={15} className="text-brand-green-moss" />
                     <span>Cupom de Desconto / Promocional</span>
-                    <span className="font-normal text-text-muted lowercase text-[11px]">(opcional)</span>
+                    <span className="font-normal text-text-muted lowercase text-[13px]">(opcional)</span>
                   </label>
 
                   {isCouponApplied && (
@@ -532,7 +532,7 @@ export function RegisterPage() {
                       <p className="font-bold text-emerald-950">
                         🎉 Cupom Promocional Aplicado!
                       </p>
-                      <p className="mt-0.5 text-[11px] text-emerald-800 leading-tight">
+                      <p className="mt-0.5 text-[13px] text-emerald-800 leading-tight">
                         Esta conta terá <strong>2 meses de acesso 100% gratuito (60 dias)</strong> com todas as funcionalidades de matching e conexões liberadas.
                       </p>
                     </div>

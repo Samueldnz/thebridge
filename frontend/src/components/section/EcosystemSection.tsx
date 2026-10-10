@@ -227,7 +227,7 @@ export function EcosystemSection() {
                         "w-[92px]",
                         "whitespace-pre-line",
                         "text-center",
-                        "font-heading text-[11px] font-semibold leading-[1.25]",
+                        "font-heading text-[13px] font-semibold leading-[1.25]",
                         "text-text-primary",
                         "md:mt-4 md:w-auto md:text-sm md:leading-5",
                       ].join(" ")}

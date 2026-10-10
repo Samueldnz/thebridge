@@ -433,7 +433,7 @@ export function AuthPage({ initialMode = "login" }: AuthPageProps) {
                       <span className="font-heading text-sm font-semibold text-text-primary">
                         Pesquisador
                       </span>
-                      <span className="font-body text-[11px] leading-tight text-text-secondary">
+                      <span className="font-body text-[13px] leading-tight text-text-secondary">
                         Academia, cientistas e laboratórios
                       </span>
                     </button>
@@ -454,7 +454,7 @@ export function AuthPage({ initialMode = "login" }: AuthPageProps) {
                       <span className="font-heading text-sm font-semibold text-text-primary">
                         Empresa
                       </span>
-                      <span className="font-body text-[11px] leading-tight text-text-secondary">
+                      <span className="font-body text-[13px] leading-tight text-text-secondary">
                         Indústria, corporações e investidores
                       </span>
                     </button>

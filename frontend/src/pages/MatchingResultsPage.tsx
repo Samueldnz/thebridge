@@ -384,7 +384,7 @@ export function MatchingResultsPage() {
                 <p className="font-body text-xs md:text-sm text-white/85 leading-relaxed">
                   {selectedOpportunity.description}
                 </p>
-                <div className="flex flex-wrap items-center gap-2 pt-1 text-[11px]">
+                <div className="flex flex-wrap items-center gap-2 pt-1 text-[13px]">
                   {selectedOpportunity.industrySector && (
                     <span className="rounded-md bg-white/15 px-2.5 py-0.5 font-medium text-white">
                       Setor: {selectedOpportunity.industrySector}
@@ -437,7 +437,7 @@ export function MatchingResultsPage() {
                 {isFromCache ? "Matches salvos da última análise" : "Nova análise calculada e salva"}
               </span>
               {lastCalculatedAt && (
-                <span className="font-body text-text-secondary sm:ml-1.5 text-[11px]">
+                <span className="font-body text-text-secondary sm:ml-1.5 text-[13px]">
                   (calculado em {new Date(lastCalculatedAt).toLocaleDateString("pt-BR")} às{" "}
                   {new Date(lastCalculatedAt).toLocaleTimeString("pt-BR", {
                     hour: "2-digit",
@@ -578,7 +578,7 @@ export function MatchingResultsPage() {
                   {/* Authors and Affiliations (Censurados com asteriscos de quantidade fixa) */}
                   <div className="py-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <span className="text-[11px] font-heading font-bold uppercase text-text-secondary">
+                      <span className="text-[13px] font-heading font-bold uppercase text-text-secondary">
                         Autores:
                       </span>
                       <p
@@ -590,7 +590,7 @@ export function MatchingResultsPage() {
                     </div>
 
                     <div>
-                      <span className="text-[11px] font-heading font-bold uppercase text-text-secondary">
+                      <span className="text-[13px] font-heading font-bold uppercase text-text-secondary">
                         Vínculos de Pesquisa:
                       </span>
                       <p
@@ -606,7 +606,7 @@ export function MatchingResultsPage() {
                   {cleanAbstract && (
                     <div className="pt-2 pb-4">
                       <div className="flex items-center justify-between pb-1.5">
-                        <span className="text-[11px] font-heading font-bold uppercase text-text-secondary">
+                        <span className="text-[13px] font-heading font-bold uppercase text-text-secondary">
                           Resumo da Pesquisa:
                         </span>
                         <button
@@ -710,7 +710,7 @@ export function MatchingResultsPage() {
             <div className="mt-6 space-y-6">
               {/* Formula Demonstration */}
               <div className="rounded-2xl border border-emerald-300 bg-emerald-50/50 p-5 font-mono text-xs space-y-3">
-                <p className="font-bold text-emerald-950 uppercase tracking-wider text-[11px]">
+                <p className="font-bold text-emerald-950 uppercase tracking-wider text-[13px]">
                   Fórmula de Calibração Aplicada:
                 </p>
                 <div className="p-3 bg-surface-white rounded-xl border border-emerald-200 text-center font-bold text-emerald-900 text-sm shadow-xs">
@@ -809,13 +809,13 @@ export function MatchingResultsPage() {
                     <h4 className="font-heading text-xs font-bold text-text-primary uppercase tracking-wide">
                       Parâmetros da Proposta Corporativa
                     </h4>
-                    <p className="font-body text-[11px] text-text-secondary mt-0.5 leading-relaxed">
+                    <p className="font-body text-[13px] text-text-secondary mt-0.5 leading-relaxed">
                       O nome da sua empresa será mantido em sigilo. O pesquisador verá apenas os dados abaixo para decidir sobre a conexão:
                     </p>
                   </div>
 
                   <div>
-                    <label className="block font-heading text-[11px] font-semibold text-text-primary mb-1">
+                    <label className="block font-heading text-[13px] font-semibold text-text-primary mb-1">
                       Área de Atuação da Empresa *
                     </label>
                     <input
@@ -828,7 +828,7 @@ export function MatchingResultsPage() {
                   </div>
 
                   <div>
-                    <label className="block font-heading text-[11px] font-semibold text-text-primary mb-1">
+                    <label className="block font-heading text-[13px] font-semibold text-text-primary mb-1">
                       Capacidade de Investimento Estimada *
                     </label>
                     <input
@@ -841,7 +841,7 @@ export function MatchingResultsPage() {
                   </div>
 
                   <div>
-                    <label className="block font-heading text-[11px] font-semibold text-text-primary mb-1">
+                    <label className="block font-heading text-[13px] font-semibold text-text-primary mb-1">
                       Tempo Desejável de Execução do Projeto *
                     </label>
                     <input
@@ -854,7 +854,7 @@ export function MatchingResultsPage() {
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-3 text-[11px] text-emerald-950 font-body leading-relaxed flex items-start gap-2">
+                <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-3 text-[13px] text-emerald-950 font-body leading-relaxed flex items-start gap-2">
                   <Icon icon={Info} size={14} className="text-emerald-800 shrink-0 mt-0.5" />
                   <span>
                     As informações de contato de ambas as partes só serão liberadas após aceite mútuo e assinatura do <strong>Termo de Responsabilidade (Success Fee)</strong>.
@@ -876,7 +876,7 @@ export function MatchingResultsPage() {
                     className="w-full flex-1 rounded-2xl border border-border-subtle bg-surface-primary p-4 text-xs md:text-sm text-text-primary focus:border-brand-green-moss focus:outline-none focus:bg-surface-white transition-all resize-none leading-relaxed"
                   />
                 </div>
-                <p className="text-[11px] font-body text-text-secondary">
+                <p className="text-[13px] font-body text-text-secondary">
                   Evite inserir dados de contato direto ou razão social no texto acima para preservar o protocolo de confidencialidade da curadoria.
                 </p>
               </div>

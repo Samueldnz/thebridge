@@ -497,11 +497,11 @@ export function ConnectionsPage() {
                             1. Assinatura do Perfil Empresa:
                           </span>
                           {item.companySignedTerm ? (
-                            <span className="font-mono text-[11px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-md">
+                            <span className="font-mono text-[13px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-md">
                               Assinado ({item.companySignedAt})
                             </span>
                           ) : (
-                            <span className="font-mono text-[11px] font-bold text-amber-800 bg-amber-100 px-2.5 py-0.5 rounded-md">
+                            <span className="font-mono text-[13px] font-bold text-amber-800 bg-amber-100 px-2.5 py-0.5 rounded-md">
                               Pendente
                             </span>
                           )}
@@ -512,11 +512,11 @@ export function ConnectionsPage() {
                             2. Assinatura do Perfil Pesquisador:
                           </span>
                           {item.researcherSignedTerm ? (
-                            <span className="font-mono text-[11px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-md">
+                            <span className="font-mono text-[13px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-md">
                               Assinado ({item.researcherSignedAt})
                             </span>
                           ) : (
-                            <span className="font-mono text-[11px] font-bold text-amber-800 bg-amber-100 px-2.5 py-0.5 rounded-md">
+                            <span className="font-mono text-[13px] font-bold text-amber-800 bg-amber-100 px-2.5 py-0.5 rounded-md">
                               Pendente
                             </span>
                           )}
@@ -589,7 +589,7 @@ export function ConnectionsPage() {
 
                   {/* Rodapé de Ações */}
                   <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div className="text-[11px] font-mono text-text-secondary flex items-center gap-1.5">
+                    <div className="text-[13px] font-mono text-text-secondary flex items-center gap-1.5">
                       <Icon icon={ShieldCheck} size={14} className="text-brand-green-moss" />
                       <span>
                         {isFullyConnected
@@ -751,7 +751,7 @@ export function ConnectionsPage() {
 
             {/* Minuta Provisória do Termo (Documento em fase de elaboração jurídica definitiva) */}
             <div className="rounded-2xl border border-border-subtle bg-surface-white p-5 max-h-64 overflow-y-auto font-body text-xs text-text-secondary space-y-3 leading-relaxed shadow-inner">
-              <p className="font-heading font-bold text-text-primary uppercase text-[11px]">
+              <p className="font-heading font-bold text-text-primary uppercase text-[13px]">
                 MINUTA PRELIMINAR DO TERMO DE RESPONSABILIDADE E INTERMEDIAÇÃO (SUCCESS FEE)
               </p>
               <p>
@@ -766,7 +766,7 @@ export function ConnectionsPage() {
               <p>
                 <strong>4. LIBERAÇÃO DE CONTATOS:</strong> As informações completas de contato de ambas as partes serão desbloqueadas automaticamente no painel assim que tanto o Perfil Empresa quanto o Perfil Pesquisador registrarem o aceite deste Termo.
               </p>
-              <p className="italic text-[11px] text-text-muted">
+              <p className="italic text-[13px] text-text-muted">
                 * Nota: Este documento é o modelo estrutural do sistema para validação de fluxo; a redação jurídica definitiva do contrato de Success Fee será inserida oportunamente.
               </p>
             </div>

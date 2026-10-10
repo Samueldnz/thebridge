@@ -254,7 +254,7 @@ export function DashboardLayout({
                             <p className="font-heading text-xs text-text-primary line-clamp-1">
                               {notif.title}
                             </p>
-                            <p className="font-body text-[11px] text-text-secondary line-clamp-1 mt-0.5 font-normal">
+                            <p className="font-body text-[13px] text-text-secondary line-clamp-1 mt-0.5 font-normal">
                               {notif.preview}
                             </p>
                           </div>
@@ -285,7 +285,7 @@ export function DashboardLayout({
               {/* Circular Avatar with Qualification Tier Border */}
               <div
                 className={[
-                  "flex h-8 w-8 items-center justify-center rounded-full bg-brand-green-dark text-[11px] font-bold text-white transition-transform group-hover:scale-105 overflow-hidden",
+                  "flex h-8 w-8 items-center justify-center rounded-full bg-brand-green-dark text-[13px] font-bold text-white transition-transform group-hover:scale-105 overflow-hidden",
                   userTier === "OURO"
                     ? "ring-2 ring-amber-400 border-2 border-amber-500 shadow-xs"
                     : userTier === "PRATA"

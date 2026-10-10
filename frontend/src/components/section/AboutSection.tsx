@@ -105,7 +105,7 @@ export function AboutSection() {
 
               {/* Editorial keywords */}
               <div className="absolute bottom-[12%] right-[4%] z-20">
-                <p className="font-body text-[11px] uppercase leading-5 tracking-[0.1em] text-brand-white">
+                <p className="font-body text-[13px] uppercase leading-5 tracking-[0.1em] text-brand-white">
                   Pessoas
                   <br />
                   Ideias

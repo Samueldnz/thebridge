@@ -116,7 +116,7 @@ export function MySubmissionsPage() {
 
           {/* Progress bar */}
           <div className="w-full sm:w-48 shrink-0">
-            <div className="flex justify-between text-[11px] font-mono mb-1 text-text-secondary">
+            <div className="flex justify-between text-[13px] font-mono mb-1 text-text-secondary">
               <span>Uso: {Math.round((count / maxLimit) * 100)}%</span>
               <span>{count}/{maxLimit}</span>
             </div>
@@ -173,20 +173,20 @@ export function MySubmissionsPage() {
                   >
                     <div className="space-y-2 max-w-2xl">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="rounded-full bg-brand-green-moss/10 px-2.5 py-0.5 font-mono text-[11px] font-bold text-brand-green-dark">
+                        <span className="rounded-full bg-brand-green-moss/10 px-2.5 py-0.5 font-mono text-[13px] font-bold text-brand-green-dark">
                           TRL {p.trl}
                         </span>
-                        <span className="rounded-full bg-brand-earth/10 px-2.5 py-0.5 font-mono text-[11px] font-bold text-brand-earth">
+                        <span className="rounded-full bg-brand-earth/10 px-2.5 py-0.5 font-mono text-[13px] font-bold text-brand-earth">
                           CRL {p.crl}
                         </span>
-                        <span className="rounded-full bg-blue-50 px-2.5 py-0.5 font-mono text-[11px] font-bold text-blue-800">
+                        <span className="rounded-full bg-blue-50 px-2.5 py-0.5 font-mono text-[13px] font-bold text-blue-800">
                           {p.patentStatus === "GRANTED"
                             ? "Patente Concedida"
                             : p.patentStatus === "PENDING"
                             ? "Em Depósito"
                             : "Sem Patente"}
                         </span>
-                        <span className="text-[11px] font-body text-text-secondary">
+                        <span className="text-[13px] font-body text-text-secondary">
                           {p.researchField}
                         </span>
                       </div>
@@ -232,20 +232,20 @@ export function MySubmissionsPage() {
                   >
                     <div className="space-y-2 max-w-2xl">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="rounded-full bg-brand-green-moss/10 px-2.5 py-0.5 font-mono text-[11px] font-bold text-brand-green-dark">
+                        <span className="rounded-full bg-brand-green-moss/10 px-2.5 py-0.5 font-mono text-[13px] font-bold text-brand-green-dark">
                           Mín TRL {opp.minTrl}
                         </span>
-                        <span className="rounded-full bg-brand-earth/10 px-2.5 py-0.5 font-mono text-[11px] font-bold text-brand-earth">
+                        <span className="rounded-full bg-brand-earth/10 px-2.5 py-0.5 font-mono text-[13px] font-bold text-brand-earth">
                           Alvo CRL {opp.desiredCrl}
                         </span>
-                        <span className="rounded-full bg-amber-50 px-2.5 py-0.5 font-mono text-[11px] font-bold text-amber-800">
+                        <span className="rounded-full bg-amber-50 px-2.5 py-0.5 font-mono text-[13px] font-bold text-amber-800">
                           {opp.patentRequirement === "REQUIRED"
                             ? "Patente Obrigatória"
                             : opp.patentRequirement === "PENDING_ACCEPTED"
                             ? "Aceita Depósito"
                             : "Patente Dispensável"}
                         </span>
-                        <span className="text-[11px] font-body text-text-secondary">
+                        <span className="text-[13px] font-body text-text-secondary">
                           {opp.industrySector}
                         </span>
                       </div>

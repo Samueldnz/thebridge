@@ -381,7 +381,7 @@ export function CompanyProfilePage() {
               <Icon icon={Building2} size={16} />
             </div>
             <div>
-              <span className="font-heading font-semibold text-text-secondary block text-[11px]">Tipo de Conta Atual:</span>
+              <span className="font-heading font-semibold text-text-secondary block text-[13px]">Tipo de Conta Atual:</span>
               <span className="font-heading text-xs font-bold text-text-primary">
                 Empresa (Pessoa Jurídica)
               </span>
@@ -439,7 +439,7 @@ export function CompanyProfilePage() {
                     type="button"
                     onClick={() => handleValidateCnpj()}
                     disabled={validatingCnpj || !formData.cnpj}
-                    className="inline-flex items-center gap-1 font-heading text-[11px] font-bold text-brand-green-moss hover:underline cursor-pointer disabled:opacity-50"
+                    className="inline-flex items-center gap-1 font-heading text-[13px] font-bold text-brand-green-moss hover:underline cursor-pointer disabled:opacity-50"
                   >
                     {validatingCnpj ? (
                       <>
@@ -484,7 +484,7 @@ export function CompanyProfilePage() {
                       <p className="font-heading font-bold">
                         CNPJ Validado na Receita Federal (BrasilAPI): {cnpjData.razao_social}
                       </p>
-                      <p className="text-[11px] text-emerald-800 font-body">
+                      <p className="text-[13px] text-emerald-800 font-body">
                         Situação: <strong>{cnpjData.descricao_situacao_cadastral || "ATIVA"}</strong>
                         {cnpjData.municipio && cnpjData.uf ? ` • ${cnpjData.municipio} - ${cnpjData.uf}` : ""}
                       </p>
@@ -493,7 +493,7 @@ export function CompanyProfilePage() {
                 )}
 
                 {cnpjError && (
-                  <div className="mt-2 p-2 rounded-xl border border-red-300 bg-red-50 text-red-800 text-[11px] flex items-center gap-1.5 animate-in fade-in">
+                  <div className="mt-2 p-2 rounded-xl border border-red-300 bg-red-50 text-red-800 text-[13px] flex items-center gap-1.5 animate-in fade-in">
                     <Icon icon={ShieldAlert} size={14} className="text-red-700 shrink-0" />
                     <span>{cnpjError}</span>
                   </div>
@@ -586,7 +586,7 @@ export function CompanyProfilePage() {
                   <button
                     type="button"
                     onClick={() => setEmailModalOpen(true)}
-                    className="text-[11px] font-heading font-bold text-brand-green-moss hover:underline cursor-pointer"
+                    className="text-[13px] font-heading font-bold text-brand-green-moss hover:underline cursor-pointer"
                   >
                     Solicitar mudança de e-mail ↗
                   </button>
@@ -600,7 +600,7 @@ export function CompanyProfilePage() {
                     className="w-full rounded-xl border border-border-subtle bg-surface-secondary pl-9 pr-3.5 py-2.5 text-xs text-text-secondary cursor-not-allowed"
                   />
                 </div>
-                <p className="mt-1 text-[11px] text-text-secondary flex items-center justify-between">
+                <p className="mt-1 text-[13px] text-text-secondary flex items-center justify-between">
                   <span>E-mail institucional fixo para login.</span>
                   <button
                     type="button"
@@ -681,7 +681,7 @@ export function CompanyProfilePage() {
                       <span className="font-heading font-bold text-text-primary block">
                         Logo Corporativo Detectado
                       </span>
-                      <span className="text-[11px] text-text-secondary font-body">
+                      <span className="text-[13px] text-text-secondary font-body">
                         Usado como foto/ícone do perfil ({extractDomain(formData.website)})
                       </span>
                     </div>

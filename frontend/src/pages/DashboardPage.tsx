@@ -117,10 +117,10 @@ export function DashboardPage() {
               </div>
               <div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded-full bg-purple-100 px-2.5 py-0.5 font-mono text-[11px] font-bold text-purple-900 border border-purple-200">
+                  <span className="rounded-full bg-purple-100 px-2.5 py-0.5 font-mono text-[13px] font-bold text-purple-900 border border-purple-200">
                     ACESSO PROMOCIONAL ATIVO
                   </span>
-                  <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-800">
+                  <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[13px] font-semibold text-emerald-800">
                     {daysRemaining} dias restantes de cortesia
                   </span>
                 </div>
@@ -255,7 +255,7 @@ export function DashboardPage() {
                         <span className="font-mono text-xs font-bold text-brand-green-dark bg-brand-green-moss/10 px-2.5 py-0.5 rounded-full">
                           TRL {p.trl} • CRL {p.crl}
                         </span>
-                        <span className="text-[11px] font-body text-text-secondary">
+                        <span className="text-[13px] font-body text-text-secondary">
                           {p.patentStatus === "GRANTED" ? "Patente Concedida" : p.patentStatus === "PENDING" ? "Em Depósito" : "Sem Patente"}
                         </span>
                       </div>
@@ -288,7 +288,7 @@ export function DashboardPage() {
                         <span className="font-mono text-xs font-bold text-brand-green-dark bg-brand-green-moss/10 px-2.5 py-0.5 rounded-full">
                           Mín TRL {opp.minTrl} • Alvo CRL {opp.desiredCrl}
                         </span>
-                        <span className="text-[11px] font-body text-text-secondary">
+                        <span className="text-[13px] font-body text-text-secondary">
                           {opp.industrySector}
                         </span>
                       </div>
@@ -359,12 +359,12 @@ export function DashboardPage() {
                       <span className="font-mono text-sm font-bold text-emerald-800 bg-emerald-100 px-3 py-0.5 rounded-full">
                         {m.percentage}% Match
                       </span>
-                      <span className="text-[11px] font-body text-text-secondary">
+                      <span className="text-[13px] font-body text-text-secondary">
                         TRL {m.project.trl} ↔ TRL {m.opportunity.minTrl}
                       </span>
                     </div>
 
-                    <p className="text-[11px] font-heading font-semibold text-text-secondary uppercase">
+                    <p className="text-[13px] font-heading font-semibold text-text-secondary uppercase">
                       {isResearcher ? `Para seu projeto: "${m.project.title.slice(0, 25)}..."` : `Para sua demanda: "${m.opportunity.title.slice(0, 25)}..."`}
                     </p>
 
@@ -372,7 +372,7 @@ export function DashboardPage() {
                       {isResearcher ? m.opportunity.title : m.project.title}
                     </h4>
 
-                    <p className="mt-1 text-[11px] font-mono font-medium text-text-secondary tracking-wider">
+                    <p className="mt-1 text-[13px] font-mono font-medium text-text-secondary tracking-wider">
                       {isResearcher
                         ? "Empresa: ****************"
                         : "Autores: ****************"}
@@ -380,7 +380,7 @@ export function DashboardPage() {
                   </div>
 
                   <div className="mt-6 pt-4 border-t border-border-subtle flex items-center justify-between">
-                    <span className="text-[11px] font-body text-text-secondary">
+                    <span className="text-[13px] font-body text-text-secondary">
                       Competências: {m.explanation.components.competence.percentage}%
                     </span>
                     <Link

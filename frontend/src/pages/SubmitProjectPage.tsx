@@ -501,7 +501,7 @@ export function SubmitProjectPage() {
                           className="accent-brand-green-moss"
                         />
                       </div>
-                      <span className="mt-1 font-body text-[11px] text-text-secondary">
+                      <span className="mt-1 font-body text-[13px] text-text-secondary">
                         {item.desc}
                       </span>
                     </label>
@@ -548,7 +548,7 @@ export function SubmitProjectPage() {
                         <p className="font-heading text-xs font-bold text-text-primary">
                           {comp.name}
                         </p>
-                        <span className="font-body text-[11px] text-text-secondary">
+                        <span className="font-body text-[13px] text-text-secondary">
                           Proficiência declarada: Nível {comp.level} de 5
                         </span>
                       </div>

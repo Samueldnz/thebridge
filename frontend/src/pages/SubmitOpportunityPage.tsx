@@ -332,7 +332,7 @@ export function SubmitOpportunityPage() {
                   placeholder="Detalhe o gargalo tecnológico atual da sua empresa, quais metas técnicas precisam ser alcançadas e os critérios de validação..."
                   className="mt-2 w-full rounded-xl border border-border-subtle bg-surface-primary px-4 py-3 font-body text-sm text-text-primary transition-all focus:border-brand-green-moss focus:bg-surface-white focus:outline-none focus:ring-2 focus:ring-brand-green-moss/20"
                 />
-                <p className="mt-1.5 font-body text-[11px] text-text-secondary">
+                <p className="mt-1.5 font-body text-[13px] text-text-secondary">
                   Mínimo de 30 caracteres. Quanto mais clara a descrição técnica, maior a precisão semântica do algoritmo de IA.
                 </p>
               </div>
@@ -399,14 +399,14 @@ export function SubmitOpportunityPage() {
                       <p className="font-heading text-xs md:text-sm font-bold text-text-primary truncate">
                         {selectedTrlObj.name}
                       </p>
-                      <p className="font-body text-[11px] text-text-secondary truncate">
+                      <p className="font-body text-[13px] text-text-secondary truncate">
                         {selectedTrlObj.description}
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-1.5 flex-shrink-0 text-text-secondary">
-                    <span className="text-[11px] font-heading font-medium hidden sm:inline">
+                    <span className="text-[13px] font-heading font-medium hidden sm:inline">
                       {isTrlMenuOpen ? "Fechar menu" : "Escolher nível"}
                     </span>
                     <Icon icon={isTrlMenuOpen ? ChevronUp : ChevronDown} size={18} />
@@ -417,7 +417,7 @@ export function SubmitOpportunityPage() {
                 {isTrlMenuOpen && (
                   <div className="absolute top-full left-0 right-0 mt-2 z-30 max-h-80 overflow-y-auto rounded-2xl border border-border-subtle bg-surface-white p-2 shadow-xl animate-in fade-in slide-in-from-top-2 duration-150">
                     <div className="p-2 border-b border-border-subtle/70 mb-1">
-                      <p className="font-heading text-[11px] font-semibold text-text-secondary uppercase tracking-wider">
+                      <p className="font-heading text-[13px] font-semibold text-text-secondary uppercase tracking-wider">
                         Selecione o nível de TRL desejado (1 a 9):
                       </p>
                     </div>
@@ -455,7 +455,7 @@ export function SubmitOpportunityPage() {
                               <p className={["font-heading text-xs font-bold truncate", isSelected ? "text-white" : "text-text-primary"].join(" ")}>
                                 {opt.name}
                               </p>
-                              <p className={["font-body text-[11px] line-clamp-2 mt-0.5", isSelected ? "text-white/80" : "text-text-secondary"].join(" ")}>
+                              <p className={["font-body text-[13px] line-clamp-2 mt-0.5", isSelected ? "text-white/80" : "text-text-secondary"].join(" ")}>
                                 {opt.description}
                               </p>
                             </div>
@@ -503,14 +503,14 @@ export function SubmitOpportunityPage() {
                       <p className="font-heading text-xs md:text-sm font-bold text-text-primary truncate">
                         {selectedCrlObj.name}
                       </p>
-                      <p className="font-body text-[11px] text-text-secondary truncate">
+                      <p className="font-body text-[13px] text-text-secondary truncate">
                         {selectedCrlObj.description}
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-1.5 flex-shrink-0 text-text-secondary">
-                    <span className="text-[11px] font-heading font-medium hidden sm:inline">
+                    <span className="text-[13px] font-heading font-medium hidden sm:inline">
                       {isCrlMenuOpen ? "Fechar menu" : "Escolher nível"}
                     </span>
                     <Icon icon={isCrlMenuOpen ? ChevronUp : ChevronDown} size={18} />
@@ -521,7 +521,7 @@ export function SubmitOpportunityPage() {
                 {isCrlMenuOpen && (
                   <div className="absolute top-full left-0 right-0 mt-2 z-30 max-h-80 overflow-y-auto rounded-2xl border border-border-subtle bg-surface-white p-2 shadow-xl animate-in fade-in slide-in-from-top-2 duration-150">
                     <div className="p-2 border-b border-border-subtle/70 mb-1">
-                      <p className="font-heading text-[11px] font-semibold text-text-secondary uppercase tracking-wider">
+                      <p className="font-heading text-[13px] font-semibold text-text-secondary uppercase tracking-wider">
                         Selecione o nível de CRL desejado (1 a 9):
                       </p>
                     </div>
@@ -559,7 +559,7 @@ export function SubmitOpportunityPage() {
                               <p className={["font-heading text-xs font-bold truncate", isSelected ? "text-white" : "text-text-primary"].join(" ")}>
                                 {opt.name}
                               </p>
-                              <p className={["font-body text-[11px] line-clamp-2 mt-0.5", isSelected ? "text-white/80" : "text-text-secondary"].join(" ")}>
+                              <p className={["font-body text-[13px] line-clamp-2 mt-0.5", isSelected ? "text-white/80" : "text-text-secondary"].join(" ")}>
                                 {opt.description}
                               </p>
                             </div>
@@ -623,7 +623,7 @@ export function SubmitOpportunityPage() {
                         className="accent-blue-600"
                       />
                     </div>
-                    <span className="mt-1 font-body text-[11px] text-text-secondary">
+                    <span className="mt-1 font-body text-[13px] text-text-secondary">
                       {item.desc}
                     </span>
                   </label>

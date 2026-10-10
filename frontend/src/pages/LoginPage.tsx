@@ -302,7 +302,7 @@ export function LoginPage() {
                 <div>
                   <Link
                     to="/cadastro"
-                    className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-[11px] font-medium text-amber-900 hover:bg-amber-100 transition-colors shadow-2xs"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-[13px] font-medium text-amber-900 hover:bg-amber-100 transition-colors shadow-2xs"
                   >
                     <span>🎟️ Possui um cupom promocional ou de parceiro? Insira no cadastro para resgatar →</span>
                   </Link>
