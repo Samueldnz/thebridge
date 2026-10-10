@@ -16,23 +16,39 @@ export const FIXED_CENSOR_COMPANY = "****************";
 
 export interface ConnectionItem {
   id: string;
-  // Dados da Empresa (identidade oculta para o pesquisador até status === "CONECTADO")
+  // Ficha Completa da Empresa e da Demanda (identidade oculta para o pesquisador até status === "CONECTADO")
   companyName: string;
+  companyCnpj?: string;
+  companyVerificationStatus?: "VERIFICADO" | "EM_ANALISE" | "NAO_VERIFICADO" | "RECUSADO" | "NAO_SUBMETIDO";
+  companyWebsite?: string;
+  companyLinkedin?: string;
   companyEmail?: string;
   companyPhone?: string;
   companyContactName?: string;
+  companyRoleTitle?: string;
   companySector: string;        // Visível ao pesquisador após aprovação do Admin
   investmentAmount: string;     // Visível ao pesquisador após aprovação do Admin
   executionTimeline: string;    // Visível ao pesquisador após aprovação do Admin
   opportunityTitle?: string;
+  opportunityDescription?: string;
+  opportunityKeywords?: string;
+  opportunityMinTrl?: number | string;
+  opportunityDesiredCrl?: number | string;
+  opportunityPatentReq?: string;
 
-  // Dados do Pesquisador e Projeto (autores e vínculos ocultos para a empresa até status === "CONECTADO")
+  // Ficha Completa do Pesquisador e do Projeto (autores e vínculos ocultos para a empresa até status === "CONECTADO")
   researcherName: string;
   researcherAffiliation?: string;
   researcherEmail?: string;
   researcherPhone?: string;
+  researcherLattes?: string;
+  researcherLinkedin?: string;
   articleTitle: string;
+  articleAbstract?: string;
   articleEvent?: string;
+  articleArea?: string;
+  articleCode?: string;
+  cosineScore?: number;
 
   matchScore: number;
   status: ConnectionStatus;
@@ -66,8 +82,8 @@ export interface NotificationItem {
   targetRole?: "COMPANY" | "RESEARCHER" | "ADMIN" | "ALL";
 }
 
-const STORAGE_CONNECTIONS_GLOBAL_KEY = "thebridge_connections_v2_global";
-const STORAGE_NOTIFICATIONS_KEY = "thebridge_notifications_v2";
+const STORAGE_CONNECTIONS_GLOBAL_KEY = "thebridge_connections_v3_global";
+const STORAGE_NOTIFICATIONS_KEY = "thebridge_notifications_v3";
 
 /**
  * Contas autorizadas para visualização dos dados simulados de verificação e teste de funcionalidade.
@@ -91,19 +107,37 @@ const INITIAL_CONNECTIONS: ConnectionItem[] = [
   {
     id: "conn-stage-1",
     companyName: "Braskem Inovação & Polímeros S.A.",
+    companyCnpj: "42.150.391/0001-70",
+    companyVerificationStatus: "VERIFICADO",
+    companyWebsite: "https://www.braskem.com.br",
+    companyLinkedin: "https://www.linkedin.com/company/braskem",
     companyEmail: "inovacao.aberta@braskem.com.br",
     companyPhone: "(11) 3576-8900",
     companyContactName: "Dr. Roberto Albuquerque",
+    companyRoleTitle: "Gerente de P&D e Novos Negócios",
     companySector: "Indústria Química, Petroquímica e Novos Materiais",
     investmentAmount: "R$ 350.000,00 a R$ 600.000,00",
     executionTimeline: "18 meses",
-    researcherName: "Profa. Dra. Helena Vasconcelos; Dr. Marcos Paulo Ribeiro",
-    researcherAffiliation: "Universidade Estadual de Campinas (UNICAMP) - Instituto de Química",
+    opportunityTitle: "Membranas Poliméricas Sustentáveis para Filtração Industrial e Tratamento de Efluentes",
+    opportunityDescription:
+      "Buscamos soluções em membranas de matriz polimérica reforçadas com nanomateriais celulósicos ou cargas funcionais para retenção de contaminantes biológicos e químicos em correntes de efluentes industriais, visando alta durabilidade mecânica e resistência à incrustação (anti-fouling).",
+    opportunityKeywords: "membranas poliméricas, nanocelulose, filtração de efluentes, tratamento de esgoto, polímeros verdes",
+    opportunityMinTrl: 4,
+    opportunityDesiredCrl: 5,
+    opportunityPatentReq: "Aceita em Depósito",
+    researcherName: "Helena Vasconcelos, Marcos Paulo Ribeiro, Juliana T. Fontes",
+    researcherAffiliation: "Universidade Estadual de Campinas (UNICAMP) - Instituto de Química / LabPol",
     researcherEmail: "helena.vasconcelos@iqm.unicamp.br",
     researcherPhone: "(19) 98812-3456",
+    researcherLattes: "http://lattes.cnpq.br/",
+    researcherLinkedin: "https://www.linkedin.com/search/results/people/?keywords=Helena+Vasconcelos+UNICAMP",
     articleTitle: "Manufacturing of polymer matrix membranes reinforced with nanocellulosic materials for use in wastewater filtration",
+    articleAbstract:
+      "Polymeric membranes are applied for wastewater and unhealthy water filtration to contain the action of biological contaminants (bacteria and viruses), organic pollutants and suspended solids. In this work, biodegradable and high-performance polymer matrix membranes reinforced with functionalized nanocellulosic structures were synthesized by phase inversion and electrospinning techniques. Mechanical tensile essays, scanning electron microscopy (SEM), contact angle and hydraulic permeability tests demonstrated a 42% increase in permeate flux and superior retention efficiency (>98.5%) for industrial and sanitary wastewater treatment.",
     articleEvent: "SBPMat 2025",
-    opportunityTitle: "Membranas Poliméricas Sustentáveis para Filtração Industrial",
+    articleArea: "Materiais Poliméricos, Membranas & Sustentabilidade",
+    articleCode: "PM-OR-042",
+    cosineScore: 0.714,
     matchScore: 91,
     status: "EM_ANALISE_ADMIN",
     message:
@@ -116,19 +150,36 @@ const INITIAL_CONNECTIONS: ConnectionItem[] = [
   {
     id: "conn-stage-2",
     companyName: "Aegea Saneamento & Efluentes S.A.",
+    companyCnpj: "08.827.501/0001-58",
+    companyVerificationStatus: "VERIFICADO",
+    companyWebsite: "https://www.aegea.com.br",
+    companyLinkedin: "https://www.linkedin.com/company/aegea-saneamento",
     companyEmail: "pd.engenharia@aegea.com.br",
     companyPhone: "(11) 3890-1122",
     companyContactName: "Eng. Beatriz Fontes",
+    companyRoleTitle: "Diretora de Tecnologia e Eficiência Operacional",
     companySector: "Saneamento Básico, Tratamento de Águas e Efluentes",
     investmentAmount: "R$ 250.000,00 a R$ 450.000,00",
     executionTimeline: "12 meses",
-    researcherName: "Prof. Dr. Carlos Eduardo Siqueira; Eng. Lucas Prado",
-    researcherAffiliation: "Universidade Federal do Rio de Janeiro (UFRJ) - COPPE / Engenharia de Materiais",
+    opportunityTitle: "Material Filtrante de Baixo Custo para Estações de Tratamento de Esgoto",
+    opportunityDescription:
+      "Procuramos materiais adsorventes sustentáveis e filtros cerâmicos ou compósitos produzidos a partir de resíduos industriais para remoção de micropoluentes, metais pesados e contaminantes emergentes em estações de tratamento de esgoto sanitário.",
+    opportunityKeywords: "adsorção, tratamento de esgoto, materiais reciclados, filtro cerâmico, saneamento",
+    opportunityMinTrl: 3,
+    opportunityDesiredCrl: 4,
+    opportunityPatentReq: "Dispensável",
+    researcherName: "Carlos Eduardo Siqueira, Lucas Prado, Fernanda Rocha",
+    researcherAffiliation: "Universidade Federal do Rio de Janeiro (UFRJ) - COPPE / Programa de Engenharia Metalúrgica e de Materiais",
     researcherEmail: "carlos.siqueira@metalurgia.ufrj.br",
     researcherPhone: "(21) 99741-8520",
+    researcherLattes: "http://lattes.cnpq.br/",
     articleTitle: "Evaluation of the potential use of recycled materials for adsorption in treatment",
+    articleAbstract:
+      "The search for sustainable and economically feasible materials for wastewater treatment has been an important line of research in materials engineering. This study evaluates the synthesis and characterization of porous adsorbent filters produced from industrial solid waste and recycled mineral matrices. Adsorption isotherms (Langmuir and Freundlich models), X-ray diffraction (XRD) and BET surface area analysis confirmed high specific surface area and rapid kinetics for pollutant removal in sewage and industrial effluent treatment.",
     articleEvent: "CBPol",
-    opportunityTitle: "Material Filtrante de Baixo Custo para Estações de Tratamento de Esgoto",
+    articleArea: "Reciclagem de Materiais & Adsorventes Ambientais",
+    articleCode: "ENV-P-118",
+    cosineScore: 0.706,
     matchScore: 89,
     status: "AGUARDANDO_PESQUISADOR",
     message:
@@ -143,19 +194,35 @@ const INITIAL_CONNECTIONS: ConnectionItem[] = [
   {
     id: "conn-stage-3",
     companyName: "Eurofarma Laboratórios S.A.",
+    companyCnpj: "61.190.096/0001-92",
+    companyVerificationStatus: "VERIFICADO",
+    companyWebsite: "https://www.eurofarma.com.br",
+    companyLinkedin: "https://www.linkedin.com/company/eurofarma",
     companyEmail: "parcerias.cientificas@eurofarma.com.br",
     companyPhone: "(11) 5090-8600",
     companyContactName: "Dra. Camila Medeiros",
+    companyRoleTitle: "Head de Inovação Radical & Parcerias Acadêmicas",
     companySector: "Saúde, Biotecnologia & Indústria Farmacêutica",
     investmentAmount: "R$ 500.000,00 a R$ 1.200.000,00",
     executionTimeline: "24 meses",
-    researcherName: "Profa. Dra. Mariana Dornelles; Dr. Tiago Mendes",
+    opportunityTitle: "Sistemas Nanométricos para Aumento de Biodisponibilidade de Princípios Ativos",
+    opportunityDescription:
+      "Buscamos grupos de pesquisa com tecnologia em nanocarreadores lipídicos ou poliméricos para co-desenvolvimento de formulações de liberação controlada e alta eficácia terapêutica em ensaios pré-clínicos avançados.",
+    opportunityKeywords: "nanotecnologia, farmacotécnica, liberação controlada, nanocarreadores poliméricos",
+    opportunityMinTrl: 4,
+    opportunityDesiredCrl: 5,
+    opportunityPatentReq: "Aceita em Depósito",
+    researcherName: "Mariana Dornelles, Tiago Mendes",
     researcherAffiliation: "Universidade de São Paulo (USP) - Faculdade de Ciências Farmacêuticas",
     researcherEmail: "mariana.dornelles@usp.br",
     researcherPhone: "(11) 99123-4567",
     articleTitle: "Development of polymeric nanocarriers for controlled release of bioactive compounds",
+    articleAbstract:
+      "Biodegradable polymeric nanoparticles based on PLGA-PEG block copolymers were developed by microfluidic nanoprecipitation for targeted and controlled drug delivery. Dynamic light scattering (DLS), zeta potential and in vitro release profiles demonstrated monodisperse particle size distribution (115 nm), encapsulation efficiency above 89% and sustained release over 72 hours under physiological conditions.",
     articleEvent: "SBPMat",
-    opportunityTitle: "Sistemas Nanométricos para Aumento de Biodisponibilidade de Princípios Ativos",
+    articleArea: "Biomateriais & Nanomedicina",
+    articleCode: "BIO-OR-019",
+    cosineScore: 0.726,
     matchScore: 94,
     status: "AGUARDANDO_TERMO",
     message:
@@ -169,19 +236,35 @@ const INITIAL_CONNECTIONS: ConnectionItem[] = [
   {
     id: "conn-stage-4",
     companyName: "WEG Equipamentos Elétricos S.A.",
+    companyCnpj: "84.429.695/0001-11",
+    companyVerificationStatus: "VERIFICADO",
+    companyWebsite: "https://www.weg.net",
+    companyLinkedin: "https://www.linkedin.com/company/weg",
     companyEmail: "pd.materiais@weg.net",
     companyPhone: "(47) 3276-4000",
     companyContactName: "Dr. Henrique Zimmermann",
+    companyRoleTitle: "Especialista Corporativo em Materiais Elétricos",
     companySector: "Energia, Motores Elétricos e Automação Industrial",
     investmentAmount: "R$ 800.000,00 a R$ 1.500.000,00",
     executionTimeline: "18 a 24 meses",
-    researcherName: "Prof. Dr. Fernando Álvares; Dra. Patrícia Lemos",
-    researcherAffiliation: "Universidade Federal de Santa Catarina (UFSC) - LabMat",
+    opportunityTitle: "Novos Compósitos Magnéticos para Motores de Alta Eficiência",
+    opportunityDescription:
+      "Desenvolvimento de compósitos magnéticos macios (SMC) e materiais nanoestruturados com baixas perdas por correntes parasitas e elevada condutividade térmica para aplicação em estatores de motores elétricos de alta rotação.",
+    opportunityKeywords: "compósitos magnéticos, motores elétricos, dissipação térmica, eficiência energética",
+    opportunityMinTrl: 5,
+    opportunityDesiredCrl: 5,
+    opportunityPatentReq: "Obrigatória",
+    researcherName: "Fernando Álvares, Patrícia Lemos",
+    researcherAffiliation: "Universidade Federal de Santa Catarina (UFSC) - LabMat / Engenharia Mecânica",
     researcherEmail: "fernando.alvares@ufsc.br",
     researcherPhone: "(48) 99654-3210",
     articleTitle: "Magnetic nanocomposites for high-efficiency electric motors and thermal dissipation",
+    articleAbstract:
+      "Soft magnetic nanocomposites insulated with hybrid inorganic-organic dielectric coatings were consolidated by warm compaction and controlled sintering. Magnetic hysteresis measurements, core loss evaluation at medium-to-high frequencies and thermal conductivity essays revealed a 31% reduction in eddy current losses and enhanced heat extraction for next-generation electric traction motors.",
     articleEvent: "SBPMat",
-    opportunityTitle: "Novos Compósitos Magnéticos para Motores de Alta Eficiência",
+    articleArea: "Materiais Magnéticos & Energia",
+    articleCode: "MAG-OR-007",
+    cosineScore: 0.698,
     matchScore: 87,
     status: "CONECTADO",
     message:
@@ -287,18 +370,27 @@ export const connectionsService = {
 
   /**
    * Etapa 1: Perfil Empresa solicita conexão no resultado do match.
-   * Vai diretamente para a Central de Admin com status 'EM_ANALISE_ADMIN'.
+   * Vai diretamente para a Central de Admin com status 'EM_ANALISE_ADMIN' e dossiê completo de ambos os lados.
    */
   requestConnection(
     data: {
       articleTitle: string;
+      articleAbstract?: string;
       articleEvent?: string;
+      articleArea?: string;
+      articleCode?: string;
+      cosineScore?: number;
       matchScore: number;
       message: string;
       companyName?: string;
+      companyCnpj?: string;
+      companyVerificationStatus?: "VERIFICADO" | "EM_ANALISE" | "NAO_VERIFICADO" | "RECUSADO" | "NAO_SUBMETIDO";
+      companyWebsite?: string;
+      companyLinkedin?: string;
       companyEmail?: string;
       companyPhone?: string;
       companyContactName?: string;
+      companyRoleTitle?: string;
       companySector?: string;
       investmentAmount?: string;
       executionTimeline?: string;
@@ -306,6 +398,11 @@ export const connectionsService = {
       researcherAffiliation?: string;
       researcherEmail?: string;
       opportunityTitle?: string;
+      opportunityDescription?: string;
+      opportunityKeywords?: string;
+      opportunityMinTrl?: number | string;
+      opportunityDesiredCrl?: number | string;
+      opportunityPatentReq?: string;
     },
     userEmail?: string
   ): ConnectionItem {
@@ -326,20 +423,42 @@ export const connectionsService = {
 
     const newConn: ConnectionItem = {
       id: `conn-${Date.now()}`,
-      companyName: data.companyName || currentUser?.companyName || currentUser?.name || "Empresa Parceira Registrada",
+      companyName:
+        data.companyName ||
+        currentUser?.cnpjValidationData?.razaoSocial ||
+        currentUser?.companyName ||
+        currentUser?.name ||
+        "Empresa Parceira Registrada",
+      companyCnpj: data.companyCnpj || currentUser?.cnpj || "Não informado",
+      companyVerificationStatus:
+        data.companyVerificationStatus || currentUser?.verificationStatus || "EM_ANALISE",
+      companyWebsite: data.companyWebsite || currentUser?.website || "",
+      companyLinkedin: data.companyLinkedin || currentUser?.linkedin || "",
       companyEmail: data.companyEmail || currentUser?.email || "contato@empresa.com.br",
       companyPhone: data.companyPhone || currentUser?.phone || "(11) 99999-0000",
       companyContactName: data.companyContactName || currentUser?.name || "Gestor de P&D",
+      companyRoleTitle: data.companyRoleTitle || currentUser?.roleTitle || "Gestor de Inovação & P&D",
       companySector: data.companySector || currentUser?.industrySector || "Indústria de Transformação & Materiais",
       investmentAmount: data.investmentAmount || "R$ 150.000,00 a R$ 400.000,00",
       executionTimeline: data.executionTimeline || "12 a 18 meses",
+      opportunityTitle: data.opportunityTitle || "Demanda Tecnológica Corporativa",
+      opportunityDescription:
+        data.opportunityDescription ||
+        "Demanda corporativa submetida no motor de busca semântica vetorial The Bridge.",
+      opportunityKeywords: data.opportunityKeywords || "",
+      opportunityMinTrl: data.opportunityMinTrl ?? 3,
+      opportunityDesiredCrl: data.opportunityDesiredCrl ?? 4,
+      opportunityPatentReq: data.opportunityPatentReq || "Aceita em Depósito",
       researcherName: rawAuthors,
       researcherAffiliation: rawAffiliation,
       researcherEmail: data.researcherEmail || "pesquisador.lider@universidade.edu.br",
       researcherPhone: "(11) 98765-4321",
       articleTitle: data.articleTitle,
+      articleAbstract: data.articleAbstract || "",
       articleEvent: data.articleEvent || "Acervo Científico The Bridge",
-      opportunityTitle: data.opportunityTitle || "Demanda Tecnológica Corporativa",
+      articleArea: data.articleArea || "Ciência e Engenharia de Materiais",
+      articleCode: data.articleCode || "",
+      cosineScore: data.cosineScore,
       matchScore: data.matchScore,
       status: "EM_ANALISE_ADMIN",
       message: data.message,

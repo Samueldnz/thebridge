@@ -238,10 +238,19 @@ export function MatchingResultsPage() {
     const parsedAuthors = splitAuthorsAndAffiliations(selectedArticleForConnection.autores);
     connectionsService.requestConnection({
       articleTitle: selectedArticleForConnection.titulo,
+      articleAbstract: getCleanAbstract(selectedArticleForConnection.resumo),
+      articleArea: selectedArticleForConnection.area,
       articleEvent: selectedArticleForConnection.evento,
+      articleCode: selectedArticleForConnection.codigo,
       matchScore: selectedArticleForConnection.relevancia_pct,
+      cosineScore: selectedArticleForConnection.score_cosseno,
       message: connectionMessage,
       companyName: user?.companyName || user?.name || "Empresa Parceira Registrada",
+      companyCnpj: user?.cnpj || "Não informado",
+      companyVerificationStatus: user?.verificationStatus || "EM_ANALISE",
+      companyWebsite: user?.website,
+      companyLinkedin: user?.linkedin,
+      companyRoleTitle: user?.roleTitle || "Representante de P&D",
       companyEmail: user?.email,
       companyPhone: user?.phone,
       companyContactName: user?.name,
@@ -252,6 +261,16 @@ export function MatchingResultsPage() {
       researcherAffiliation: parsedAuthors.affiliations || "Instituição Científica e Tecnológica (ICT)",
       researcherEmail: selectedArticleForConnection.email || selectedArticleForConnection.emails?.[0],
       opportunityTitle: selectedOpportunity?.title || "Demanda Tecnológica Corporativa",
+      opportunityDescription: selectedOpportunity?.description || searchQuery,
+      opportunityKeywords: selectedOpportunity?.keywords,
+      opportunityMinTrl: selectedOpportunity?.minTrl ? `TRL ${selectedOpportunity.minTrl}` : "TRL 3 a 6",
+      opportunityDesiredCrl: selectedOpportunity?.desiredCrl ? `CRL ${selectedOpportunity.desiredCrl}` : "CRL 3+",
+      opportunityPatentReq:
+        selectedOpportunity?.patentRequirement === "REQUIRED"
+          ? "Exige Patente / Pedido Depositado"
+          : selectedOpportunity?.patentRequirement === "NOT_REQUIRED"
+          ? "Sem exigência prévia de patente"
+          : "Desejável (Co-titularidade ou Licenciamento)",
     });
     setConnectionSentSuccess(true);
     setTimeout(() => {

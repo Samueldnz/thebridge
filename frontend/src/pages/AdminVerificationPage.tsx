@@ -42,6 +42,11 @@ export function AdminVerificationPage() {
   const currentUser = authService.getStoredUser();
   const isAuthorized = adminAuditService.isAdmin(currentUser?.email);
 
+  // Aba ativa do Painel de Admin
+  const [activeAdminTab, setActiveAdminTab] = useState<
+    "MATCHES" | "AUDITORIA" | "SOLICITACOES"
+  >("MATCHES");
+
   // ========================================================
   // ESTADOS - CENTRAL DE INTERMEDIAÇÃO DE CONEXÕES (MATCHES)
   // ========================================================
@@ -53,6 +58,7 @@ export function AdminVerificationPage() {
     return list.length > 0 ? list[0].id : "";
   });
   const [connStatusFilter, setConnStatusFilter] = useState<string>("TODOS");
+  const [adminConnFeedbackInput, setAdminConnFeedbackInput] = useState<string>("");
 
   // ========================================================
   // ESTADOS - AUDITORIA DE PERFIS
@@ -120,8 +126,10 @@ export function AdminVerificationPage() {
   const handleApproveConnectionPotential = (conn: ConnectionItem) => {
     connectionsService.approveConnectionByAdmin(
       conn.id,
-      "Potencial de conexão validado pela Central de Admin The Bridge."
+      adminConnFeedbackInput.trim() ||
+        "Potencial de conexão validado pela Central de Admin The Bridge. Alinhamento técnico e capacidade de investimento verificados."
     );
+    setAdminConnFeedbackInput("");
     setAdminConnections(connectionsService.getAllConnections());
     showToast(
       `✅ Potencial aprovado! O pesquisador foi notificado (sem o nome da empresa, exibindo área de atuação, investimento e prazo).`
@@ -131,8 +139,10 @@ export function AdminVerificationPage() {
   const handleRejectConnectionPotential = (conn: ConnectionItem) => {
     connectionsService.rejectConnectionByAdmin(
       conn.id,
-      "Após análise de potencial na Central de Admin, a solicitação não atendeu aos requisitos mínimos de alinhamento."
+      adminConnFeedbackInput.trim() ||
+        "Após análise de potencial na Central de Admin, a solicitação não atendeu aos requisitos mínimos de alinhamento."
     );
+    setAdminConnFeedbackInput("");
     setAdminConnections(connectionsService.getAllConnections());
     showToast(`Solicitação de conexão recusada pela Central de Admin.`);
   };
@@ -423,269 +433,675 @@ export function AdminVerificationPage() {
         )}
 
         {/* ======================================================================== */}
-        {/* CENTRAL DE ANÁLISE DE POTENCIAL DE CONEXÕES (EMPRESA ↔ PESQUISADOR)      */}
+        {/* NAVEGAÇÃO POR ABAS HORIZONTAIS NO TOPO DO PAINEL DE ADMIN                */}
         {/* ======================================================================== */}
-        <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <div>
-              <h2 className="font-heading text-lg font-bold text-text-primary flex items-center gap-2">
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-green-dark text-white text-xs font-bold">
-                  ★
-                </span>
-                Central de Análise de Potencial de Conexões (Matches Empresa ↔ Pesquisador)
-              </h2>
-              <p className="font-body text-xs text-text-secondary mt-0.5">
-                Avalie o potencial estratégico das solicitações de conexão enviadas pelas empresas antes de notificar os pesquisadores.
-              </p>
-            </div>
+        <div className="rounded-2xl border border-border-subtle bg-surface-white p-1.5 shadow-xs flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setActiveAdminTab("MATCHES")}
+            className={`flex-1 min-w-[220px] flex items-center justify-center gap-2.5 rounded-xl px-4 py-3 font-heading text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+              activeAdminTab === "MATCHES"
+                ? "bg-brand-green-dark text-white shadow-sm"
+                : "text-text-secondary hover:bg-surface-primary hover:text-text-primary"
+            }`}
+          >
+            <span>1. Análise de Matches &amp; Conexões</span>
+            <span
+              className={`rounded-full px-2 py-0.5 text-[11px] font-mono font-bold ${
+                activeAdminTab === "MATCHES"
+                  ? "bg-amber-300 text-amber-950"
+                  : "bg-amber-100 text-amber-900"
+              }`}
+            >
+              {countPendingAdminConns} pendentes
+            </span>
+          </button>
 
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-[11px] font-bold text-amber-900 border border-amber-300">
-                {countPendingAdminConns} Aguardando Análise Admin
-              </span>
-              <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-[11px] font-bold text-blue-900 border border-blue-300">
-                {countInProgressConns} Em Aceite / Termo
-              </span>
-              <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-bold text-emerald-900 border border-emerald-300">
-                {countCompletedConns} Conectadas (Termo Assinado)
-              </span>
-            </div>
-          </div>
+          <button
+            type="button"
+            onClick={() => setActiveAdminTab("AUDITORIA")}
+            className={`flex-1 min-w-[220px] flex items-center justify-center gap-2.5 rounded-xl px-4 py-3 font-heading text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+              activeAdminTab === "AUDITORIA"
+                ? "bg-brand-green-dark text-white shadow-sm"
+                : "text-text-secondary hover:bg-surface-primary hover:text-text-primary"
+            }`}
+          >
+            <span>2. Auditoria de Perfis (Selo Ouro)</span>
+            <span
+              className={`rounded-full px-2 py-0.5 text-[11px] font-mono font-bold ${
+                activeAdminTab === "AUDITORIA"
+                  ? "bg-emerald-200 text-emerald-950"
+                  : "bg-emerald-100 text-emerald-900"
+              }`}
+            >
+              {countPendingVerif} pendentes
+            </span>
+          </button>
 
-          <div className="bg-surface-white rounded-3xl border border-border-subtle shadow-xs overflow-hidden min-h-[500px] flex flex-col">
-            {/* Barra de Filtros de Status da Conexão */}
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle px-5 py-3 bg-surface-primary">
-              <div className="flex flex-wrap items-center gap-1.5">
-                <span className="text-xs font-heading font-semibold text-text-secondary mr-1">Etapa:</span>
-                {[
-                  { id: "TODOS", label: `Todas (${adminConnections.length})` },
-                  { id: "EM_ANALISE_ADMIN", label: `Para Aprovar Potencial (${countPendingAdminConns})` },
-                  { id: "AGUARDANDO_PESQUISADOR", label: "Com o Pesquisador" },
-                  { id: "AGUARDANDO_TERMO", label: "Aguardando Termo (Success Fee)" },
-                  { id: "CONECTADO", label: "Conectadas" },
-                ].map((tab) => (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => setConnStatusFilter(tab.id)}
-                    className={`rounded-full px-2.5 py-1 text-xs font-heading font-medium transition-all cursor-pointer ${
-                      connStatusFilter === tab.id
-                        ? "bg-brand-green-dark text-white font-bold"
-                        : "bg-surface-white border border-border-subtle text-text-secondary hover:text-text-primary"
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Master-Detail das Conexões */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 flex-1">
-              {/* Lista lateral esquerda */}
-              <div className="lg:col-span-4 border-r border-border-subtle overflow-y-auto max-h-[560px] divide-y divide-border-subtle bg-surface-primary/25">
-                {filteredAdminConns.length === 0 ? (
-                  <div className="p-10 text-center text-text-secondary">
-                    <Icon icon={Inbox} size={28} className="mx-auto text-text-muted mb-2" />
-                    <p className="text-xs font-heading font-semibold">Nenhuma solicitação nesta etapa</p>
-                  </div>
-                ) : (
-                  filteredAdminConns.map((conn) => {
-                    const isSelected = selectedAdminConn?.id === conn.id;
-                    return (
-                      <button
-                        key={conn.id}
-                        type="button"
-                        onClick={() => setSelectedConnId(conn.id)}
-                        className={`w-full text-left p-4 transition-all flex flex-col gap-1.5 cursor-pointer ${
-                          isSelected
-                            ? "bg-emerald-50/80 border-l-4 border-l-brand-green-dark"
-                            : "hover:bg-surface-white"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="font-heading text-xs font-bold text-text-primary truncate">
-                            {conn.companyName}
-                          </span>
-                          <span className="font-mono text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full shrink-0">
-                            {conn.matchScore}% Match
-                          </span>
-                        </div>
-
-                        <p className="font-body text-[11px] text-text-secondary line-clamp-2 font-medium">
-                          Projeto: {conn.articleTitle}
-                        </p>
-
-                        <div className="flex items-center justify-between pt-1 text-[10px] font-mono">
-                          <span
-                            className={`px-2 py-0.5 rounded font-bold ${
-                              conn.status === "EM_ANALISE_ADMIN"
-                                ? "bg-amber-100 text-amber-900"
-                                : conn.status === "AGUARDANDO_PESQUISADOR"
-                                ? "bg-blue-100 text-blue-900"
-                                : conn.status === "AGUARDANDO_TERMO"
-                                ? "bg-purple-100 text-purple-900"
-                                : conn.status === "CONECTADO"
-                                ? "bg-emerald-100 text-emerald-900"
-                                : "bg-rose-100 text-rose-900"
-                            }`}
-                          >
-                            {conn.status === "EM_ANALISE_ADMIN"
-                              ? "Aguardando Admin"
-                              : conn.status === "AGUARDANDO_PESQUISADOR"
-                              ? "Com Pesquisador"
-                              : conn.status === "AGUARDANDO_TERMO"
-                              ? "Aguardando Termo"
-                              : conn.status === "CONECTADO"
-                              ? "Conectado"
-                              : "Recusada"}
-                          </span>
-                          <span className="text-text-muted">{conn.createdAt}</span>
-                        </div>
-                      </button>
-                    );
-                  })
-                )}
-              </div>
-
-              {/* Detalhe completo à direita (Visão aberta para o Admin) */}
-              <div className="lg:col-span-8 p-6 flex flex-col justify-between bg-surface-white">
-                {selectedAdminConn ? (
-                  <div className="space-y-5">
-                    <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border-subtle pb-4">
-                      <div>
-                        <span className="font-mono text-[10px] font-bold uppercase text-brand-green-moss">
-                          Dossiê Completo de Matchmaking (Visão Exclusiva Admin)
-                        </span>
-                        <h3 className="font-heading text-base md:text-lg font-bold text-text-primary mt-0.5">
-                          {selectedAdminConn.articleTitle}
-                        </h3>
-                      </div>
-                      <span className="rounded-xl bg-emerald-100 text-emerald-900 font-mono text-xs font-bold px-3 py-1">
-                        {selectedAdminConn.matchScore}% Afinidade
-                      </span>
-                    </div>
-
-                    {/* Grid Lado a Lado: Perfil Empresa vs Perfil Pesquisador */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                      {/* Dados Completos da Empresa */}
-                      <div className="rounded-2xl border border-border-subtle bg-surface-primary p-4 space-y-2">
-                        <div className="flex items-center gap-2 font-heading font-bold text-text-primary uppercase text-[11px] text-blue-900">
-                          <Icon icon={Building2} size={14} />
-                          Perfil Empresa Solicitante (Dados Abertos ao Admin)
-                        </div>
-                        <p className="font-heading font-bold text-sm text-text-primary">
-                          {selectedAdminConn.companyName}
-                        </p>
-                        <div className="space-y-1 text-text-secondary">
-                          <p><strong>Área de Atuação:</strong> {selectedAdminConn.companySector}</p>
-                          <p><strong>Capacidade de Investimento:</strong> <span className="text-emerald-800 font-bold">{selectedAdminConn.investmentAmount}</span></p>
-                          <p><strong>Tempo Desejável de Execução:</strong> {selectedAdminConn.executionTimeline}</p>
-                          <p><strong>E-mail Corporativo:</strong> {selectedAdminConn.companyEmail || "contato@empresa.com.br"}</p>
-                          <p><strong>Telefone:</strong> {selectedAdminConn.companyPhone || "(11) 3000-0000"}</p>
-                        </div>
-                      </div>
-
-                      {/* Dados Completos do Pesquisador */}
-                      <div className="rounded-2xl border border-border-subtle bg-surface-primary p-4 space-y-2">
-                        <div className="flex items-center gap-2 font-heading font-bold text-text-primary uppercase text-[11px] text-emerald-900">
-                          <Icon icon={GraduationCap} size={14} />
-                          Perfil Pesquisador &amp; Projeto (Dados Abertos ao Admin)
-                        </div>
-                        <p className="font-heading font-bold text-sm text-text-primary">
-                          {selectedAdminConn.researcherName}
-                        </p>
-                        <div className="space-y-1 text-text-secondary">
-                          <p><strong>Vínculos Institucionais:</strong> {selectedAdminConn.researcherAffiliation || "ICT / Universidade"}</p>
-                          <p><strong>E-mail do Pesquisador:</strong> {selectedAdminConn.researcherEmail || "pesquisador@universidade.edu.br"}</p>
-                          <p><strong>Evento / Base:</strong> {selectedAdminConn.articleEvent || "Acervo The Bridge"}</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Mensagem da Empresa */}
-                    <div className="rounded-2xl border border-border-subtle bg-surface-primary/50 p-4 text-xs space-y-1">
-                      <span className="font-mono text-[10px] font-bold uppercase text-text-secondary">
-                        Mensagem de Apresentação da Empresa:
-                      </span>
-                      <p className="font-body text-text-primary leading-relaxed">
-                        &ldquo;{selectedAdminConn.message}&rdquo;
-                      </p>
-                    </div>
-
-                    {/* Status das Assinaturas do Termo se em AGUARDANDO_TERMO ou CONECTADO */}
-                    {(selectedAdminConn.status === "AGUARDANDO_TERMO" ||
-                      selectedAdminConn.status === "CONECTADO") && (
-                      <div className="rounded-2xl border border-purple-200 bg-purple-50/60 p-3.5 text-xs flex flex-wrap items-center justify-between gap-2">
-                        <span className="font-heading font-bold text-purple-950">
-                          Status do Termo de Responsabilidade (Success Fee):
-                        </span>
-                        <div className="flex items-center gap-3 font-mono text-[11px]">
-                          <span className={selectedAdminConn.companySignedTerm ? "text-emerald-800 font-bold" : "text-amber-800"}>
-                            Empresa: {selectedAdminConn.companySignedTerm ? "✓ Assinado" : "⏳ Pendente"}
-                          </span>
-                          <span>|</span>
-                          <span className={selectedAdminConn.researcherSignedTerm ? "text-emerald-800 font-bold" : "text-amber-800"}>
-                            Pesquisador: {selectedAdminConn.researcherSignedTerm ? "✓ Assinado" : "⏳ Pendente"}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Botões de Ação do Admin */}
-                    <div className="pt-3 border-t border-border-subtle flex flex-wrap items-center justify-between gap-3">
-                      <span className="text-[11px] font-body text-text-secondary">
-                        Ao aprovar, o pesquisador será notificado com a Área de Atuação, Investimento e Prazo (sem o nome da empresa).
-                      </span>
-
-                      {selectedAdminConn.status === "EM_ANALISE_ADMIN" ? (
-                        <div className="flex items-center gap-2.5">
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            onClick={() => handleRejectConnectionPotential(selectedAdminConn)}
-                            className="text-xs text-rose-700 hover:bg-rose-50 cursor-pointer"
-                          >
-                            <Icon icon={XCircle} size={14} />
-                            Recusar Potencial
-                          </Button>
-                          <Button
-                            size="sm"
-                            onClick={() => handleApproveConnectionPotential(selectedAdminConn)}
-                            className="bg-brand-green-dark !text-white hover:bg-brand-green-moss text-xs font-bold cursor-pointer"
-                          >
-                            <Icon icon={CheckCircle2} size={14} />
-                            Aprovar Potencial e Notificar Pesquisador
-                          </Button>
-                        </div>
-                      ) : (
-                        <span className="rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-1.5 text-xs font-heading font-bold text-emerald-900">
-                          ✓ Potencial já analisado ({selectedAdminConn.status})
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="p-12 text-center text-text-secondary">
-                    Selecione uma solicitação de conexão à esquerda para avaliar o potencial.
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+          <button
+            type="button"
+            onClick={() => setActiveAdminTab("SOLICITACOES")}
+            className={`flex-1 min-w-[220px] flex items-center justify-center gap-2.5 rounded-xl px-4 py-3 font-heading text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+              activeAdminTab === "SOLICITACOES"
+                ? "bg-brand-green-dark text-white shadow-sm"
+                : "text-text-secondary hover:bg-surface-primary hover:text-text-primary"
+            }`}
+          >
+            <span>3. Solicitações de Conta</span>
+            <span
+              className={`rounded-full px-2 py-0.5 text-[11px] font-mono font-bold ${
+                activeAdminTab === "SOLICITACOES"
+                  ? "bg-blue-200 text-blue-950"
+                  : "bg-blue-100 text-blue-900"
+              }`}
+            >
+              {countPendingUserReq} pendentes
+            </span>
+          </button>
         </div>
 
+        {/* ======================================================================== */}
+        {/* ABA 1: CENTRAL DE ANÁLISE DE POTENCIAL DE CONEXÕES (EMPRESA ↔ PESQUISADOR) */}
+        {/* ======================================================================== */}
+        {activeAdminTab === "MATCHES" && (
+          <div className="space-y-4 animate-in fade-in duration-200">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <h2 className="font-heading text-lg font-bold text-text-primary flex items-center gap-2">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-green-dark text-white text-xs font-bold">
+                    1
+                  </span>
+                  Central de Análise de Potencial de Conexões (Matches Empresa ↔ Pesquisador)
+                </h2>
+                <p className="font-body text-xs text-text-secondary mt-0.5">
+                  Dossiê analítico completo lado a lado: compare o texto integral da Demanda Corporativa com o Resumo Científico do Projeto e audite os dados abertos de ambos os perfis antes de aprovar.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-[11px] font-bold text-amber-900 border border-amber-300">
+                  {countPendingAdminConns} Aguardando Análise Admin
+                </span>
+                <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-[11px] font-bold text-blue-900 border border-blue-300">
+                  {countInProgressConns} Em Aceite / Termo
+                </span>
+                <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-bold text-emerald-900 border border-emerald-300">
+                  {countCompletedConns} Conectadas (Termo Assinado)
+                </span>
+              </div>
+            </div>
+
+            <div className="bg-surface-white rounded-3xl border border-border-subtle shadow-xs overflow-hidden min-h-[680px] flex flex-col">
+              {/* Barra de Filtros de Status da Conexão */}
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle px-5 py-3 bg-surface-primary">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="text-xs font-heading font-semibold text-text-secondary mr-1">Etapa do Funil:</span>
+                  {[
+                    { id: "TODOS", label: `Todas (${adminConnections.length})` },
+                    { id: "EM_ANALISE_ADMIN", label: `1. Para Aprovar Potencial (${countPendingAdminConns})` },
+                    { id: "AGUARDANDO_PESQUISADOR", label: "2. Com o Pesquisador" },
+                    { id: "AGUARDANDO_TERMO", label: "3. Aguardando Termo (Success Fee)" },
+                    { id: "CONECTADO", label: "4. Conectadas" },
+                  ].map((tab) => (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => setConnStatusFilter(tab.id)}
+                      className={`rounded-full px-2.5 py-1 text-xs font-heading font-medium transition-all cursor-pointer ${
+                        connStatusFilter === tab.id
+                          ? "bg-brand-green-dark text-white font-bold"
+                          : "bg-surface-white border border-border-subtle text-text-secondary hover:text-text-primary"
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Master-Detail das Conexões */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 flex-1">
+                {/* Lista lateral esquerda (3 colunas) */}
+                <div className="lg:col-span-3 border-r border-border-subtle overflow-y-auto max-h-[920px] divide-y divide-border-subtle bg-surface-primary/25">
+                  {filteredAdminConns.length === 0 ? (
+                    <div className="p-10 text-center text-text-secondary">
+                      <Icon icon={Inbox} size={28} className="mx-auto text-text-muted mb-2" />
+                      <p className="text-xs font-heading font-semibold">Nenhuma solicitação nesta etapa</p>
+                    </div>
+                  ) : (
+                    filteredAdminConns.map((conn) => {
+                      const isSelected = selectedAdminConn?.id === conn.id;
+                      return (
+                        <button
+                          key={conn.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedConnId(conn.id);
+                            setAdminConnFeedbackInput("");
+                          }}
+                          className={`w-full text-left p-4 transition-all flex flex-col gap-1.5 cursor-pointer ${
+                            isSelected
+                              ? "bg-emerald-50/90 border-l-4 border-l-brand-green-dark"
+                              : "hover:bg-surface-white"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-heading text-xs font-bold text-text-primary truncate">
+                              {conn.companyName}
+                            </span>
+                            <span className="font-mono text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full shrink-0">
+                              {conn.matchScore}% Match
+                            </span>
+                          </div>
+
+                          <p className="font-body text-[11px] text-blue-900 font-semibold truncate">
+                            Demanda: {conn.opportunityTitle || "Demanda Corporativa"}
+                          </p>
+
+                          <p className="font-body text-[11px] text-text-secondary line-clamp-2">
+                            Projeto: {conn.articleTitle}
+                          </p>
+
+                          <div className="flex items-center justify-between pt-1 text-[10px] font-mono">
+                            <span
+                              className={`px-2 py-0.5 rounded font-bold ${
+                                conn.status === "EM_ANALISE_ADMIN"
+                                  ? "bg-amber-100 text-amber-900"
+                                  : conn.status === "AGUARDANDO_PESQUISADOR"
+                                  ? "bg-blue-100 text-blue-900"
+                                  : conn.status === "AGUARDANDO_TERMO"
+                                  ? "bg-purple-100 text-purple-900"
+                                  : conn.status === "CONECTADO"
+                                  ? "bg-emerald-100 text-emerald-900"
+                                  : "bg-rose-100 text-rose-900"
+                              }`}
+                            >
+                              {conn.status === "EM_ANALISE_ADMIN"
+                                ? "⏳ Aguardando Admin"
+                                : conn.status === "AGUARDANDO_PESQUISADOR"
+                                ? "📨 Com Pesquisador"
+                                : conn.status === "AGUARDANDO_TERMO"
+                                ? "✍️ Aguardando Termo"
+                                : conn.status === "CONECTADO"
+                                ? "✓ Conectado"
+                                : "✕ Recusada"}
+                            </span>
+                            <span className="text-text-muted">{conn.createdAt.split(" ")[0]}</span>
+                          </div>
+                        </button>
+                      );
+                    })
+                  )}
+                </div>
+
+                {/* Dossiê Completo de Matchmaking à direita (9 colunas) */}
+                <div className="lg:col-span-9 p-6 flex flex-col justify-between bg-surface-white overflow-y-auto max-h-[920px]">
+                  {selectedAdminConn ? (
+                    <div className="space-y-6">
+                      {/* Cabeçalho do Dossiê */}
+                      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border-subtle pb-4">
+                        <div className="space-y-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="font-mono text-[10px] font-bold uppercase tracking-wider bg-brand-green-dark text-white px-2.5 py-0.5 rounded-md">
+                              Dossiê Analítico de Matchmaking • Visão Desbloqueada Admin
+                            </span>
+                            <span className="font-mono text-[11px] text-text-secondary">
+                              ID: {selectedAdminConn.id} • Criado em {selectedAdminConn.createdAt}
+                            </span>
+                          </div>
+                          <h3 className="font-heading text-base md:text-lg font-bold text-text-primary">
+                            {selectedAdminConn.companyName} ↔ {selectedAdminConn.researcherName.split(",")[0]}
+                          </h3>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          {selectedAdminConn.cosineScore && (
+                            <span className="rounded-xl bg-surface-primary border border-border-subtle text-text-secondary font-mono text-xs font-semibold px-3 py-1">
+                              Cosine: {selectedAdminConn.cosineScore.toFixed(4)}
+                            </span>
+                          )}
+                          <span className="rounded-xl bg-emerald-100 border border-emerald-300 text-emerald-950 font-mono text-xs font-bold px-3.5 py-1">
+                            {selectedAdminConn.matchScore}% Afinidade Semântica
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* ===================================================================== */}
+                      {/* BLOCO 1: COMPARATIVO TÉCNICO LADO A LADO (DEMANDA VS. RESUMO PROJETO) */}
+                      {/* ===================================================================== */}
+                      <div className="space-y-2.5">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-heading text-xs font-bold uppercase tracking-wider text-text-primary flex items-center gap-2">
+                            <span className="h-2.5 w-2.5 rounded-full bg-brand-green-moss" />
+                            1. Comparativo Técnico Lado a Lado (Demanda da Empresa vs. Resumo Científico do Projeto)
+                          </h4>
+                          <span className="text-[11px] font-body text-text-secondary">
+                            Avalie se a solução científica resolve de fato a dor descrita pela empresa
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {/* Coluna Esquerda: Texto Integral da Demanda Corporativa + Mensagem */}
+                          <div className="rounded-2xl border border-blue-200 bg-blue-50/35 p-4 flex flex-col justify-between space-y-3">
+                            <div className="space-y-2.5">
+                              <div className="flex items-center justify-between gap-2 border-b border-blue-200/70 pb-2">
+                                <span className="font-heading text-[11px] font-bold uppercase tracking-wider text-blue-950 flex items-center gap-1.5">
+                                  <Icon icon={Building2} size={14} className="text-blue-800" />
+                                  Demanda Tecnológica da Empresa
+                                </span>
+                                <span className="rounded bg-blue-100 px-2 py-0.5 font-mono text-[10px] font-bold text-blue-900">
+                                  Dor de Mercado
+                                </span>
+                              </div>
+
+                              <div>
+                                <span className="text-[10px] font-mono uppercase text-text-secondary block">
+                                  Título da Demanda / Desafio Corporativo:
+                                </span>
+                                <p className="font-heading text-sm font-bold text-text-primary mt-0.5">
+                                  {selectedAdminConn.opportunityTitle || "Demanda Corporativa de P&D"}
+                                </p>
+                              </div>
+
+                              <div>
+                                <span className="text-[10px] font-mono uppercase text-text-secondary block mb-1">
+                                  Descrição Técnica Completa da Demanda:
+                                </span>
+                                <div className="rounded-xl border border-blue-200/80 bg-white p-3 text-xs text-text-primary leading-relaxed max-h-52 overflow-y-auto whitespace-pre-line">
+                                  {selectedAdminConn.opportunityDescription ||
+                                    "Descrição técnica detalhada na mensagem de apresentação abaixo."}
+                                </div>
+                              </div>
+
+                              {/* Requisitos Técnicos da Demanda */}
+                              <div className="grid grid-cols-3 gap-2 pt-1 text-[11px]">
+                                <div className="rounded-lg bg-white border border-blue-100 p-2">
+                                  <span className="text-[9px] font-mono uppercase text-text-secondary block">TRL Mínimo</span>
+                                  <span className="font-heading font-bold text-blue-950">
+                                    {selectedAdminConn.opportunityMinTrl || "TRL 3 a 6"}
+                                  </span>
+                                </div>
+                                <div className="rounded-lg bg-white border border-blue-100 p-2">
+                                  <span className="text-[9px] font-mono uppercase text-text-secondary block">CRL Desejado</span>
+                                  <span className="font-heading font-bold text-blue-950">
+                                    {selectedAdminConn.opportunityDesiredCrl || "CRL 3+"}
+                                  </span>
+                                </div>
+                                <div className="rounded-lg bg-white border border-blue-100 p-2">
+                                  <span className="text-[9px] font-mono uppercase text-text-secondary block">Patente</span>
+                                  <span className="font-heading font-bold text-blue-950 truncate block" title={selectedAdminConn.opportunityPatentReq}>
+                                    {selectedAdminConn.opportunityPatentReq || "Desejável"}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {selectedAdminConn.opportunityKeywords && (
+                                <div className="text-[11px]">
+                                  <span className="font-mono text-[10px] text-text-secondary">Palavras-chave da Demanda: </span>
+                                  <span className="font-medium text-blue-950">{selectedAdminConn.opportunityKeywords}</span>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Mensagem de Apresentação da Empresa */}
+                            <div className="rounded-xl border border-blue-200 bg-white p-3 space-y-1">
+                              <span className="font-mono text-[10px] font-bold uppercase text-blue-900 block">
+                                Mensagem de Apresentação Enviada pela Empresa:
+                              </span>
+                              <p className="font-body text-xs text-text-primary italic leading-relaxed">
+                                &ldquo;{selectedAdminConn.message}&rdquo;
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Coluna Direita: Resumo Científico Completo do Projeto */}
+                          <div className="rounded-2xl border border-emerald-200 bg-emerald-50/35 p-4 flex flex-col justify-between space-y-3">
+                            <div className="space-y-2.5">
+                              <div className="flex items-center justify-between gap-2 border-b border-emerald-200/70 pb-2">
+                                <span className="font-heading text-[11px] font-bold uppercase tracking-wider text-emerald-950 flex items-center gap-1.5">
+                                  <Icon icon={GraduationCap} size={14} className="text-emerald-800" />
+                                  Projeto Científico Selecionado no Match
+                                </span>
+                                <span className="rounded bg-emerald-100 px-2 py-0.5 font-mono text-[10px] font-bold text-emerald-900">
+                                  {selectedAdminConn.articleCode ? `Cód. ${selectedAdminConn.articleCode}` : "Acervo Científico"}
+                                </span>
+                              </div>
+
+                              <div>
+                                <span className="text-[10px] font-mono uppercase text-text-secondary block">
+                                  Título do Projeto / Artigo:
+                                </span>
+                                <p className="font-heading text-sm font-bold text-text-primary mt-0.5">
+                                  {selectedAdminConn.articleTitle}
+                                </p>
+                              </div>
+
+                              <div>
+                                <span className="text-[10px] font-mono uppercase text-text-secondary block mb-1">
+                                  Resumo Científico Completo (Abstract):
+                                </span>
+                                <div className="rounded-xl border border-emerald-200/80 bg-white p-3 text-xs text-text-primary leading-relaxed max-h-64 overflow-y-auto whitespace-pre-line">
+                                  {selectedAdminConn.articleAbstract ||
+                                    "Resumo técnico vinculado ao acervo científico The Bridge."}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-2 pt-1 text-[11px]">
+                              <div className="rounded-lg bg-white border border-emerald-100 p-2.5">
+                                <span className="text-[9px] font-mono uppercase text-text-secondary block">Área Temática</span>
+                                <span className="font-heading font-bold text-emerald-950">
+                                  {selectedAdminConn.articleArea || "Engenharia & Ciência dos Materiais"}
+                                </span>
+                              </div>
+                              <div className="rounded-lg bg-white border border-emerald-100 p-2.5">
+                                <span className="text-[9px] font-mono uppercase text-text-secondary block">Evento / Fonte</span>
+                                <span className="font-heading font-bold text-emerald-950">
+                                  {selectedAdminConn.articleEvent || "CBECiMat / Acervo The Bridge"}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* ===================================================================== */}
+                      {/* BLOCO 2: FICHA COMPLETA DA EMPRESA VS. FICHA COMPLETA DO PESQUISADOR  */}
+                      {/* ===================================================================== */}
+                      <div className="space-y-2.5">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-heading text-xs font-bold uppercase tracking-wider text-text-primary flex items-center gap-2">
+                            <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
+                            2. Auditoria de Perfis Envolvidos (Ficha da Empresa vs. Ficha do Pesquisador Desbloqueadas)
+                          </h4>
+                          <span className="text-[11px] font-body text-text-secondary">
+                            Verifique a capacidade financeira da empresa e o currículo dos autores antes de intermediar
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                          {/* Ficha Completa da Empresa e da Proposta */}
+                          <div className="rounded-2xl border border-border-subtle bg-surface-primary p-4 space-y-3">
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-2 font-heading font-bold uppercase text-[11px] text-blue-900">
+                                <Icon icon={Building2} size={15} />
+                                Ficha Completa da Empresa Solicitante
+                              </div>
+                              <span
+                                className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold border ${
+                                  selectedAdminConn.companyVerificationStatus === "VERIFICADO"
+                                    ? "bg-amber-100 text-amber-900 border-amber-300"
+                                    : "bg-slate-100 text-slate-700 border-slate-300"
+                                }`}
+                              >
+                                {selectedAdminConn.companyVerificationStatus === "VERIFICADO"
+                                  ? "★ Selo Ouro Verificado"
+                                  : "⏳ Em Verificação"}
+                              </span>
+                            </div>
+
+                            <div className="rounded-xl bg-white border border-border-subtle p-3 space-y-1.5">
+                              <p className="font-heading font-bold text-sm text-text-primary">
+                                {selectedAdminConn.companyName}
+                              </p>
+                              <p className="font-mono text-[11px] text-text-secondary">
+                                <strong>CNPJ:</strong> {selectedAdminConn.companyCnpj || "Consulte na Auditoria de Perfis"}
+                              </p>
+                              <p className="text-text-secondary">
+                                <strong>Representante:</strong> {selectedAdminConn.companyContactName || "Responsável P&D"}{" "}
+                                {selectedAdminConn.companyRoleTitle && `(${selectedAdminConn.companyRoleTitle})`}
+                              </p>
+                              <p className="text-text-secondary">
+                                <strong>E-mail Corporativo:</strong>{" "}
+                                <span className="font-mono text-text-primary">{selectedAdminConn.companyEmail || "contato@empresa.com.br"}</span>
+                              </p>
+                              <p className="text-text-secondary">
+                                <strong>Telefone Direto:</strong> {selectedAdminConn.companyPhone || "(11) 3000-0000"}
+                              </p>
+                            </div>
+
+                            {/* Dados que serão enviados ao Pesquisador (Sem revelar o nome da empresa) */}
+                            <div className="rounded-xl bg-emerald-50/70 border border-emerald-200 p-3 space-y-1.5">
+                              <span className="font-mono text-[10px] font-bold uppercase text-emerald-950 block">
+                                Dados que o Pesquisador verá ao Aprovar (Sem Nome da Empresa):
+                              </span>
+                              <p className="text-text-primary">
+                                <strong>• Área de Atuação:</strong> {selectedAdminConn.companySector}
+                              </p>
+                              <p className="text-text-primary">
+                                <strong>• Capacidade de Investimento:</strong>{" "}
+                                <span className="text-emerald-800 font-bold">{selectedAdminConn.investmentAmount}</span>
+                              </p>
+                              <p className="text-text-primary">
+                                <strong>• Tempo Desejável de Execução:</strong> {selectedAdminConn.executionTimeline}
+                              </p>
+                            </div>
+
+                            {/* Atalhos de verificação da empresa */}
+                            <div className="flex flex-wrap gap-2 pt-1">
+                              {selectedAdminConn.companyWebsite && (
+                                <a
+                                  href={selectedAdminConn.companyWebsite}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1.5 rounded-xl border border-border-subtle bg-white px-3 py-1.5 text-[11px] font-bold text-brand-green-moss hover:bg-emerald-50 transition-colors"
+                                >
+                                  <span>Site da Empresa</span>
+                                  <Icon icon={ExternalLink} size={11} />
+                                </a>
+                              )}
+                              {selectedAdminConn.companyLinkedin && (
+                                <a
+                                  href={selectedAdminConn.companyLinkedin}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1.5 rounded-xl border border-border-subtle bg-white px-3 py-1.5 text-[11px] font-bold text-blue-800 hover:bg-blue-50 transition-colors"
+                                >
+                                  <span>LinkedIn Corporativo</span>
+                                  <Icon icon={ExternalLink} size={11} />
+                                </a>
+                              )}
+                              <a
+                                href={`https://www.google.com/search?q=${encodeURIComponent(
+                                  `${selectedAdminConn.companyName} ${selectedAdminConn.companyCnpj || ""} CNPJ`
+                                )}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1.5 rounded-xl border border-border-subtle bg-white px-3 py-1.5 text-[11px] font-medium text-text-secondary hover:text-text-primary transition-colors"
+                              >
+                                <span>Consultar Empresa no Google</span>
+                                <Icon icon={ExternalLink} size={11} />
+                              </a>
+                            </div>
+                          </div>
+
+                          {/* Ficha Completa do Pesquisador e do Projeto (Com atalhos 1-clique para Lattes / Scholar / LinkedIn) */}
+                          <div className="rounded-2xl border border-border-subtle bg-surface-primary p-4 space-y-3">
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-2 font-heading font-bold uppercase text-[11px] text-emerald-900">
+                                <Icon icon={GraduationCap} size={15} />
+                                Ficha Completa do Pesquisador &amp; ICT (Sem Censura)
+                              </div>
+                              <span className="rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300 px-2.5 py-0.5 text-[10px] font-bold">
+                                Dados Desbloqueados
+                              </span>
+                            </div>
+
+                            <div className="rounded-xl bg-white border border-border-subtle p-3 space-y-1.5">
+                              <div>
+                                <span className="text-[10px] font-mono uppercase text-text-secondary block">
+                                  Quadro Completo de Autores (Censurado para a Empresa):
+                                </span>
+                                <p className="font-heading font-bold text-sm text-text-primary mt-0.5">
+                                  {selectedAdminConn.researcherName}
+                                </p>
+                              </div>
+                              <div>
+                                <span className="text-[10px] font-mono uppercase text-text-secondary block">
+                                  Vínculo Institucional / Universidade / ICT:
+                                </span>
+                                <p className="font-medium text-emerald-950">
+                                  {selectedAdminConn.researcherAffiliation || "Instituição Científica e Tecnológica (ICT)"}
+                                </p>
+                              </div>
+                              <p className="text-text-secondary pt-1">
+                                <strong>E-mail Extraído do Artigo / PDF:</strong>{" "}
+                                <span className="font-mono font-bold text-text-primary">
+                                  {selectedAdminConn.researcherEmail || "pesquisador@universidade.edu.br"}
+                                </span>
+                              </p>
+                              <p className="text-text-secondary">
+                                <strong>Telefone / Contato ICT:</strong>{" "}
+                                {selectedAdminConn.researcherPhone || "A confirmar no aceite do pesquisador"}
+                              </p>
+                            </div>
+
+                            {/* Atalhos de 1 Clique para Investigar o Autor Principal */}
+                            <div className="rounded-xl bg-blue-50/60 border border-blue-200 p-3 space-y-2">
+                              <span className="font-mono text-[10px] font-bold uppercase text-blue-950 block">
+                                Investigação Rápida do Autor Principal (1 Clique):
+                              </span>
+                              <div className="flex flex-wrap gap-2">
+                                <a
+                                  href={`https://www.google.com/search?q=${encodeURIComponent(
+                                    `${selectedAdminConn.researcherName.split(",")[0]} Currículo Lattes CNPq`
+                                  )}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1.5 rounded-xl border border-blue-300 bg-white px-3 py-1.5 text-[11px] font-bold text-blue-900 hover:bg-blue-100 transition-colors"
+                                >
+                                  <span>Buscar no Lattes CNPq</span>
+                                  <Icon icon={ExternalLink} size={11} />
+                                </a>
+
+                                <a
+                                  href={`https://scholar.google.com/scholar?q=${encodeURIComponent(
+                                    selectedAdminConn.researcherName.split(",")[0]
+                                  )}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-300 bg-white px-3 py-1.5 text-[11px] font-bold text-emerald-900 hover:bg-emerald-100 transition-colors"
+                                >
+                                  <span>Google Scholar</span>
+                                  <Icon icon={ExternalLink} size={11} />
+                                </a>
+
+                                <a
+                                  href={`https://www.google.com/search?q=${encodeURIComponent(
+                                    `${selectedAdminConn.researcherName.split(",")[0]} ${
+                                      selectedAdminConn.researcherAffiliation?.split(";")[0] || ""
+                                    } LinkedIn`
+                                  )}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1.5 rounded-xl border border-border-subtle bg-white px-3 py-1.5 text-[11px] font-bold text-text-primary hover:bg-surface-secondary transition-colors"
+                                >
+                                  <span>Buscar no LinkedIn</span>
+                                  <Icon icon={ExternalLink} size={11} />
+                                </a>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Status das Assinaturas do Termo se em AGUARDANDO_TERMO ou CONECTADO */}
+                      {(selectedAdminConn.status === "AGUARDANDO_TERMO" ||
+                        selectedAdminConn.status === "CONECTADO") && (
+                        <div className="rounded-2xl border border-purple-200 bg-purple-50/60 p-3.5 text-xs flex flex-wrap items-center justify-between gap-2">
+                          <span className="font-heading font-bold text-purple-950">
+                            Status do Termo de Responsabilidade (Success Fee):
+                          </span>
+                          <div className="flex items-center gap-3 font-mono text-[11px]">
+                            <span className={selectedAdminConn.companySignedTerm ? "text-emerald-800 font-bold" : "text-amber-800"}>
+                              Empresa: {selectedAdminConn.companySignedTerm ? "✓ Assinado" : "⏳ Pendente"}
+                            </span>
+                            <span>|</span>
+                            <span className={selectedAdminConn.researcherSignedTerm ? "text-emerald-800 font-bold" : "text-amber-800"}>
+                              Pesquisador: {selectedAdminConn.researcherSignedTerm ? "✓ Assinado" : "⏳ Pendente"}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* ===================================================================== */}
+                      {/* BLOCO 3: PARECER DA CENTRAL DE ADMIN E DECISÃO DE POTENCIAL           */}
+                      {/* ===================================================================== */}
+                      <div className="rounded-2xl border border-border-subtle bg-surface-primary/60 p-4 space-y-3">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                          <label className="font-heading text-xs font-bold text-text-primary">
+                            3. Parecer de Alinhamento Técnico &amp; Potencial de Negócio (Central de Admin)
+                          </label>
+                          <span className="text-[11px] text-text-secondary">
+                            Ao aprovar, o pesquisador recebe apenas Área de Atuação, Investimento e Prazo (sem nome da empresa)
+                          </span>
+                        </div>
+
+                        {selectedAdminConn.status === "EM_ANALISE_ADMIN" ? (
+                          <>
+                            <textarea
+                              rows={2}
+                              value={adminConnFeedbackInput}
+                              onChange={(e) => setAdminConnFeedbackInput(e.target.value)}
+                              placeholder="Opcional: registre observações da análise técnica (ex: Forte sinergia entre a rota de síntese do autor e o TRL exigido pela empresa; orçamento compatível)..."
+                              className="w-full rounded-xl border border-border-subtle bg-white p-3 text-xs text-text-primary focus:border-brand-green-moss focus:outline-none"
+                            />
+                            <div className="flex flex-wrap items-center justify-end gap-2.5 pt-1">
+                              <Button
+                                size="sm"
+                                variant="secondary"
+                                onClick={() => handleRejectConnectionPotential(selectedAdminConn)}
+                                className="text-xs text-rose-700 hover:bg-rose-50 cursor-pointer"
+                              >
+                                <Icon icon={XCircle} size={14} />
+                                Recusar Potencial
+                              </Button>
+                              <Button
+                                size="sm"
+                                onClick={() => handleApproveConnectionPotential(selectedAdminConn)}
+                                className="bg-brand-green-dark !text-white hover:bg-brand-green-moss text-xs font-bold cursor-pointer"
+                              >
+                                <Icon icon={CheckCircle2} size={14} />
+                                Aprovar Potencial e Notificar Pesquisador
+                              </Button>
+                            </div>
+                          </>
+                        ) : (
+                          <div className="flex flex-wrap items-center justify-between gap-2 bg-white rounded-xl border border-border-subtle p-3 text-xs">
+                            <p className="text-text-secondary">
+                              <strong>Parecer Registrado:</strong>{" "}
+                              {selectedAdminConn.adminFeedback || "Potencial analisado pela Central de Admin."}
+                            </p>
+                            <span className="rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-1 font-heading font-bold text-emerald-900 shrink-0">
+                              ✓ Status: {selectedAdminConn.status}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-12 text-center text-text-secondary">
+                      Selecione uma solicitação de conexão à esquerda para avaliar o dossiê completo.
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* ======================================================== */}
-        {/* SEÇÃO 1: AUDITORIA DE VERACIDADE DE PERFIS (ESTILO EMAIL) */}
+        {/* ABA 2: AUDITORIA DE VERACIDADE DE PERFIS (ESTILO EMAIL)  */}
         {/* ======================================================== */}
-        <div className="space-y-4">
+        {activeAdminTab === "AUDITORIA" && (
+        <div className="space-y-4 animate-in fade-in duration-200">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <h2 className="font-heading text-lg font-bold text-text-primary flex items-center gap-2">
                 <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-100 text-emerald-800 text-xs font-bold">
-                  1
+                  2
                 </span>
-                Auditoria de Veracidade de Perfis
+                Auditoria de Veracidade de Perfis (Selo Ouro)
               </h2>
               <p className="font-body text-xs text-text-secondary mt-0.5">
                 Avaliação cadastral de empresas e pesquisadores que solicitaram o Selo Verificado (Ouro).
@@ -1067,16 +1483,18 @@ export function AdminVerificationPage() {
             </div>
           </div>
         </div>
+        )}
 
         {/* ======================================================== */}
-        {/* SEÇÃO 2: SOLICITAÇÕES DE USUÁRIOS (EMAIL & PERFIL)       */}
+        {/* ABA 3: SOLICITAÇÕES DE USUÁRIOS (EMAIL & PERFIL)         */}
         {/* ======================================================== */}
-        <div className="space-y-4 pt-6 border-t border-border-subtle">
+        {activeAdminTab === "SOLICITACOES" && (
+        <div className="space-y-4 animate-in fade-in duration-200">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <h2 className="font-heading text-lg font-bold text-text-primary flex items-center gap-2">
                 <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-100 text-blue-800 text-xs font-bold">
-                  2
+                  3
                 </span>
                 Solicitações de Usuários (E-mail &amp; Perfil)
               </h2>
@@ -1371,6 +1789,7 @@ export function AdminVerificationPage() {
             </div>
           </div>
         </div>
+        )}
 
         {/* ======================================================== */}
         {/* MODAL 1: RECUSAR / SOLICITAR AJUSTES EM AUDITORIA       */}
