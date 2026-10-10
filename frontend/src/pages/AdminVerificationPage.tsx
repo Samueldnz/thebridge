@@ -132,7 +132,7 @@ export function AdminVerificationPage() {
     setAdminConnFeedbackInput("");
     setAdminConnections(connectionsService.getAllConnections());
     showToast(
-      `✅ Potencial aprovado! O pesquisador foi notificado (sem o nome da empresa, exibindo área de atuação, investimento e prazo).`
+      "Potencial aprovado! O pesquisador foi notificado (sem o nome da empresa, exibindo área de atuação, investimento e prazo)."
     );
   };
 
@@ -144,7 +144,7 @@ export function AdminVerificationPage() {
     );
     setAdminConnFeedbackInput("");
     setAdminConnections(connectionsService.getAllConnections());
-    showToast(`Solicitação de conexão recusada pela Central de Admin.`);
+    showToast("Solicitação de conexão recusada pela Central de Admin.");
   };
 
   const handleTestDiscord = async () => {
@@ -152,9 +152,9 @@ export function AdminVerificationPage() {
     const ok = await discordWebhookService.sendTestMessage();
     setTestingDiscord(false);
     if (ok) {
-      showToast("🔔 Mensagem de teste enviada com sucesso para o canal do Discord!");
+      showToast("Mensagem de teste enviada com sucesso para o canal do Discord!");
     } else {
-      showToast("❌ Não foi possível conectar ao Webhook do Discord. Verifique a URL.");
+      showToast("Não foi possível conectar ao Webhook do Discord. Verifique a URL.");
     }
   };
 
@@ -170,7 +170,7 @@ export function AdminVerificationPage() {
       );
       if (ok) {
         setVerifications(adminAuditService.getRequests());
-        showToast(`✅ Perfil de "${item.razaoSocial || item.name}" homologado com Selo Ouro!`);
+        showToast(`Perfil de "${item.razaoSocial || item.name}" homologado com sucesso!`);
       }
     } catch {
       showToast("Ocorreu um erro ao aprovar o perfil.");
@@ -198,7 +198,7 @@ export function AdminVerificationPage() {
       );
       if (ok) {
         setVerifications(adminAuditService.getRequests());
-        showToast(`⚠️ Solicitação de ajustes enviada para "${rejectVerifModalItem.name}".`);
+        showToast(`Solicitação de ajustes enviada para "${rejectVerifModalItem.name}".`);
         setRejectVerifModalItem(null);
         setRejectVerifFeedback("");
       }
@@ -221,7 +221,7 @@ export function AdminVerificationPage() {
       );
       if (ok) {
         setUserRequests(adminAuditService.getUserRequests());
-        showToast(`✅ Solicitação de "${item.userName}" atendida com sucesso!`);
+        showToast(`Solicitação de "${item.userName}" atendida com sucesso!`);
       }
     } catch {
       showToast("Erro ao processar solicitação do usuário.");
@@ -249,7 +249,7 @@ export function AdminVerificationPage() {
       );
       if (ok) {
         setUserRequests(adminAuditService.getUserRequests());
-        showToast(`❌ Solicitação de "${rejectUserReqModalItem.userName}" recusada com justificativa.`);
+        showToast(`Solicitação de "${rejectUserReqModalItem.userName}" recusada com justificativa.`);
         setRejectUserReqModalItem(null);
         setRejectUserReqFeedback("");
       }
@@ -274,7 +274,7 @@ export function AdminVerificationPage() {
     if (ok) {
       setAdminEmailsList(adminAuditService.getAdminEmails());
       setNewAdminEmailInput("");
-      showToast(`✅ ${clean} agora possui privilégios de Admin.`);
+      showToast(`${clean} agora possui privilégios de Admin.`);
     }
   };
 
@@ -350,10 +350,6 @@ export function AdminVerificationPage() {
     filteredAdminConns[0] ||
     null;
   const countPendingAdminConns = adminConnections.filter((c) => c.status === "EM_ANALISE_ADMIN").length;
-  const countInProgressConns = adminConnections.filter(
-    (c) => c.status === "AGUARDANDO_PESQUISADOR" || c.status === "AGUARDANDO_TERMO"
-  ).length;
-  const countCompletedConns = adminConnections.filter((c) => c.status === "CONECTADO").length;
 
   // Caso o usuário não seja admin, exibe tela de bloqueio
   if (!isAuthorized) {
@@ -400,7 +396,7 @@ export function AdminVerificationPage() {
             className="border-[#5865F2] text-[#5865F2] hover:bg-[#5865F2]/10 text-xs font-bold shadow-xs cursor-pointer"
           >
             <Icon icon={Sparkles} size={14} className="text-[#5865F2]" />
-            {testingDiscord ? "Enviando..." : "Testar Discord 🔔"}
+            {testingDiscord ? "Enviando..." : "Testar Discord"}
           </Button>
 
           <Button
@@ -445,7 +441,7 @@ export function AdminVerificationPage() {
                 : "text-text-secondary hover:bg-surface-primary hover:text-text-primary"
             }`}
           >
-            <span>1. Análise de Matches &amp; Conexões</span>
+            <span>MATCHES</span>
             <span
               className={`rounded-full px-2 py-0.5 text-[11px] font-mono font-bold ${
                 activeAdminTab === "MATCHES"
@@ -453,7 +449,7 @@ export function AdminVerificationPage() {
                   : "bg-amber-100 text-amber-900"
               }`}
             >
-              {countPendingAdminConns} pendentes
+              {countPendingAdminConns}
             </span>
           </button>
 
@@ -466,7 +462,7 @@ export function AdminVerificationPage() {
                 : "text-text-secondary hover:bg-surface-primary hover:text-text-primary"
             }`}
           >
-            <span>2. Auditoria de Perfis (Selo Ouro)</span>
+            <span>AUDITORIA DE PERFIS</span>
             <span
               className={`rounded-full px-2 py-0.5 text-[11px] font-mono font-bold ${
                 activeAdminTab === "AUDITORIA"
@@ -474,7 +470,7 @@ export function AdminVerificationPage() {
                   : "bg-emerald-100 text-emerald-900"
               }`}
             >
-              {countPendingVerif} pendentes
+              {countPendingVerif}
             </span>
           </button>
 
@@ -487,7 +483,7 @@ export function AdminVerificationPage() {
                 : "text-text-secondary hover:bg-surface-primary hover:text-text-primary"
             }`}
           >
-            <span>3. Solicitações de Conta</span>
+            <span>SOLICITAÇÕES DE CONTAS</span>
             <span
               className={`rounded-full px-2 py-0.5 text-[11px] font-mono font-bold ${
                 activeAdminTab === "SOLICITACOES"
@@ -495,42 +491,16 @@ export function AdminVerificationPage() {
                   : "bg-blue-100 text-blue-900"
               }`}
             >
-              {countPendingUserReq} pendentes
+              {countPendingUserReq}
             </span>
           </button>
         </div>
 
         {/* ======================================================================== */}
-        {/* ABA 1: CENTRAL DE ANÁLISE DE POTENCIAL DE CONEXÕES (EMPRESA ↔ PESQUISADOR) */}
+        {/* ABA 1: MATCHES                                                           */}
         {/* ======================================================================== */}
         {activeAdminTab === "MATCHES" && (
           <div className="space-y-4 animate-in fade-in duration-200">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <div>
-                <h2 className="font-heading text-lg font-bold text-text-primary flex items-center gap-2">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-green-dark text-white text-xs font-bold">
-                    1
-                  </span>
-                  Central de Análise de Potencial de Conexões (Matches Empresa ↔ Pesquisador)
-                </h2>
-                <p className="font-body text-xs text-text-secondary mt-0.5">
-                  Dossiê analítico completo lado a lado: compare o texto integral da Demanda Corporativa com o Resumo Científico do Projeto e audite os dados abertos de ambos os perfis antes de aprovar.
-                </p>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-[11px] font-bold text-amber-900 border border-amber-300">
-                  {countPendingAdminConns} Aguardando Análise Admin
-                </span>
-                <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-[11px] font-bold text-blue-900 border border-blue-300">
-                  {countInProgressConns} Em Aceite / Termo
-                </span>
-                <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-bold text-emerald-900 border border-emerald-300">
-                  {countCompletedConns} Conectadas (Termo Assinado)
-                </span>
-              </div>
-            </div>
-
             <div className="bg-surface-white rounded-3xl border border-border-subtle shadow-xs overflow-hidden min-h-[680px] flex flex-col">
               {/* Barra de Filtros de Status da Conexão */}
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle px-5 py-3 bg-surface-primary">
@@ -540,7 +510,7 @@ export function AdminVerificationPage() {
                     { id: "TODOS", label: `Todas (${adminConnections.length})` },
                     { id: "EM_ANALISE_ADMIN", label: `1. Para Aprovar Potencial (${countPendingAdminConns})` },
                     { id: "AGUARDANDO_PESQUISADOR", label: "2. Com o Pesquisador" },
-                    { id: "AGUARDANDO_TERMO", label: "3. Aguardando Termo (Success Fee)" },
+                    { id: "AGUARDANDO_TERMO", label: "3. Aguardando Termo" },
                     { id: "CONECTADO", label: "4. Conectadas" },
                   ].map((tab) => (
                     <button
@@ -617,14 +587,14 @@ export function AdminVerificationPage() {
                               }`}
                             >
                               {conn.status === "EM_ANALISE_ADMIN"
-                                ? "⏳ Aguardando Admin"
+                                ? "Aguardando Admin"
                                 : conn.status === "AGUARDANDO_PESQUISADOR"
-                                ? "📨 Com Pesquisador"
+                                ? "Com Pesquisador"
                                 : conn.status === "AGUARDANDO_TERMO"
-                                ? "✍️ Aguardando Termo"
+                                ? "Aguardando Termo"
                                 : conn.status === "CONECTADO"
-                                ? "✓ Conectado"
-                                : "✕ Recusada"}
+                                ? "Conectado"
+                                : "Recusada"}
                             </span>
                             <span className="text-text-muted">{conn.createdAt.split(" ")[0]}</span>
                           </div>
@@ -642,9 +612,6 @@ export function AdminVerificationPage() {
                       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border-subtle pb-4">
                         <div className="space-y-1">
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="font-mono text-[10px] font-bold uppercase tracking-wider bg-brand-green-dark text-white px-2.5 py-0.5 rounded-md">
-                              Dossiê Analítico de Matchmaking • Visão Desbloqueada Admin
-                            </span>
                             <span className="font-mono text-[11px] text-text-secondary">
                               ID: {selectedAdminConn.id} • Criado em {selectedAdminConn.createdAt}
                             </span>
@@ -667,17 +634,14 @@ export function AdminVerificationPage() {
                       </div>
 
                       {/* ===================================================================== */}
-                      {/* BLOCO 1: COMPARATIVO TÉCNICO LADO A LADO (DEMANDA VS. RESUMO PROJETO) */}
+                      {/* BLOCO 1: COMPARATIVO TÉCNICO                                          */}
                       {/* ===================================================================== */}
                       <div className="space-y-2.5">
                         <div className="flex items-center justify-between">
                           <h4 className="font-heading text-xs font-bold uppercase tracking-wider text-text-primary flex items-center gap-2">
                             <span className="h-2.5 w-2.5 rounded-full bg-brand-green-moss" />
-                            1. Comparativo Técnico Lado a Lado (Demanda da Empresa vs. Resumo Científico do Projeto)
+                            Comparativo Técnico
                           </h4>
-                          <span className="text-[11px] font-body text-text-secondary">
-                            Avalie se a solução científica resolve de fato a dor descrita pela empresa
-                          </span>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -689,23 +653,17 @@ export function AdminVerificationPage() {
                                   <Icon icon={Building2} size={14} className="text-blue-800" />
                                   Demanda Tecnológica da Empresa
                                 </span>
-                                <span className="rounded bg-blue-100 px-2 py-0.5 font-mono text-[10px] font-bold text-blue-900">
-                                  Dor de Mercado
-                                </span>
                               </div>
 
                               <div>
-                                <span className="text-[10px] font-mono uppercase text-text-secondary block">
-                                  Título da Demanda / Desafio Corporativo:
-                                </span>
-                                <p className="font-heading text-sm font-bold text-text-primary mt-0.5">
+                                <p className="font-heading text-sm font-bold text-text-primary">
                                   {selectedAdminConn.opportunityTitle || "Demanda Corporativa de P&D"}
                                 </p>
                               </div>
 
                               <div>
                                 <span className="text-[10px] font-mono uppercase text-text-secondary block mb-1">
-                                  Descrição Técnica Completa da Demanda:
+                                  Descrição da Demanda:
                                 </span>
                                 <div className="rounded-xl border border-blue-200/80 bg-white p-3 text-xs text-text-primary leading-relaxed max-h-52 overflow-y-auto whitespace-pre-line">
                                   {selectedAdminConn.opportunityDescription ||
@@ -762,23 +720,17 @@ export function AdminVerificationPage() {
                                   <Icon icon={GraduationCap} size={14} className="text-emerald-800" />
                                   Projeto Científico Selecionado no Match
                                 </span>
-                                <span className="rounded bg-emerald-100 px-2 py-0.5 font-mono text-[10px] font-bold text-emerald-900">
-                                  {selectedAdminConn.articleCode ? `Cód. ${selectedAdminConn.articleCode}` : "Acervo Científico"}
-                                </span>
                               </div>
 
                               <div>
-                                <span className="text-[10px] font-mono uppercase text-text-secondary block">
-                                  Título do Projeto / Artigo:
-                                </span>
-                                <p className="font-heading text-sm font-bold text-text-primary mt-0.5">
+                                <p className="font-heading text-sm font-bold text-text-primary">
                                   {selectedAdminConn.articleTitle}
                                 </p>
                               </div>
 
                               <div>
                                 <span className="text-[10px] font-mono uppercase text-text-secondary block mb-1">
-                                  Resumo Científico Completo (Abstract):
+                                  Resumo do Projeto:
                                 </span>
                                 <div className="rounded-xl border border-emerald-200/80 bg-white p-3 text-xs text-text-primary leading-relaxed max-h-64 overflow-y-auto whitespace-pre-line">
                                   {selectedAdminConn.articleAbstract ||
@@ -787,17 +739,11 @@ export function AdminVerificationPage() {
                               </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-2 pt-1 text-[11px]">
+                            <div className="pt-1 text-[11px]">
                               <div className="rounded-lg bg-white border border-emerald-100 p-2.5">
                                 <span className="text-[9px] font-mono uppercase text-text-secondary block">Área Temática</span>
                                 <span className="font-heading font-bold text-emerald-950">
                                   {selectedAdminConn.articleArea || "Engenharia & Ciência dos Materiais"}
-                                </span>
-                              </div>
-                              <div className="rounded-lg bg-white border border-emerald-100 p-2.5">
-                                <span className="text-[9px] font-mono uppercase text-text-secondary block">Evento / Fonte</span>
-                                <span className="font-heading font-bold text-emerald-950">
-                                  {selectedAdminConn.articleEvent || "CBECiMat / Acervo The Bridge"}
                                 </span>
                               </div>
                             </div>
@@ -806,38 +752,24 @@ export function AdminVerificationPage() {
                       </div>
 
                       {/* ===================================================================== */}
-                      {/* BLOCO 2: FICHA COMPLETA DA EMPRESA VS. FICHA COMPLETA DO PESQUISADOR  */}
+                      {/* BLOCO 2: AUDITORIA DOS PERFIS DA CONEXÃO                              */}
                       {/* ===================================================================== */}
                       <div className="space-y-2.5">
                         <div className="flex items-center justify-between">
                           <h4 className="font-heading text-xs font-bold uppercase tracking-wider text-text-primary flex items-center gap-2">
                             <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
-                            2. Auditoria de Perfis Envolvidos (Ficha da Empresa vs. Ficha do Pesquisador Desbloqueadas)
+                            Auditoria dos Perfis da Conexão
                           </h4>
-                          <span className="text-[11px] font-body text-text-secondary">
-                            Verifique a capacidade financeira da empresa e o currículo dos autores antes de intermediar
-                          </span>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                          {/* Ficha Completa da Empresa e da Proposta */}
+                          {/* Perfil Empresa */}
                           <div className="rounded-2xl border border-border-subtle bg-surface-primary p-4 space-y-3">
                             <div className="flex items-center justify-between gap-2">
                               <div className="flex items-center gap-2 font-heading font-bold uppercase text-[11px] text-blue-900">
                                 <Icon icon={Building2} size={15} />
-                                Ficha Completa da Empresa Solicitante
+                                Perfil Empresa
                               </div>
-                              <span
-                                className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold border ${
-                                  selectedAdminConn.companyVerificationStatus === "VERIFICADO"
-                                    ? "bg-amber-100 text-amber-900 border-amber-300"
-                                    : "bg-slate-100 text-slate-700 border-slate-300"
-                                }`}
-                              >
-                                {selectedAdminConn.companyVerificationStatus === "VERIFICADO"
-                                  ? "★ Selo Ouro Verificado"
-                                  : "⏳ Em Verificação"}
-                              </span>
                             </div>
 
                             <div className="rounded-xl bg-white border border-border-subtle p-3 space-y-1.5">
@@ -915,24 +847,18 @@ export function AdminVerificationPage() {
                             </div>
                           </div>
 
-                          {/* Ficha Completa do Pesquisador e do Projeto (Com atalhos 1-clique para Lattes / Scholar / LinkedIn) */}
+                          {/* Perfil Pesquisador */}
                           <div className="rounded-2xl border border-border-subtle bg-surface-primary p-4 space-y-3">
                             <div className="flex items-center justify-between gap-2">
                               <div className="flex items-center gap-2 font-heading font-bold uppercase text-[11px] text-emerald-900">
                                 <Icon icon={GraduationCap} size={15} />
-                                Ficha Completa do Pesquisador &amp; ICT (Sem Censura)
+                                Perfil Pesquisador
                               </div>
-                              <span className="rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300 px-2.5 py-0.5 text-[10px] font-bold">
-                                Dados Desbloqueados
-                              </span>
                             </div>
 
                             <div className="rounded-xl bg-white border border-border-subtle p-3 space-y-1.5">
                               <div>
-                                <span className="text-[10px] font-mono uppercase text-text-secondary block">
-                                  Quadro Completo de Autores (Censurado para a Empresa):
-                                </span>
-                                <p className="font-heading font-bold text-sm text-text-primary mt-0.5">
+                                <p className="font-heading font-bold text-sm text-text-primary">
                                   {selectedAdminConn.researcherName}
                                 </p>
                               </div>
@@ -957,10 +883,7 @@ export function AdminVerificationPage() {
                             </div>
 
                             {/* Atalhos de 1 Clique para Investigar o Autor Principal */}
-                            <div className="rounded-xl bg-blue-50/60 border border-blue-200 p-3 space-y-2">
-                              <span className="font-mono text-[10px] font-bold uppercase text-blue-950 block">
-                                Investigação Rápida do Autor Principal (1 Clique):
-                              </span>
+                            <div className="rounded-xl bg-blue-50/60 border border-blue-200 p-3">
                               <div className="flex flex-wrap gap-2">
                                 <a
                                   href={`https://www.google.com/search?q=${encodeURIComponent(
@@ -1010,41 +933,38 @@ export function AdminVerificationPage() {
                         selectedAdminConn.status === "CONECTADO") && (
                         <div className="rounded-2xl border border-purple-200 bg-purple-50/60 p-3.5 text-xs flex flex-wrap items-center justify-between gap-2">
                           <span className="font-heading font-bold text-purple-950">
-                            Status do Termo de Responsabilidade (Success Fee):
+                            Status do Termo de Responsabilidade:
                           </span>
                           <div className="flex items-center gap-3 font-mono text-[11px]">
                             <span className={selectedAdminConn.companySignedTerm ? "text-emerald-800 font-bold" : "text-amber-800"}>
-                              Empresa: {selectedAdminConn.companySignedTerm ? "✓ Assinado" : "⏳ Pendente"}
+                              Empresa: {selectedAdminConn.companySignedTerm ? "Assinado" : "Pendente"}
                             </span>
                             <span>|</span>
                             <span className={selectedAdminConn.researcherSignedTerm ? "text-emerald-800 font-bold" : "text-amber-800"}>
-                              Pesquisador: {selectedAdminConn.researcherSignedTerm ? "✓ Assinado" : "⏳ Pendente"}
+                              Pesquisador: {selectedAdminConn.researcherSignedTerm ? "Assinado" : "Pendente"}
                             </span>
                           </div>
                         </div>
                       )}
 
                       {/* ===================================================================== */}
-                      {/* BLOCO 3: PARECER DA CENTRAL DE ADMIN E DECISÃO DE POTENCIAL           */}
+                      {/* BLOCO 3: PARECER DE ALINHAMENTO ENTRE OS PERFIS                       */}
                       {/* ===================================================================== */}
                       <div className="rounded-2xl border border-border-subtle bg-surface-primary/60 p-4 space-y-3">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                           <label className="font-heading text-xs font-bold text-text-primary">
-                            3. Parecer de Alinhamento Técnico &amp; Potencial de Negócio (Central de Admin)
+                            Parecer de alinhamento entre os perfis
                           </label>
-                          <span className="text-[11px] text-text-secondary">
-                            Ao aprovar, o pesquisador recebe apenas Área de Atuação, Investimento e Prazo (sem nome da empresa)
-                          </span>
                         </div>
 
                         {selectedAdminConn.status === "EM_ANALISE_ADMIN" ? (
                           <>
                             <textarea
-                              rows={2}
+                              rows={5}
                               value={adminConnFeedbackInput}
                               onChange={(e) => setAdminConnFeedbackInput(e.target.value)}
                               placeholder="Opcional: registre observações da análise técnica (ex: Forte sinergia entre a rota de síntese do autor e o TRL exigido pela empresa; orçamento compatível)..."
-                              className="w-full rounded-xl border border-border-subtle bg-white p-3 text-xs text-text-primary focus:border-brand-green-moss focus:outline-none"
+                              className="w-full rounded-xl border border-border-subtle bg-white p-3 text-xs text-text-primary focus:border-brand-green-moss focus:outline-none resize-y"
                             />
                             <div className="flex flex-wrap items-center justify-end gap-2.5 pt-1">
                               <Button
@@ -1073,7 +993,7 @@ export function AdminVerificationPage() {
                               {selectedAdminConn.adminFeedback || "Potencial analisado pela Central de Admin."}
                             </p>
                             <span className="rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-1 font-heading font-bold text-emerald-900 shrink-0">
-                              ✓ Status: {selectedAdminConn.status}
+                              Status: {selectedAdminConn.status}
                             </span>
                           </div>
                         )}
@@ -1091,38 +1011,10 @@ export function AdminVerificationPage() {
         )}
 
         {/* ======================================================== */}
-        {/* ABA 2: AUDITORIA DE VERACIDADE DE PERFIS (ESTILO EMAIL)  */}
+        {/* ABA 2: AUDITORIA DE PERFIS                               */}
         {/* ======================================================== */}
         {activeAdminTab === "AUDITORIA" && (
         <div className="space-y-4 animate-in fade-in duration-200">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <div>
-              <h2 className="font-heading text-lg font-bold text-text-primary flex items-center gap-2">
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-100 text-emerald-800 text-xs font-bold">
-                  2
-                </span>
-                Auditoria de Veracidade de Perfis (Selo Ouro)
-              </h2>
-              <p className="font-body text-xs text-text-secondary mt-0.5">
-                Avaliação cadastral de empresas e pesquisadores que solicitaram o Selo Verificado (Ouro).
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-[11px] font-bold text-amber-900 border border-amber-300">
-                {countPendingVerif} Pendentes
-              </span>
-              <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-bold text-emerald-900 border border-emerald-300">
-                {countApprovedVerif} Ouro
-              </span>
-              {countRejectedVerif > 0 && (
-                <span className="rounded-full bg-rose-100 px-2.5 py-0.5 text-[11px] font-bold text-rose-900 border border-rose-300">
-                  {countRejectedVerif} Ajustes
-                </span>
-              )}
-            </div>
-          </div>
-
           {/* Email-like Master-Detail Card */}
           <div className="bg-surface-white rounded-3xl border border-border-subtle shadow-xs overflow-hidden min-h-[560px] flex flex-col">
             {/* Subheader Filters Bar */}
@@ -1247,17 +1139,17 @@ export function AdminVerificationPage() {
 
                               {isPending && (
                                 <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold text-amber-900 border border-amber-300">
-                                  ⏳ Pendente
+                                  Pendente
                                 </span>
                               )}
                               {isApproved && (
                                 <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[9px] font-bold text-emerald-900 border border-emerald-300">
-                                  ✓ Ouro
+                                  Verificado
                                 </span>
                               )}
                               {item.status === "RECUSADO" && (
                                 <span className="rounded bg-rose-100 px-1.5 py-0.5 text-[9px] font-bold text-rose-900 border border-rose-300">
-                                  ✕ Ajustes
+                                  Ajustes
                                 </span>
                               )}
                             </div>
@@ -1311,9 +1203,9 @@ export function AdminVerificationPage() {
                             : "bg-rose-100 text-rose-900 border border-rose-300"
                         }`}
                       >
-                        {selectedVerif.status === "EM_ANALISE" && "Aguardando Auditoria ⏳"}
-                        {selectedVerif.status === "VERIFICADO" && "Homologado (Selo Ouro) ✓"}
-                        {selectedVerif.status === "RECUSADO" && "Ajustes Solicitados ⚠️"}
+                        {selectedVerif.status === "EM_ANALISE" && "Aguardando Auditoria"}
+                        {selectedVerif.status === "VERIFICADO" && "Homologado"}
+                        {selectedVerif.status === "RECUSADO" && "Ajustes Solicitados"}
                       </span>
                     </div>
 
@@ -1458,7 +1350,7 @@ export function AdminVerificationPage() {
                             className="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold cursor-pointer"
                           >
                             <Icon icon={ShieldCheck} size={15} />
-                            {processingId === selectedVerif.id ? "Aprovando..." : "Homologar & Aprovar (Selo Ouro)"}
+                            {processingId === selectedVerif.id ? "Aprovando..." : "Homologar & Aprovar"}
                           </Button>
                         </>
                       ) : (
@@ -1486,38 +1378,10 @@ export function AdminVerificationPage() {
         )}
 
         {/* ======================================================== */}
-        {/* ABA 3: SOLICITAÇÕES DE USUÁRIOS (EMAIL & PERFIL)         */}
+        {/* ABA 3: SOLICITAÇÕES DE CONTAS                            */}
         {/* ======================================================== */}
         {activeAdminTab === "SOLICITACOES" && (
         <div className="space-y-4 animate-in fade-in duration-200">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <div>
-              <h2 className="font-heading text-lg font-bold text-text-primary flex items-center gap-2">
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-100 text-blue-800 text-xs font-bold">
-                  3
-                </span>
-                Solicitações de Usuários (E-mail &amp; Perfil)
-              </h2>
-              <p className="font-body text-xs text-text-secondary mt-0.5">
-                Pedidos de alteração de e-mail de acesso e migração de tipo de conta (Pesquisador ➔ Empresa ou vice-versa).
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-[11px] font-bold text-amber-900 border border-amber-300">
-                {countPendingUserReq} Pendentes
-              </span>
-              <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-bold text-emerald-900 border border-emerald-300">
-                {countAcceptedUserReq} Atendidas
-              </span>
-              {countRejectedUserReq > 0 && (
-                <span className="rounded-full bg-rose-100 px-2.5 py-0.5 text-[11px] font-bold text-rose-900 border border-rose-300">
-                  {countRejectedUserReq} Recusadas
-                </span>
-              )}
-            </div>
-          </div>
-
           {/* Email-like Master-Detail Card */}
           <div className="bg-surface-white rounded-3xl border border-border-subtle shadow-xs overflow-hidden min-h-[500px] flex flex-col">
             {/* Subheader Filters Bar */}
@@ -1630,17 +1494,17 @@ export function AdminVerificationPage() {
 
                               {isPending && (
                                 <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold text-amber-900 border border-amber-300">
-                                  ⏳ Pendente
+                                  Pendente
                                 </span>
                               )}
                               {isAccepted && (
                                 <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[9px] font-bold text-emerald-900 border border-emerald-300">
-                                  ✓ Atendida
+                                  Atendida
                                 </span>
                               )}
                               {item.status === "RECUSADA" && (
                                 <span className="rounded bg-rose-100 px-1.5 py-0.5 text-[9px] font-bold text-rose-900 border border-rose-300">
-                                  ✕ Recusada
+                                  Recusada
                                 </span>
                               )}
                             </div>
@@ -1685,9 +1549,9 @@ export function AdminVerificationPage() {
                             : "bg-rose-100 text-rose-900 border border-rose-300"
                         }`}
                       >
-                        {selectedUserReq.status === "PENDENTE" && "Aguardando Análise ⏳"}
-                        {selectedUserReq.status === "ACEITA" && "Solicitação Aceita ✓"}
-                        {selectedUserReq.status === "RECUSADA" && "Solicitação Recusada ✕"}
+                        {selectedUserReq.status === "PENDENTE" && "Aguardando Análise"}
+                        {selectedUserReq.status === "ACEITA" && "Solicitação Aceita"}
+                        {selectedUserReq.status === "RECUSADA" && "Solicitação Recusada"}
                       </span>
                     </div>
 

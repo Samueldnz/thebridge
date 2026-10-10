@@ -318,13 +318,26 @@ export function DashboardLayout({
               <Link
                 to="/dashboard/admin/validacoes"
                 title="Painel de Admin"
+                style={
+                  location.pathname.startsWith("/dashboard/admin") || location.pathname === "/admin"
+                    ? { color: "#ffffff", backgroundColor: "#002025" }
+                    : undefined
+                }
                 className={`relative inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border-subtle transition-colors cursor-pointer ${
                   location.pathname.startsWith("/dashboard/admin") || location.pathname === "/admin"
-                    ? "bg-brand-green-dark text-white border-brand-green-dark shadow-xs"
+                    ? "bg-brand-green-dark !text-white border-brand-green-dark shadow-xs"
                     : "bg-surface-white text-emerald-800 hover:text-emerald-950 hover:bg-emerald-50"
                 }`}
               >
-                <Icon icon={ShieldCheck} size={16} />
+                <Icon
+                  icon={ShieldCheck}
+                  size={16}
+                  className={
+                    location.pathname.startsWith("/dashboard/admin") || location.pathname === "/admin"
+                      ? "!text-white"
+                      : ""
+                  }
+                />
                 {pendingCount > 0 && (
                   <span className="absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-600 px-1 text-[9px] font-bold text-white shadow-xs animate-in zoom-in">
                     {pendingBadge}

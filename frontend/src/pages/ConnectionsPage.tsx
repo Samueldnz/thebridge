@@ -48,10 +48,17 @@ export function ConnectionsPage() {
   );
   const [statusFilter, setStatusFilter] = useState<string>("TODAS");
 
-  // Modal do Termo de Responsabilidade (Success Fee)
+  // Modal do Termo de Responsabilidade
   const [termModalConn, setTermModalConn] = useState<ConnectionItem | null>(null);
   const [termSignerRole, setTermSignerRole] = useState<"COMPANY" | "RESEARCHER">("COMPANY");
   const [termAcceptedCheckbox, setTermAcceptedCheckbox] = useState(false);
+
+  // Modal de Confirmação para Aceitar ou Recusar Conexão
+  const [decisionModal, setDecisionModal] = useState<{
+    conn: ConnectionItem;
+    accept: boolean;
+  } | null>(null);
+
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const refreshConnections = (role = viewRole) => {
@@ -67,12 +74,15 @@ export function ConnectionsPage() {
     setTimeout(() => setToastMessage(null), 5000);
   };
 
-  const handleResearcherDecision = (id: string, accept: boolean) => {
-    connectionsService.respondConnectionByResearcher(id, accept);
+  const handleConfirmResearcherDecision = () => {
+    if (!decisionModal) return;
+    const { conn, accept } = decisionModal;
+    connectionsService.respondConnectionByResearcher(conn.id, accept);
+    setDecisionModal(null);
     refreshConnections();
     if (accept) {
       showToast(
-        "✅ Conexão aceita! Ambas as partes foram notificadas para assinar o Termo de Responsabilidade (Success Fee)."
+        "Conexão aceita! Ambas as partes foram notificadas para assinar o Termo de Responsabilidade."
       );
     } else {
       showToast("Solicitação de conexão recusada.");
@@ -93,11 +103,11 @@ export function ConnectionsPage() {
 
     if (updated?.status === "CONECTADO") {
       showToast(
-        "🎉 Termo de Responsabilidade assinado por ambas as partes! Conexão concluída e dados de contato desbloqueados."
+        "Termo de Responsabilidade assinado por ambas as partes! Conexão concluída e dados de contato desbloqueados."
       );
     } else {
       showToast(
-        "✍️ Sua assinatura foi registrada no Termo de Responsabilidade! Aguardando assinatura da outra parte."
+        "Sua assinatura foi registrada no Termo de Responsabilidade! Aguardando assinatura da outra parte."
       );
     }
   };
@@ -379,7 +389,7 @@ export function ConnectionsPage() {
                     <div className="rounded-2xl bg-surface-primary p-4 border border-border-subtle space-y-2.5">
                       <span className="font-mono text-[10px] font-bold text-text-secondary uppercase block">
                         {activeIsResearcher
-                          ? "Informações da Empresa Interessada (Sem Identificação):"
+                          ? "Informações da Empresa Interessada"
                           : "Parâmetros Corporativos Enviados na Solicitação:"}
                       </span>
 
@@ -432,7 +442,7 @@ export function ConnectionsPage() {
                   </div>
 
                   {/* ===================================================================== */}
-                  {/* ETAPA 3: PAINEL DE ASSINATURA DO TERMO DE RESPONSABILIDADE (SUCCESS FEE) */}
+                  {/* ETAPA 3: PAINEL DE ASSINATURA DO TERMO DE RESPONSABILIDADE            */}
                   {/* ===================================================================== */}
                   {item.status === "AGUARDANDO_TERMO" && (
                     <div className="rounded-2xl border border-purple-300 bg-purple-50/70 p-5 space-y-4">
@@ -440,7 +450,7 @@ export function ConnectionsPage() {
                         <div className="space-y-1">
                           <div className="flex items-center gap-2 text-purple-950 font-heading text-xs font-bold uppercase">
                             <Icon icon={FileSignature} size={16} className="text-purple-700" />
-                            Termo de Responsabilidade &amp; Success Fee Obrigatório
+                            Termo de Responsabilidade
                           </div>
                           <p className="font-body text-xs text-purple-900 leading-relaxed">
                             O perfil pesquisador aceitou a conexão! Para que a conexão seja efetivada e ambos os perfis recebam as respectivas informações de contato, <strong>ambas as partes precisam assinar o Termo de Responsabilidade</strong>.
@@ -453,34 +463,34 @@ export function ConnectionsPage() {
                               <Button
                                 size="sm"
                                 onClick={() => handleOpenTermModal(item, "RESEARCHER")}
-                                className="bg-purple-800 hover:bg-purple-900 !text-white text-xs font-bold shadow-xs"
+                                className="bg-purple-800 hover:bg-purple-900 !text-white text-xs font-bold shadow-xs cursor-pointer"
                               >
                                 <Icon icon={FileSignature} size={14} />
                                 Assinar Termo (Pesquisador)
                               </Button>
                             ) : (
                               <span className="rounded-xl bg-emerald-100 border border-emerald-300 px-3 py-1.5 text-xs font-heading font-bold text-emerald-900">
-                                ✓ Você já assinou como Pesquisador
+                                Assinado como Pesquisador
                               </span>
                             )
                           ) : !item.companySignedTerm ? (
                             <Button
                               size="sm"
                               onClick={() => handleOpenTermModal(item, "COMPANY")}
-                              className="bg-purple-800 hover:bg-purple-900 !text-white text-xs font-bold shadow-xs"
+                              className="bg-purple-800 hover:bg-purple-900 !text-white text-xs font-bold shadow-xs cursor-pointer"
                             >
                               <Icon icon={FileSignature} size={14} />
                               Assinar Termo (Empresa)
                             </Button>
                           ) : (
                             <span className="rounded-xl bg-emerald-100 border border-emerald-300 px-3 py-1.5 text-xs font-heading font-bold text-emerald-900">
-                              ✓ Você já assinou como Empresa
+                              Assinado como Empresa
                             </span>
                           )}
                         </div>
                       </div>
 
-                      {/* Status das 2 assinaturas */}
+                      {/* Status das 2 assinaturas (apenas exibição de estado, sem botões duplicados) */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-purple-200 text-xs">
                         <div className="flex items-center justify-between rounded-xl bg-surface-white px-3.5 py-2.5 border border-purple-200">
                           <span className="font-heading font-semibold text-text-primary">
@@ -488,16 +498,12 @@ export function ConnectionsPage() {
                           </span>
                           {item.companySignedTerm ? (
                             <span className="font-mono text-[11px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-md">
-                              ✓ Assinado ({item.companySignedAt})
+                              Assinado ({item.companySignedAt})
                             </span>
                           ) : (
-                            <button
-                              type="button"
-                              onClick={() => handleOpenTermModal(item, "COMPANY")}
-                              className="font-mono text-[11px] font-bold text-amber-800 bg-amber-100 hover:bg-amber-200 px-2.5 py-0.5 rounded-md transition-colors cursor-pointer"
-                            >
-                              ⏳ Pendente (Clique para assinar)
-                            </button>
+                            <span className="font-mono text-[11px] font-bold text-amber-800 bg-amber-100 px-2.5 py-0.5 rounded-md">
+                              Pendente
+                            </span>
                           )}
                         </div>
 
@@ -507,16 +513,12 @@ export function ConnectionsPage() {
                           </span>
                           {item.researcherSignedTerm ? (
                             <span className="font-mono text-[11px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-md">
-                              ✓ Assinado ({item.researcherSignedAt})
+                              Assinado ({item.researcherSignedAt})
                             </span>
                           ) : (
-                            <button
-                              type="button"
-                              onClick={() => handleOpenTermModal(item, "RESEARCHER")}
-                              className="font-mono text-[11px] font-bold text-amber-800 bg-amber-100 hover:bg-amber-200 px-2.5 py-0.5 rounded-md transition-colors cursor-pointer"
-                            >
-                              ⏳ Pendente (Clique para assinar)
-                            </button>
+                            <span className="font-mono text-[11px] font-bold text-amber-800 bg-amber-100 px-2.5 py-0.5 rounded-md">
+                              Pendente
+                            </span>
                           )}
                         </div>
                       </div>
@@ -533,9 +535,6 @@ export function ConnectionsPage() {
                           <Icon icon={Unlock} size={16} className="text-emerald-700" />
                           Conexão Efetivada • Termo Assinado por Ambos • Contatos Liberados
                         </div>
-                        <span className="text-[11px] font-mono font-semibold text-emerald-800">
-                          Success Fee Ativo
-                        </span>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
@@ -607,7 +606,7 @@ export function ConnectionsPage() {
                           <Button
                             variant="secondary"
                             size="sm"
-                            onClick={() => handleResearcherDecision(item.id, false)}
+                            onClick={() => setDecisionModal({ conn: item, accept: false })}
                             className="text-xs text-red-700 hover:bg-red-50 cursor-pointer"
                           >
                             <Icon icon={XCircle} size={14} />
@@ -615,7 +614,7 @@ export function ConnectionsPage() {
                           </Button>
                           <Button
                             size="sm"
-                            onClick={() => handleResearcherDecision(item.id, true)}
+                            onClick={() => setDecisionModal({ conn: item, accept: true })}
                             className="bg-brand-green-dark !text-white text-xs cursor-pointer"
                           >
                             <Icon icon={CheckCircle2} size={14} />
@@ -638,6 +637,78 @@ export function ConnectionsPage() {
           </div>
         )}
       </div>
+
+      {/* ===================================================================== */}
+      {/* MODAL DE CONFIRMAÇÃO DE ACEITE OU RECUSA DE CONEXÃO                   */}
+      {/* ===================================================================== */}
+      {decisionModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="relative w-full max-w-md rounded-3xl bg-surface-white p-6 md:p-7 shadow-2xl border border-border-subtle space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
+              <div className="flex items-center gap-2.5">
+                <div
+                  className={`flex h-9 w-9 items-center justify-center rounded-xl ${
+                    decisionModal.accept
+                      ? "bg-emerald-100 text-emerald-800"
+                      : "bg-red-100 text-red-800"
+                  }`}
+                >
+                  <Icon icon={decisionModal.accept ? CheckCircle2 : XCircle} size={18} />
+                </div>
+                <h3 className="font-heading text-base font-bold text-text-primary">
+                  {decisionModal.accept ? "Confirmar Aceite de Conexão" : "Confirmar Recusa de Conexão"}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setDecisionModal(null)}
+                className="rounded-lg p-1.5 text-text-secondary hover:bg-surface-secondary cursor-pointer"
+              >
+                <Icon icon={X} size={18} />
+              </button>
+            </div>
+
+            <div className="space-y-2 text-xs font-body text-text-secondary leading-relaxed">
+              <p className="font-heading font-semibold text-text-primary">
+                Projeto: {decisionModal.conn.articleTitle}
+              </p>
+              {decisionModal.accept ? (
+                <p>
+                  Tem certeza de que deseja <strong>aceitar</strong> esta conexão? Ao confirmar, ambas as partes serão convocadas para assinar o Termo de Responsabilidade antes da liberação dos dados de contato.
+                </p>
+              ) : (
+                <p>
+                  Tem certeza de que deseja <strong>recusar</strong> esta solicitação de conexão? Esta ação encerrará a tratativa para esta demanda.
+                </p>
+              )}
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-border-subtle">
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={() => setDecisionModal(null)}
+                className="cursor-pointer"
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                onClick={handleConfirmResearcherDecision}
+                className={
+                  decisionModal.accept
+                    ? "bg-brand-green-dark !text-white hover:bg-brand-green-moss cursor-pointer"
+                    : "bg-red-700 !text-white hover:bg-red-800 cursor-pointer"
+                }
+              >
+                {decisionModal.accept ? "Confirmar Aceite" : "Confirmar Recusa"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ===================================================================== */}
       {/* MODAL DE ASSINATURA DO TERMO DE RESPONSABILIDADE (SUCCESS FEE)        */}

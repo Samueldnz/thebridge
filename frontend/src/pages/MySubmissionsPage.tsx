@@ -70,14 +70,16 @@ export function MySubmissionsPage() {
               : "Cadastrar Nova Demanda"}
           </Button>
 
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => navigate(isResearcher ? "/dashboard/conexoes" : "/dashboard/matching")}
-          >
-            <Icon icon={Sparkles} size={15} />
-            {isResearcher ? "Minhas Conexões" : "Ver Matches"}
-          </Button>
+          {!isResearcher && (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => navigate("/dashboard/matching")}
+            >
+              <Icon icon={Sparkles} size={15} />
+              Ver Matches
+            </Button>
+          )}
         </div>
       }
     >
@@ -218,16 +220,7 @@ export function MySubmissionsPage() {
                         className="justify-center"
                       >
                         <Icon icon={Edit3} size={14} />
-                        Editar (Rematch)
-                      </Button>
-
-                      <Button
-                        size="sm"
-                        onClick={() => navigate("/dashboard/matching")}
-                        className="justify-center bg-brand-green-dark text-brand-off-white"
-                      >
-                        <Icon icon={Sparkles} size={14} />
-                        Ver Matches
+                        Editar
                       </Button>
                     </div>
                   </div>

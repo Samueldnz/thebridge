@@ -273,15 +273,7 @@ export function DashboardPage() {
                         className="font-heading text-xs font-semibold text-text-secondary hover:text-brand-green-moss inline-flex items-center gap-1"
                       >
                         <Icon icon={Edit3} size={13} />
-                        Editar (Rematch)
-                      </Link>
-
-                      <Link
-                        to="/dashboard/matching"
-                        className="font-heading text-xs font-semibold text-brand-green-moss hover:underline inline-flex items-center gap-1"
-                      >
-                        Ver Matches
-                        <Icon icon={ArrowRight} size={12} />
+                        Editar
                       </Link>
                     </div>
                   </div>
