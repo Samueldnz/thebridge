@@ -412,26 +412,24 @@ export function SubmitProjectPage() {
             </div>
 
             <div className="mt-8 space-y-8">
-              {/* TRL Slider */}
+              {/* TRL Selector */}
               <div>
-                <div className="flex items-baseline justify-between">
+                <div className="flex items-center justify-between gap-4">
                   <label className="font-heading text-xs font-bold text-text-primary uppercase tracking-wide">
                     Nível de Prontidão Tecnológica (TRL)
                   </label>
-                  <span className="font-mono text-base font-bold text-brand-green-dark bg-brand-green-moss/15 px-3 py-1 rounded-full">
-                    TRL {trl} de 9
-                  </span>
+                  <select
+                    value={trl}
+                    onChange={(e) => setTrl(Number(e.target.value))}
+                    className="rounded-xl border border-border-subtle bg-surface-white px-3.5 py-2.5 font-body text-xs text-text-primary focus:outline-none focus:ring-2 focus:ring-brand-green-moss/20 cursor-pointer"
+                  >
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((lvl) => (
+                      <option key={lvl} value={lvl}>
+                        Nível {lvl}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-
-                <input
-                  type="range"
-                  min={1}
-                  max={9}
-                  step={1}
-                  value={trl}
-                  onChange={(e) => setTrl(Number(e.target.value))}
-                  className="mt-4 w-full accent-brand-green-dark cursor-pointer h-2 bg-border-subtle rounded-lg"
-                />
 
                 <div className="mt-3 rounded-xl bg-surface-secondary/50 p-3.5 border border-border-subtle font-body text-xs text-text-secondary flex items-start gap-2">
                   <Icon icon={Info} size={15} className="text-brand-green-moss mt-0.5 shrink-0" />
@@ -439,26 +437,24 @@ export function SubmitProjectPage() {
                 </div>
               </div>
 
-              {/* CRL Slider */}
+              {/* CRL Selector */}
               <div>
-                <div className="flex items-baseline justify-between">
+                <div className="flex items-center justify-between gap-4">
                   <label className="font-heading text-xs font-bold text-text-primary uppercase tracking-wide">
                     Nível de Prontidão Comercial (CRL)
                   </label>
-                  <span className="font-mono text-base font-bold text-brand-earth bg-brand-earth/15 px-3 py-1 rounded-full">
-                    CRL {crl} de 9
-                  </span>
+                  <select
+                    value={crl}
+                    onChange={(e) => setCrl(Number(e.target.value))}
+                    className="rounded-xl border border-border-subtle bg-surface-white px-3.5 py-2.5 font-body text-xs text-text-primary focus:outline-none focus:ring-2 focus:ring-brand-green-moss/20 cursor-pointer"
+                  >
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((lvl) => (
+                      <option key={lvl} value={lvl}>
+                        Nível {lvl}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-
-                <input
-                  type="range"
-                  min={1}
-                  max={9}
-                  step={1}
-                  value={crl}
-                  onChange={(e) => setCrl(Number(e.target.value))}
-                  className="mt-4 w-full accent-brand-earth cursor-pointer h-2 bg-border-subtle rounded-lg"
-                />
 
                 <div className="mt-3 rounded-xl bg-surface-secondary/50 p-3.5 border border-border-subtle font-body text-xs text-text-secondary flex items-start gap-2">
                   <Icon icon={Info} size={15} className="text-brand-earth mt-0.5 shrink-0" />
