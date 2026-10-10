@@ -93,7 +93,7 @@ export function ContentSection() {
                   </div>
 
                   <div className="flex min-h-[230px] flex-col p-6">
-                    <span className="inline-flex w-fit rounded-full bg-brand-green-moss/10 px-4 py-2 font-body text-[10px] font-medium uppercase tracking-[0.08em] text-brand-green-dark">
+                    <span className="inline-flex w-fit rounded-full bg-brand-green-moss/10 px-4 py-2 font-body text-[13px] font-medium uppercase tracking-[0.08em] text-brand-green-dark">
                       {content.type}
                     </span>
 

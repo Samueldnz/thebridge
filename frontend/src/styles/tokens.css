@@ -160,6 +160,9 @@
    *   Size scale.
    */
 
+  --text-xs: 0.8125rem;
+  --text-xs--line-height: 1.5;
+
   --text-body-lg: 1.125rem;
   --text-body-lg--line-height: 1.65;
 
@@ -169,10 +172,10 @@
   --text-body-sm: 0.875rem;
   --text-body-sm--line-height: 1.55;
 
-  --text-caption: 0.75rem;
+  --text-caption: 0.8125rem;
   --text-caption--line-height: 1.45;
 
-  --text-label: 0.75rem;
+  --text-label: 0.8125rem;
   --text-label--line-height: 1.2;
   --text-label--letter-spacing: 0.08em;
 

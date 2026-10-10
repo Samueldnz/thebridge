@@ -468,7 +468,7 @@ export function RegisterPage() {
                   </label>
 
                   {isCouponApplied && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 font-mono text-[10px] font-bold text-emerald-800">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 font-mono text-[13px] font-bold text-emerald-800">
                       <Icon icon={CheckCircle2} size={11} />
                       Cupom Ativo ✓
                     </span>

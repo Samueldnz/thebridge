@@ -203,7 +203,7 @@ export function MySubmissionsPage() {
                         {p.competences.map((c, i) => (
                           <span
                             key={i}
-                            className="rounded-lg bg-surface-primary border border-border-subtle px-2 py-0.5 text-[10px] font-medium text-text-primary"
+                            className="rounded-lg bg-surface-primary border border-border-subtle px-2 py-0.5 text-[13px] font-medium text-text-primary"
                           >
                             {c.name || c.competenceId} (Nível {c.level})
                           </span>
@@ -262,7 +262,7 @@ export function MySubmissionsPage() {
                         {opp.competences.map((c, i) => (
                           <span
                             key={i}
-                            className="rounded-lg bg-surface-primary border border-border-subtle px-2 py-0.5 text-[10px] font-medium text-text-primary"
+                            className="rounded-lg bg-surface-primary border border-border-subtle px-2 py-0.5 text-[13px] font-medium text-text-primary"
                           >
                             {c.name || c.competenceId} (Peso {c.weight})
                           </span>

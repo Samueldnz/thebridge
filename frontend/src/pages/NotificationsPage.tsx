@@ -218,7 +218,7 @@ export function NotificationsPage() {
                     {/* Badge */}
                     <div className="mt-1">
                       <span
-                        className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-mono font-medium border ${badge.color}`}
+                        className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[13px] font-mono font-medium border ${badge.color}`}
                       >
                         <Icon icon={badge.icon} size={10} />
                         {badge.label}

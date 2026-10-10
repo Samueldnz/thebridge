@@ -559,7 +559,7 @@ export function AdminVerificationPage() {
                             <span className="font-heading text-xs font-bold text-text-primary truncate">
                               {conn.companyName}
                             </span>
-                            <span className="font-mono text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full shrink-0">
+                            <span className="font-mono text-[13px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full shrink-0">
                               {conn.matchScore}% Match
                             </span>
                           </div>
@@ -572,7 +572,7 @@ export function AdminVerificationPage() {
                             Projeto: {conn.articleTitle}
                           </p>
 
-                          <div className="flex items-center justify-between pt-1 text-[10px] font-mono">
+                          <div className="flex items-center justify-between pt-1 text-[13px] font-mono">
                             <span
                               className={`px-2 py-0.5 rounded font-bold ${
                                 conn.status === "EM_ANALISE_ADMIN"
@@ -662,7 +662,7 @@ export function AdminVerificationPage() {
                               </div>
 
                               <div>
-                                <span className="text-[10px] font-mono uppercase text-text-secondary block mb-1">
+                                <span className="text-[13px] font-mono uppercase text-text-secondary block mb-1">
                                   Descrição da Demanda:
                                 </span>
                                 <div className="rounded-xl border border-blue-200/80 bg-white p-3 text-xs text-text-primary leading-relaxed max-h-52 overflow-y-auto whitespace-pre-line">
@@ -674,19 +674,19 @@ export function AdminVerificationPage() {
                               {/* Requisitos Técnicos da Demanda */}
                               <div className="grid grid-cols-3 gap-2 pt-1 text-[13px]">
                                 <div className="rounded-lg bg-white border border-blue-100 p-2">
-                                  <span className="text-[9px] font-mono uppercase text-text-secondary block">TRL Mínimo</span>
+                                  <span className="text-[13px] font-mono uppercase text-text-secondary block">TRL Mínimo</span>
                                   <span className="font-heading font-bold text-blue-950">
                                     {selectedAdminConn.opportunityMinTrl || "TRL 3 a 6"}
                                   </span>
                                 </div>
                                 <div className="rounded-lg bg-white border border-blue-100 p-2">
-                                  <span className="text-[9px] font-mono uppercase text-text-secondary block">CRL Desejado</span>
+                                  <span className="text-[13px] font-mono uppercase text-text-secondary block">CRL Desejado</span>
                                   <span className="font-heading font-bold text-blue-950">
                                     {selectedAdminConn.opportunityDesiredCrl || "CRL 3+"}
                                   </span>
                                 </div>
                                 <div className="rounded-lg bg-white border border-blue-100 p-2">
-                                  <span className="text-[9px] font-mono uppercase text-text-secondary block">Patente</span>
+                                  <span className="text-[13px] font-mono uppercase text-text-secondary block">Patente</span>
                                   <span className="font-heading font-bold text-blue-950 truncate block" title={selectedAdminConn.opportunityPatentReq}>
                                     {selectedAdminConn.opportunityPatentReq || "Desejável"}
                                   </span>
@@ -695,7 +695,7 @@ export function AdminVerificationPage() {
 
                               {selectedAdminConn.opportunityKeywords && (
                                 <div className="text-[13px]">
-                                  <span className="font-mono text-[10px] text-text-secondary">Palavras-chave da Demanda: </span>
+                                  <span className="font-mono text-[13px] text-text-secondary">Palavras-chave da Demanda: </span>
                                   <span className="font-medium text-blue-950">{selectedAdminConn.opportunityKeywords}</span>
                                 </div>
                               )}
@@ -703,7 +703,7 @@ export function AdminVerificationPage() {
 
                             {/* Mensagem de Apresentação da Empresa */}
                             <div className="rounded-xl border border-blue-200 bg-white p-3 space-y-1">
-                              <span className="font-mono text-[10px] font-bold uppercase text-blue-900 block">
+                              <span className="font-mono text-[13px] font-bold uppercase text-blue-900 block">
                                 Mensagem de Apresentação Enviada pela Empresa:
                               </span>
                               <p className="font-body text-xs text-text-primary italic leading-relaxed">
@@ -729,7 +729,7 @@ export function AdminVerificationPage() {
                               </div>
 
                               <div>
-                                <span className="text-[10px] font-mono uppercase text-text-secondary block mb-1">
+                                <span className="text-[13px] font-mono uppercase text-text-secondary block mb-1">
                                   Resumo do Projeto:
                                 </span>
                                 <div className="rounded-xl border border-emerald-200/80 bg-white p-3 text-xs text-text-primary leading-relaxed max-h-64 overflow-y-auto whitespace-pre-line">
@@ -741,7 +741,7 @@ export function AdminVerificationPage() {
 
                             <div className="pt-1 text-[13px]">
                               <div className="rounded-lg bg-white border border-emerald-100 p-2.5">
-                                <span className="text-[9px] font-mono uppercase text-text-secondary block">Área Temática</span>
+                                <span className="text-[13px] font-mono uppercase text-text-secondary block">Área Temática</span>
                                 <span className="font-heading font-bold text-emerald-950">
                                   {selectedAdminConn.articleArea || "Engenharia & Ciência dos Materiais"}
                                 </span>
@@ -794,7 +794,7 @@ export function AdminVerificationPage() {
 
                             {/* Dados que serão enviados ao Pesquisador (Sem revelar o nome da empresa) */}
                             <div className="rounded-xl bg-emerald-50/70 border border-emerald-200 p-3 space-y-1.5">
-                              <span className="font-mono text-[10px] font-bold uppercase text-emerald-950 block">
+                              <span className="font-mono text-[13px] font-bold uppercase text-emerald-950 block">
                                 Dados que o Pesquisador verá ao Aprovar (Sem Nome da Empresa):
                               </span>
                               <p className="text-text-primary">
@@ -863,7 +863,7 @@ export function AdminVerificationPage() {
                                 </p>
                               </div>
                               <div>
-                                <span className="text-[10px] font-mono uppercase text-text-secondary block">
+                                <span className="text-[13px] font-mono uppercase text-text-secondary block">
                                   Vínculo Institucional / Universidade / ICT:
                                 </span>
                                 <p className="font-medium text-emerald-950">
@@ -1118,7 +1118,7 @@ export function AdminVerificationPage() {
                               <h4 className="font-heading text-xs font-bold text-text-primary truncate">
                                 {item.razaoSocial || item.name}
                               </h4>
-                              <span className="text-[10px] font-mono text-text-secondary shrink-0">
+                              <span className="text-[13px] font-mono text-text-secondary shrink-0">
                                 {item.submittedAt.split(" ")[0]}
                               </span>
                             </div>
@@ -1130,7 +1130,7 @@ export function AdminVerificationPage() {
 
                             <div className="flex items-center gap-1.5 mt-2">
                               <span
-                                className={`rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
+                                className={`rounded px-1.5 py-0.5 text-[13px] font-bold uppercase tracking-wider ${
                                   isCompany ? "bg-emerald-100 text-emerald-800" : "bg-blue-100 text-blue-800"
                                 }`}
                               >
@@ -1138,17 +1138,17 @@ export function AdminVerificationPage() {
                               </span>
 
                               {isPending && (
-                                <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold text-amber-900 border border-amber-300">
+                                <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[13px] font-bold text-amber-900 border border-amber-300">
                                   Pendente
                                 </span>
                               )}
                               {isApproved && (
-                                <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[9px] font-bold text-emerald-900 border border-emerald-300">
+                                <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[13px] font-bold text-emerald-900 border border-emerald-300">
                                   Verificado
                                 </span>
                               )}
                               {item.status === "RECUSADO" && (
-                                <span className="rounded bg-rose-100 px-1.5 py-0.5 text-[9px] font-bold text-rose-900 border border-rose-300">
+                                <span className="rounded bg-rose-100 px-1.5 py-0.5 text-[13px] font-bold text-rose-900 border border-rose-300">
                                   Ajustes
                                 </span>
                               )}
@@ -1213,7 +1213,7 @@ export function AdminVerificationPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
                       {/* Box 1: Fiscal */}
                       <div className="rounded-2xl border border-border-subtle bg-surface-primary/40 p-3.5 space-y-1.5">
-                        <span className="font-heading font-bold text-[10px] uppercase tracking-wider text-text-secondary block">
+                        <span className="font-heading font-bold text-[13px] uppercase tracking-wider text-text-secondary block">
                           Identificação Fiscal &amp; Oficial
                         </span>
                         {selectedVerif.profileType === "COMPANY" ? (
@@ -1222,7 +1222,7 @@ export function AdminVerificationPage() {
                               <span className="text-text-secondary">CNPJ: </span>
                               <span className="font-mono font-bold text-text-primary">{selectedVerif.cnpj}</span>
                               {selectedVerif.cnpjStatus && (
-                                <span className="ml-2 rounded bg-emerald-100 px-1 text-[10px] font-bold text-emerald-800">
+                                <span className="ml-2 rounded bg-emerald-100 px-1 text-[13px] font-bold text-emerald-800">
                                   {selectedVerif.cnpjStatus}
                                 </span>
                               )}
@@ -1251,7 +1251,7 @@ export function AdminVerificationPage() {
 
                       {/* Box 2: Contato */}
                       <div className="rounded-2xl border border-border-subtle bg-surface-primary/40 p-3.5 space-y-1.5">
-                        <span className="font-heading font-bold text-[10px] uppercase tracking-wider text-text-secondary block">
+                        <span className="font-heading font-bold text-[13px] uppercase tracking-wider text-text-secondary block">
                           Contato &amp; Responsável
                         </span>
                         <div>
@@ -1474,7 +1474,7 @@ export function AdminVerificationPage() {
                               <h4 className="font-heading text-xs font-bold text-text-primary truncate">
                                 {item.userName}
                               </h4>
-                              <span className="text-[10px] font-mono text-text-secondary shrink-0">
+                              <span className="text-[13px] font-mono text-text-secondary shrink-0">
                                 {item.submittedAt.split(" ")[0]}
                               </span>
                             </div>
@@ -1485,7 +1485,7 @@ export function AdminVerificationPage() {
 
                             <div className="flex items-center gap-1.5 mt-2">
                               <span
-                                className={`rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
+                                className={`rounded px-1.5 py-0.5 text-[13px] font-bold uppercase tracking-wider ${
                                   isEmailChange ? "bg-blue-100 text-blue-900" : "bg-purple-100 text-purple-900"
                                 }`}
                               >
@@ -1493,17 +1493,17 @@ export function AdminVerificationPage() {
                               </span>
 
                               {isPending && (
-                                <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold text-amber-900 border border-amber-300">
+                                <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[13px] font-bold text-amber-900 border border-amber-300">
                                   Pendente
                                 </span>
                               )}
                               {isAccepted && (
-                                <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[9px] font-bold text-emerald-900 border border-emerald-300">
+                                <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[13px] font-bold text-emerald-900 border border-emerald-300">
                                   Atendida
                                 </span>
                               )}
                               {item.status === "RECUSADA" && (
-                                <span className="rounded bg-rose-100 px-1.5 py-0.5 text-[9px] font-bold text-rose-900 border border-rose-300">
+                                <span className="rounded bg-rose-100 px-1.5 py-0.5 text-[13px] font-bold text-rose-900 border border-rose-300">
                                   Recusada
                                 </span>
                               )}
@@ -1557,7 +1557,7 @@ export function AdminVerificationPage() {
 
                     {/* Comparativo de Alteração */}
                     <div className="rounded-2xl border border-border-subtle bg-surface-primary/40 p-4 space-y-3">
-                      <span className="font-heading font-bold text-[10px] uppercase tracking-wider text-text-secondary block">
+                      <span className="font-heading font-bold text-[13px] uppercase tracking-wider text-text-secondary block">
                         Comparativo do Ajuste Solicitado
                       </span>
 
@@ -1845,7 +1845,7 @@ export function AdminVerificationPage() {
                         <Icon icon={Mail} size={14} className="text-text-secondary" />
                         <span className="font-mono font-medium text-text-primary">{email}</span>
                         {isPrimary && (
-                          <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-900 border border-amber-300">
+                          <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[13px] font-bold text-amber-900 border border-amber-300">
                             Principal
                           </span>
                         )}

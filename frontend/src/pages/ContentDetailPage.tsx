@@ -223,7 +223,7 @@ export function ContentDetailPage() {
                     </div>
                     <div className="p-6 md:w-3/5 flex flex-col justify-between">
                       <div>
-                        <span className="rounded-full bg-brand-green-moss/10 px-2.5 py-0.5 font-body text-[10px] font-semibold uppercase text-brand-green-dark">
+                        <span className="rounded-full bg-brand-green-moss/10 px-2.5 py-0.5 font-body text-[13px] font-semibold uppercase text-brand-green-dark">
                           {item.type}
                         </span>
                         <h4 className="mt-3 font-heading text-base font-semibold leading-snug text-text-primary group-hover:text-brand-green-moss transition-colors">

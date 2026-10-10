@@ -197,7 +197,7 @@ export function DashboardLayout({
               >
                 <Icon icon={MessageSquare} size={16} />
                 {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-emerald-600 px-1 text-[10px] font-bold text-white shadow-2xs">
+                  <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-emerald-600 px-1 text-[13px] font-bold text-white shadow-2xs">
                     {unreadCount}
                   </span>
                 )}
@@ -219,7 +219,7 @@ export function DashboardLayout({
                         </span>
                       </div>
                       {unreadCount > 0 && (
-                        <span className="rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5">
+                        <span className="rounded-full bg-emerald-100 text-emerald-800 text-[13px] font-bold px-2 py-0.5">
                           {unreadCount} novas
                         </span>
                       )}
@@ -247,7 +247,7 @@ export function DashboardLayout({
                               <span className="font-heading text-xs font-bold text-text-primary truncate">
                                 {notif.sender}
                               </span>
-                              <span className="text-[10px] font-mono text-text-secondary shrink-0">
+                              <span className="text-[13px] font-mono text-text-secondary shrink-0">
                                 {notif.date}
                               </span>
                             </div>
@@ -339,7 +339,7 @@ export function DashboardLayout({
                   }
                 />
                 {pendingCount > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-600 px-1 text-[9px] font-bold text-white shadow-xs animate-in zoom-in">
+                  <span className="absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-600 px-1 text-[13px] font-bold text-white shadow-xs animate-in zoom-in">
                     {pendingBadge}
                   </span>
                 )}
@@ -437,7 +437,7 @@ export function DashboardLayout({
                   <span>Notificações &amp; Mensagens</span>
                 </div>
                 {unreadCount > 0 && (
-                  <span className="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white">
+                  <span className="rounded-full bg-emerald-600 px-2 py-0.5 text-[13px] font-bold text-white">
                     {unreadCount}
                   </span>
                 )}

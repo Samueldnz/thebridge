@@ -792,7 +792,7 @@ export function MatchingResultsPage() {
 
             {/* Exibe APENAS o nome do projeto (sem evento, sem ano, sem autores, sem score) */}
             <div className="rounded-2xl border border-border-subtle bg-surface-primary/80 px-5 py-3.5">
-              <span className="block font-heading font-bold text-[10px] uppercase tracking-wider text-brand-green-moss">
+              <span className="block font-heading font-bold text-[13px] uppercase tracking-wider text-brand-green-moss">
                 Nome do Projeto
               </span>
               <p className="mt-1 font-heading text-sm md:text-base font-bold text-text-primary leading-snug">

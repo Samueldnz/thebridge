@@ -317,10 +317,10 @@ export function ConnectionsPage() {
                         <Icon icon={activeIsResearcher ? Building2 : GraduationCap} size={22} />
                       </div>
                       <div>
-                        <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-text-secondary flex items-center gap-1">
+                        <span className="text-[13px] font-mono font-bold uppercase tracking-wider text-text-secondary flex items-center gap-1">
                           {activeIsResearcher ? "Empresa Interessada" : "Autores / Grupo de Pesquisa"}
                           {!isFullyConnected && (
-                            <span className="inline-flex items-center gap-0.5 text-amber-800 bg-amber-100 px-1.5 py-0.2 rounded text-[9px]">
+                            <span className="inline-flex items-center gap-0.5 text-amber-800 bg-amber-100 px-1.5 py-0.2 rounded text-[13px]">
                               <Icon icon={Lock} size={10} /> Sigilo Ativo
                             </span>
                           )}
@@ -354,7 +354,7 @@ export function ConnectionsPage() {
                   <div className="grid gap-4 md:grid-cols-2 text-xs">
                     {/* Bloco do Projeto */}
                     <div className="rounded-2xl bg-surface-primary p-4 border border-border-subtle space-y-2">
-                      <span className="font-mono text-[10px] font-bold text-brand-green-moss uppercase">
+                      <span className="font-mono text-[13px] font-bold text-brand-green-moss uppercase">
                         Nome do Projeto Científico:
                       </span>
                       <p className="font-heading text-sm font-bold text-text-primary leading-snug">
@@ -364,7 +364,7 @@ export function ConnectionsPage() {
                       {!activeIsResearcher && (
                         <div className="pt-2 border-t border-border-subtle/70 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                           <div>
-                            <span className="text-[10px] font-heading font-bold uppercase text-text-secondary block">
+                            <span className="text-[13px] font-heading font-bold uppercase text-text-secondary block">
                               Autores:
                             </span>
                             <span className="font-mono text-xs text-text-secondary font-semibold tracking-widest">
@@ -372,7 +372,7 @@ export function ConnectionsPage() {
                             </span>
                           </div>
                           <div>
-                            <span className="text-[10px] font-heading font-bold uppercase text-text-secondary block">
+                            <span className="text-[13px] font-heading font-bold uppercase text-text-secondary block">
                               Vínculos de Pesquisa:
                             </span>
                             <span className="font-mono text-xs text-text-secondary font-semibold tracking-widest">
@@ -387,7 +387,7 @@ export function ConnectionsPage() {
 
                     {/* Bloco dos Parâmetros da Empresa (Área de Atuação, Investimento e Tempo de Execução) */}
                     <div className="rounded-2xl bg-surface-primary p-4 border border-border-subtle space-y-2.5">
-                      <span className="font-mono text-[10px] font-bold text-text-secondary uppercase block">
+                      <span className="font-mono text-[13px] font-bold text-text-secondary uppercase block">
                         {activeIsResearcher
                           ? "Informações da Empresa Interessada"
                           : "Parâmetros Corporativos Enviados na Solicitação:"}
@@ -395,7 +395,7 @@ export function ConnectionsPage() {
 
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-0.5">
                         <div className="rounded-xl bg-surface-white p-2.5 border border-border-subtle">
-                          <span className="text-[10px] text-text-secondary font-heading font-semibold flex items-center gap-1">
+                          <span className="text-[13px] text-text-secondary font-heading font-semibold flex items-center gap-1">
                             <Icon icon={Briefcase} size={11} className="text-brand-green-moss" />
                             Área de Atuação
                           </span>
@@ -405,7 +405,7 @@ export function ConnectionsPage() {
                         </div>
 
                         <div className="rounded-xl bg-surface-white p-2.5 border border-border-subtle">
-                          <span className="text-[10px] text-text-secondary font-heading font-semibold flex items-center gap-1">
+                          <span className="text-[13px] text-text-secondary font-heading font-semibold flex items-center gap-1">
                             <Icon icon={Coins} size={11} className="text-emerald-700" />
                             Investimento Disponível
                           </span>
@@ -415,7 +415,7 @@ export function ConnectionsPage() {
                         </div>
 
                         <div className="rounded-xl bg-surface-white p-2.5 border border-border-subtle">
-                          <span className="text-[10px] text-text-secondary font-heading font-semibold flex items-center gap-1">
+                          <span className="text-[13px] text-text-secondary font-heading font-semibold flex items-center gap-1">
                             <Icon icon={CalendarClock} size={11} className="text-blue-700" />
                             Tempo de Execução
                           </span>
@@ -429,13 +429,13 @@ export function ConnectionsPage() {
 
                   {/* Mensagem de Apresentação */}
                   <div className="rounded-2xl bg-surface-primary/50 p-4 border border-border-subtle">
-                    <span className="font-mono text-[10px] font-bold text-text-secondary uppercase block mb-1">
+                    <span className="font-mono text-[13px] font-bold text-text-secondary uppercase block mb-1">
                       Mensagem de Apresentação:
                     </span>
                     <p className="font-body text-xs text-text-secondary leading-relaxed">
                       &ldquo;{item.message}&rdquo;
                     </p>
-                    <span className="block mt-2 text-[10px] font-mono text-text-muted">
+                    <span className="block mt-2 text-[13px] font-mono text-text-muted">
                       Solicitação registrada em: {item.createdAt}
                       {item.adminApprovedAt ? ` • Aprovada pela Central de Admin em: ${item.adminApprovedAt}` : ""}
                     </span>
@@ -540,7 +540,7 @@ export function ConnectionsPage() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                         {/* Contato da Empresa */}
                         <div className="rounded-xl bg-surface-white p-4 border border-emerald-200 space-y-1.5">
-                          <span className="font-mono text-[10px] font-bold uppercase text-emerald-800">
+                          <span className="font-mono text-[13px] font-bold uppercase text-emerald-800">
                             Dados de Contato do Perfil Empresa
                           </span>
                           <p className="font-heading text-sm font-bold text-text-primary">
@@ -563,7 +563,7 @@ export function ConnectionsPage() {
 
                         {/* Contato do Pesquisador */}
                         <div className="rounded-xl bg-surface-white p-4 border border-emerald-200 space-y-1.5">
-                          <span className="font-mono text-[10px] font-bold uppercase text-emerald-800">
+                          <span className="font-mono text-[13px] font-bold uppercase text-emerald-800">
                             Dados de Contato do Perfil Pesquisador
                           </span>
                           <p className="font-heading text-sm font-bold text-text-primary">
@@ -741,7 +741,7 @@ export function ConnectionsPage() {
             </div>
 
             <div className="rounded-2xl border border-border-subtle bg-surface-primary p-4 text-xs space-y-1">
-              <span className="font-mono text-[10px] font-bold uppercase text-brand-green-moss">
+              <span className="font-mono text-[13px] font-bold uppercase text-brand-green-moss">
                 Projeto Objeto da Conexão:
               </span>
               <p className="font-heading font-bold text-text-primary text-sm">
