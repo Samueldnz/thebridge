@@ -380,10 +380,10 @@ export function DashboardPage() {
                       {isResearcher ? m.opportunity.title : m.project.title}
                     </h4>
 
-                    <p className="mt-1 text-[11px] font-heading font-medium text-brand-green-moss">
+                    <p className="mt-1 text-[11px] font-mono font-medium text-text-secondary tracking-wider">
                       {isResearcher
-                        ? `Empresa: ${m.opportunity.organizationName}`
-                        : `Pesquisador: ${m.project.ownerName}`}
+                        ? "Empresa: ****************"
+                        : "Autores: ****************"}
                     </p>
                   </div>
 

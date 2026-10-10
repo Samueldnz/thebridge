@@ -24,7 +24,11 @@ import { scientificMatchingService, cleanScientificAbstract, type ScientificArti
 import { savedMatchesService } from "../services/savedMatches";
 import { authService } from "../services/auth";
 import { opportunitiesService, type Opportunity } from "../services/opportunities";
-import { connectionsService } from "../services/connections";
+import {
+  connectionsService,
+  FIXED_CENSOR_AUTHORS,
+  FIXED_CENSOR_AFFILIATION,
+} from "../services/connections";
 
 function buildQueryFromOpportunity(opp: Opportunity): string {
   const parts: string[] = [];
@@ -54,6 +58,7 @@ function getCleanAbstract(rawText: string): string {
 
 /**
  * Separa autores e vínculos institucionais a partir do separador ponto e vírgula (;)
+ * para envio interno à Central de Admin (mantendo censura visual para a empresa).
  */
 function splitAuthorsAndAffiliations(rawAutores?: string): { authors: string; affiliations: string | null } {
   if (!rawAutores) return { authors: "Não informado", affiliations: null };
@@ -94,6 +99,9 @@ export function MatchingResultsPage() {
   const [selectedArticleForAudit, setSelectedArticleForAudit] = useState<ScientificArticle | null>(null);
   const [selectedArticleForConnection, setSelectedArticleForConnection] = useState<ScientificArticle | null>(null);
   const [connectionMessage, setConnectionMessage] = useState<string>("");
+  const [companySectorInput, setCompanySectorInput] = useState<string>("");
+  const [investmentAmountInput, setInvestmentAmountInput] = useState<string>("");
+  const [executionTimelineInput, setExecutionTimelineInput] = useState<string>("");
   const [connectionSentSuccess, setConnectionSentSuccess] = useState<boolean>(false);
 
   // Cached / Saved Matches State
@@ -208,30 +216,48 @@ export function MatchingResultsPage() {
 
   const handleOpenConnectionModal = (art: ScientificArticle) => {
     setSelectedArticleForConnection(art);
+    setCompanySectorInput(
+      selectedOpportunity?.industrySector ||
+        user?.industrySector ||
+        "Indústria Química, Materiais & Manufatura"
+    );
+    const defaultBudget =
+      selectedOpportunity?.budgetMin && selectedOpportunity?.budgetMax
+        ? `R$ ${selectedOpportunity.budgetMin.toLocaleString("pt-BR")} a R$ ${selectedOpportunity.budgetMax.toLocaleString("pt-BR")}`
+        : "R$ 200.000,00 a R$ 500.000,00";
+    setInvestmentAmountInput(defaultBudget);
+    setExecutionTimelineInput(selectedOpportunity?.timeline || "12 a 18 meses");
     setConnectionMessage(
-      `Olá! Analisamos a pesquisa "${art.titulo}" (${art.evento}) através da plataforma The Bridge e identificamos alto grau de convergência técnica com a nossa demanda corporativa de P&D. Gostaríamos de solicitar uma conexão formal para avaliar a viabilidade técnica e possíveis modelos de cooperação.`
+      `Olá! Analisamos o projeto "${art.titulo}" através da plataforma The Bridge e identificamos alto grau de convergência técnica com a nossa demanda corporativa de P&D. Gostaríamos de solicitar uma conexão formal para avaliar a viabilidade técnica e possíveis modelos de cooperação.`
     );
     setConnectionSentSuccess(false);
   };
 
   const handleSendConnection = () => {
     if (!selectedArticleForConnection) return;
+    const parsedAuthors = splitAuthorsAndAffiliations(selectedArticleForConnection.autores);
     connectionsService.requestConnection({
       articleTitle: selectedArticleForConnection.titulo,
       articleEvent: selectedArticleForConnection.evento,
       matchScore: selectedArticleForConnection.relevancia_pct,
       message: connectionMessage,
       companyName: user?.companyName || user?.name || "Empresa Parceira Registrada",
-      researcherName: selectedArticleForConnection.autores
-        ? selectedArticleForConnection.autores.split(",")[0]
-        : "Grupo de Pesquisa",
+      companyEmail: user?.email,
+      companyPhone: user?.phone,
+      companyContactName: user?.name,
+      companySector: companySectorInput.trim() || "Indústria de Transformação & Materiais",
+      investmentAmount: investmentAmountInput.trim() || "A definir conforme escopo técnico",
+      executionTimeline: executionTimelineInput.trim() || "12 meses",
+      researcherName: parsedAuthors.authors,
+      researcherAffiliation: parsedAuthors.affiliations || "Instituição Científica e Tecnológica (ICT)",
+      researcherEmail: selectedArticleForConnection.email || selectedArticleForConnection.emails?.[0],
       opportunityTitle: selectedOpportunity?.title || "Demanda Tecnológica Corporativa",
     });
     setConnectionSentSuccess(true);
     setTimeout(() => {
       setSelectedArticleForConnection(null);
       setConnectionSentSuccess(false);
-    }, 1400);
+    }, 1500);
   };
 
   // Filtered by affinity
@@ -530,33 +556,32 @@ export function MatchingResultsPage() {
                     </div>
                   </div>
 
-                  {/* Authors and Affiliations */}
-                  {(() => {
-                    const parsedAuthors = splitAuthorsAndAffiliations(art.autores);
-                    return (
-                      <div className="py-4 space-y-3">
-                        <div>
-                          <span className="text-[11px] font-heading font-bold uppercase text-text-secondary">
-                            Autores:
-                          </span>
-                          <p className="mt-0.5 font-body text-xs md:text-sm text-text-primary font-medium">
-                            {parsedAuthors.authors}
-                          </p>
-                        </div>
+                  {/* Authors and Affiliations (Censurados com asteriscos de quantidade fixa) */}
+                  <div className="py-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <span className="text-[11px] font-heading font-bold uppercase text-text-secondary">
+                        Autores:
+                      </span>
+                      <p
+                        className="mt-0.5 font-mono text-xs md:text-sm text-text-secondary font-semibold tracking-widest select-none"
+                        title="Identidade preservada até a aprovação da conexão e assinatura do Termo de Responsabilidade"
+                      >
+                        {FIXED_CENSOR_AUTHORS}
+                      </p>
+                    </div>
 
-                        {parsedAuthors.affiliations && (
-                          <div>
-                            <span className="text-[11px] font-heading font-bold uppercase text-text-secondary">
-                              Vínculos de Pesquisa:
-                            </span>
-                            <p className="mt-0.5 font-body text-xs md:text-sm text-text-secondary leading-relaxed">
-                              {parsedAuthors.affiliations}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })()}
+                    <div>
+                      <span className="text-[11px] font-heading font-bold uppercase text-text-secondary">
+                        Vínculos de Pesquisa:
+                      </span>
+                      <p
+                        className="mt-0.5 font-mono text-xs md:text-sm text-text-secondary font-semibold tracking-widest select-none"
+                        title="Vínculo preservado até a aprovação da conexão e assinatura do Termo de Responsabilidade"
+                      >
+                        {FIXED_CENSOR_AFFILIATION}
+                      </p>
+                    </div>
+                  </div>
 
                   {/* Abstract Section - Starts right after "Resumo :" */}
                   {cleanAbstract && (
@@ -719,82 +744,134 @@ export function MatchingResultsPage() {
         </div>
       )}
 
-      {/* Connection Request Modal with soft fog background (efeito fog leve) */}
+      {/* Janela Retangular Deitada (Horizontal) de Solicitar Conexão */}
       {selectedArticleForConnection && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="relative w-full max-w-lg rounded-3xl bg-surface-white p-6 md:p-8 shadow-2xl border border-border-subtle space-y-5 animate-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/45 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="relative w-full max-w-4xl rounded-3xl bg-surface-white p-6 md:p-8 shadow-2xl border border-border-subtle space-y-5 animate-in zoom-in-95 duration-150 max-h-[92vh] overflow-y-auto">
             {/* Close button */}
             <button
               type="button"
               onClick={() => setSelectedArticleForConnection(null)}
-              className="absolute right-5 top-5 inline-flex h-8 w-8 items-center justify-center rounded-full bg-surface-secondary text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
+              className="absolute right-6 top-6 inline-flex h-8 w-8 items-center justify-center rounded-full bg-surface-secondary text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
             >
               <Icon icon={X} size={18} />
             </button>
 
-            <div className="flex items-center gap-2 font-heading text-xs font-bold text-brand-green-moss uppercase">
-              <Icon icon={MessageSquare} size={16} />
-              Intermediação de Parceria • The Bridge
-            </div>
-
-            <div>
-              <h3 className="font-display text-2xl font-bold text-text-primary">
+            {/* Header */}
+            <div className="pr-8">
+              <div className="flex items-center gap-2 font-heading text-xs font-bold text-brand-green-moss uppercase">
+                <Icon icon={MessageSquare} size={16} />
+                Intermediação Confidencial de Parceria • The Bridge
+              </div>
+              <h3 className="mt-1 font-display text-2xl font-bold text-text-primary">
                 Solicitar Conexão
               </h3>
               <p className="mt-1 font-body text-xs text-text-secondary">
-                Envie uma proposta de aproximação técnica intermediada com segurança pela plataforma.
+                Sua solicitação passará pela curadoria da nossa Central de Admin antes de notificar o pesquisador responsável.
               </p>
             </div>
 
-            {/* Target Research Card */}
-            <div className="rounded-2xl border border-border-subtle bg-surface-primary/70 p-4 space-y-2 text-xs">
-              <div className="flex items-center justify-between gap-2">
-                <span className="font-heading font-bold text-text-primary text-[11px] uppercase text-brand-green-moss">
-                  Pesquisa Alvo
-                </span>
-                <span className="rounded-full bg-emerald-100 text-emerald-900 font-mono font-bold px-2 py-0.5 text-[10px]">
-                  {selectedArticleForConnection.relevancia_pct}% afinidade
-                </span>
-              </div>
-              <p className="font-heading text-xs font-semibold text-text-primary line-clamp-2">
+            {/* Exibe APENAS o nome do projeto (sem evento, sem ano, sem autores, sem score) */}
+            <div className="rounded-2xl border border-border-subtle bg-surface-primary/80 px-5 py-3.5">
+              <span className="block font-heading font-bold text-[10px] uppercase tracking-wider text-brand-green-moss">
+                Nome do Projeto
+              </span>
+              <p className="mt-1 font-heading text-sm md:text-base font-bold text-text-primary leading-snug">
                 {selectedArticleForConnection.titulo}
               </p>
-              <p className="font-body text-[11px] text-text-secondary">
-                {selectedArticleForConnection.evento} ({selectedArticleForConnection.ano})
-              </p>
             </div>
 
-            {/* IP Security Notice */}
-            <div className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-3 text-[11px] text-emerald-950 font-body leading-relaxed flex items-start gap-2">
-              <Icon icon={Info} size={15} className="text-emerald-800 shrink-0 mt-0.5" />
-              <span>
-                As informações diretas de contato são preservadas pela The Bridge para garantir confidencialidade jurídica, salvaguarda de propriedade intelectual e celebração de acordos mútuos.
-              </span>
-            </div>
+            {/* Corpo Retangular Deitado em 2 Colunas Horizontais */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+              {/* Coluna Esquerda: Parâmetros Anônimos que o Pesquisador Receberá */}
+              <div className="lg:col-span-5 flex flex-col justify-between space-y-4 rounded-2xl border border-border-subtle bg-surface-primary/40 p-4.5">
+                <div className="space-y-3.5">
+                  <div>
+                    <h4 className="font-heading text-xs font-bold text-text-primary uppercase tracking-wide">
+                      Parâmetros da Proposta Corporativa
+                    </h4>
+                    <p className="font-body text-[11px] text-text-secondary mt-0.5 leading-relaxed">
+                      O nome da sua empresa será mantido em sigilo. O pesquisador verá apenas os dados abaixo para decidir sobre a conexão:
+                    </p>
+                  </div>
 
-            {/* Editable Message Box */}
-            <div className="space-y-1.5">
-              <label className="block font-heading text-xs font-semibold text-text-primary">
-                Mensagem de Apresentação (Editável):
-              </label>
-              <textarea
-                rows={4}
-                value={connectionMessage}
-                onChange={(e) => setConnectionMessage(e.target.value)}
-                placeholder="Descreva o interesse da sua empresa e contexto do desafio..."
-                className="w-full rounded-2xl border border-border-subtle bg-surface-primary p-3.5 text-xs text-text-primary focus:border-brand-green-moss focus:outline-none focus:bg-surface-white transition-all resize-none leading-relaxed"
-              />
+                  <div>
+                    <label className="block font-heading text-[11px] font-semibold text-text-primary mb-1">
+                      Área de Atuação da Empresa *
+                    </label>
+                    <input
+                      type="text"
+                      value={companySectorInput}
+                      onChange={(e) => setCompanySectorInput(e.target.value)}
+                      placeholder="Ex: Saneamento Básico, Química, Energia..."
+                      className="w-full rounded-xl border border-border-subtle bg-surface-white px-3 py-2 text-xs text-text-primary focus:border-brand-green-moss focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-heading text-[11px] font-semibold text-text-primary mb-1">
+                      Capacidade de Investimento Estimada *
+                    </label>
+                    <input
+                      type="text"
+                      value={investmentAmountInput}
+                      onChange={(e) => setInvestmentAmountInput(e.target.value)}
+                      placeholder="Ex: R$ 200.000,00 a R$ 500.000,00"
+                      className="w-full rounded-xl border border-border-subtle bg-surface-white px-3 py-2 text-xs text-text-primary focus:border-brand-green-moss focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-heading text-[11px] font-semibold text-text-primary mb-1">
+                      Tempo Desejável de Execução do Projeto *
+                    </label>
+                    <input
+                      type="text"
+                      value={executionTimelineInput}
+                      onChange={(e) => setExecutionTimelineInput(e.target.value)}
+                      placeholder="Ex: 12 a 18 meses"
+                      className="w-full rounded-xl border border-border-subtle bg-surface-white px-3 py-2 text-xs text-text-primary focus:border-brand-green-moss focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-3 text-[11px] text-emerald-950 font-body leading-relaxed flex items-start gap-2">
+                  <Icon icon={Info} size={14} className="text-emerald-800 shrink-0 mt-0.5" />
+                  <span>
+                    As informações de contato de ambas as partes só serão liberadas após aceite mútuo e assinatura do <strong>Termo de Responsabilidade (Success Fee)</strong>.
+                  </span>
+                </div>
+              </div>
+
+              {/* Coluna Direita: Caixa de Texto Ampla da Mensagem de Apresentação */}
+              <div className="lg:col-span-7 flex flex-col justify-between space-y-2">
+                <div className="flex-1 flex flex-col">
+                  <label className="block font-heading text-xs font-bold text-text-primary mb-1.5">
+                    Mensagem de Apresentação e Contexto Técnico (Editável):
+                  </label>
+                  <textarea
+                    rows={9}
+                    value={connectionMessage}
+                    onChange={(e) => setConnectionMessage(e.target.value)}
+                    placeholder="Descreva os objetivos da sua empresa com este projeto, o escopo esperado de P&D e como pretende aplicar a tecnologia..."
+                    className="w-full flex-1 rounded-2xl border border-border-subtle bg-surface-primary p-4 text-xs md:text-sm text-text-primary focus:border-brand-green-moss focus:outline-none focus:bg-surface-white transition-all resize-none leading-relaxed"
+                  />
+                </div>
+                <p className="text-[11px] font-body text-text-secondary">
+                  Evite inserir dados de contato direto ou razão social no texto acima para preservar o protocolo de confidencialidade da curadoria.
+                </p>
+              </div>
             </div>
 
             {/* Feedback alert if sent */}
             {connectionSentSuccess && (
               <div className="rounded-xl border border-emerald-300 bg-emerald-100 p-3 text-xs font-heading font-bold text-emerald-950 text-center animate-in fade-in">
-                ✓ Solicitação de conexão enviada com sucesso! Acompanhe em &apos;Minhas Conexões&apos;.
+                ✓ Solicitação enviada para a Central de Admin! Acompanhe o andamento em &apos;Minhas Conexões&apos;.
               </div>
             )}
 
             {/* Actions: CANCELAR & ENVIAR */}
-            <div className="flex items-center justify-end gap-3 pt-2">
+            <div className="flex items-center justify-end gap-3 pt-2 border-t border-border-subtle">
               <Button
                 type="button"
                 variant="secondary"
@@ -810,7 +887,7 @@ export function MatchingResultsPage() {
                 className="bg-brand-green-dark !text-white hover:bg-brand-green-moss shadow-xs"
               >
                 <Icon icon={Send} size={14} />
-                Enviar
+                Enviar Solicitação para Curadoria
               </Button>
             </div>
           </div>
