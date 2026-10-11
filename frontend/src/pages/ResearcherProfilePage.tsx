@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 
 import { DashboardLayout } from "../components/layout/DashboardLayout";
+import { ProfileSettingsView } from "../components/layout/ProfileSettingsView";
 import { Button } from "../components/ui/Button";
 import { Icon } from "../components/ui/Icon";
 import { authService, type User } from "../services/auth";
@@ -287,31 +288,43 @@ export function ResearcherProfilePage() {
           </div>
         )}
 
-        {/* Profile Type Badge & Request Link Banner */}
-        <div className="rounded-2xl border border-border-subtle bg-surface-white p-4 shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-100 text-emerald-800">
-              <Icon icon={GraduationCap} size={16} />
-            </div>
-            <div>
-              <span className="font-heading font-semibold text-text-secondary block text-[13px]">Tipo de Conta Atual:</span>
-              <span className="font-heading text-xs font-bold text-text-primary">
-                Pesquisador (Pessoa Física)
-              </span>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => setProfileTypeModalOpen(true)}
-            className="rounded-xl border border-border-subtle bg-surface-primary px-3 py-1.5 font-heading text-xs font-bold text-brand-green-moss hover:bg-emerald-50 transition-colors cursor-pointer flex items-center gap-1.5"
-          >
-            <Icon icon={ArrowRightLeft} size={13} />
-            Solicitar mudança de tipo de perfil ↗
-          </button>
-        </div>
+        <ProfileSettingsView
+          user={{ ...currentUser, ...formData, id: currentUser?.id || "usr", profileType: "RESEARCHER" }}
+          isResearcher={true}
+          verificationStatus={verificationStatus}
+          submittingVerification={submittingVerification}
+          onSubmitForVerification={handleSubmitForVerification}
+          onOpenEmailModal={() => setEmailModalOpen(true)}
+          onOpenProfileTypeModal={() => setProfileTypeModalOpen(true)}
+          onSaveProfile={() => handleSave()}
+          savingProfile={saving}
+          profileTabContent={
+            <div className="space-y-6">
+              {/* Profile Type Badge & Request Link Banner */}
+              <div className="rounded-2xl border border-border-subtle bg-surface-white p-4 shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-100 text-emerald-800">
+                    <Icon icon={GraduationCap} size={16} />
+                  </div>
+                  <div>
+                    <span className="font-heading font-semibold text-text-secondary block text-[13px]">Tipo de Conta Atual:</span>
+                    <span className="font-heading text-xs font-bold text-text-primary">
+                      Pesquisador (Pessoa Física)
+                    </span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setProfileTypeModalOpen(true)}
+                  className="rounded-xl border border-border-subtle bg-surface-primary px-3 py-1.5 font-heading text-xs font-bold text-brand-green-moss hover:bg-emerald-50 transition-colors cursor-pointer flex items-center gap-1.5"
+                >
+                  <Icon icon={ArrowRightLeft} size={13} />
+                  Solicitar mudança de tipo de perfil ↗
+                </button>
+              </div>
 
-        {/* The Researcher Editing Form */}
-        <form onSubmit={handleSave} className="space-y-6">
+              {/* The Researcher Editing Form */}
+              <form onSubmit={handleSave} className="space-y-6">
           {/* Section 1: Identificação Civil & Contato */}
           <div className="rounded-3xl border border-border-subtle bg-surface-white p-6 md:p-8 shadow-xs space-y-6">
             <div className="flex items-center gap-2.5 pb-4 border-b border-border-subtle">
@@ -603,6 +616,9 @@ export function ResearcherProfilePage() {
             </Button>
           </div>
         </form>
+            </div>
+          }
+        />
 
         {/* Modal: Solicitar Mudança de E-mail */}
         {emailModalOpen && (
