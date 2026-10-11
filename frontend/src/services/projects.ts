@@ -1,6 +1,8 @@
 import { env } from "../config/env";
 import { authService } from "./auth";
 import { defaultCompetences } from "./competences";
+import { savedMatchesService } from "./savedMatches";
+import { scientificMatchingService } from "./scientificMatching";
 
 export type PatentStatus = "NONE" | "PENDING" | "GRANTED";
 export type ProjectStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
@@ -25,6 +27,8 @@ export interface Project {
   competences: ProjectCompetenceItem[];
   createdAt: string;
   ownerName?: string;
+  ownerEmail?: string;
+  ownerAffiliation?: string;
 }
 
 export interface CreateProjectPayload {
@@ -55,6 +59,8 @@ const defaultInitialProjects: Project[] = [
     patentStatus: "GRANTED",
     status: "PUBLISHED",
     ownerName: "Dra. Carolina Fontes (Lab. Nanomedicina USP)",
+    ownerEmail: "carolina.fontes@usp.br",
+    ownerAffiliation: "Universidade de São Paulo (USP) - Lab. Nanomedicina",
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(),
     competences: [
       { competenceId: "comp-materials", level: 5, name: "Nanotecnologia & Novos Materiais" },
@@ -75,6 +81,8 @@ const defaultInitialProjects: Project[] = [
     patentStatus: "PENDING",
     status: "PUBLISHED",
     ownerName: "Dra. Carolina Fontes (Lab. Nanomedicina USP)",
+    ownerEmail: "carolina.fontes@usp.br",
+    ownerAffiliation: "Universidade de São Paulo (USP) - Lab. Nanomedicina",
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 12).toISOString(),
     competences: [
       { competenceId: "comp-energy", level: 5, name: "Energias Renováveis & Armazenamento" },
@@ -94,6 +102,8 @@ const defaultInitialProjects: Project[] = [
     patentStatus: "GRANTED",
     status: "PUBLISHED",
     ownerName: "Dra. Beatriz Mendes (Embrapa / UFRGS)",
+    ownerEmail: "beatriz.mendes@embrapa.br",
+    ownerAffiliation: "Embrapa / Universidade Federal do Rio Grande do Sul (UFRGS)",
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 20).toISOString(),
     competences: [
       { competenceId: "comp-agritech", level: 5, name: "Agricultura de Precisão & Bioinsumos" },
@@ -215,10 +225,16 @@ export const projectsService = {
       })),
       createdAt: new Date().toISOString(),
       ownerName: currentUser?.name || "Pesquisador",
+      ownerEmail: currentUser?.email || "pesquisador@universidade.edu.br",
+      ownerAffiliation:
+        currentUser?.university ||
+        currentUser?.department ||
+        "ICT / Universidade",
     };
 
     const currentList = this.getStoredProjects();
     this.saveStoredProjects([newProject, ...currentList.filter((p) => p.id !== newProject.id)]);
+    savedMatchesService.clear();
 
     // 2. Sincronizar com a API no backend
     try {
@@ -272,11 +288,15 @@ export const projectsService = {
       // Backend indisponível, submissão já garantida localmente
     }
 
+    // 3. Indexar dinamicamente no motor BAAI/bge-m3 (Hugging Face Space)
+    scientificMatchingService.indexProjectsInBge([newProject]).catch(() => {});
+
     return newProject;
   },
 
   async updateProject(id: string, payload: Partial<CreateProjectPayload>): Promise<Project> {
     const token = authService.getStoredToken();
+    const currentUser = authService.getStoredUser();
     const currentList = this.getStoredProjects();
     const index = currentList.findIndex((p) => p.id === id);
 
@@ -292,6 +312,12 @@ export const projectsService = {
         trl: payload.trl !== undefined ? payload.trl : existing.trl,
         crl: payload.crl !== undefined ? payload.crl : existing.crl,
         patentStatus: payload.patentStatus !== undefined ? payload.patentStatus : existing.patentStatus,
+        ownerEmail: existing.ownerEmail || currentUser?.email || "pesquisador@universidade.edu.br",
+        ownerAffiliation:
+          existing.ownerAffiliation ||
+          currentUser?.university ||
+          currentUser?.department ||
+          "ICT / Universidade",
         competences:
           payload.competences !== undefined
             ? payload.competences.map((c) => ({
@@ -303,6 +329,7 @@ export const projectsService = {
       };
       currentList[index] = updatedProject;
       this.saveStoredProjects([...currentList]);
+      savedMatchesService.clear();
     } else {
       throw new Error("Projeto não encontrado para edição.");
     }
@@ -320,6 +347,9 @@ export const projectsService = {
     } catch {
       // fallback
     }
+
+    // Re-indexar projeto editado no motor BAAI/bge-m3
+    scientificMatchingService.indexProjectsInBge([updatedProject]).catch(() => {});
 
     return updatedProject;
   },

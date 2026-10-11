@@ -10,7 +10,7 @@ export interface SavedMatchRecord {
   totalBase: number;
 }
 
-const STORAGE_KEY = "thebridge_saved_matches";
+const STORAGE_KEY = "thebridge_saved_matches_v2";
 
 export const savedMatchesService = {
   getAll(): Record<string, SavedMatchRecord> {

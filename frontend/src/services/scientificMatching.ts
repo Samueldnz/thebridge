@@ -181,6 +181,199 @@ const FALLBACK_ARTICLES: Omit<ScientificArticle, "score_cosseno" | "relevancia_p
   },
 ];
 
+const PROJECTS_STORAGE_KEY = "thebridge_demo_projects";
+const INDEXED_PROJECTS_SIG_KEY = "thebridge_indexed_bge_signatures_v1";
+
+interface StoredResearcherProject {
+  id: string;
+  ownerId?: string;
+  title: string;
+  description: string;
+  keywords?: string;
+  researchField?: string;
+  trl?: number;
+  crl?: number;
+  patentStatus?: string;
+  status?: string;
+  ownerName?: string;
+  ownerEmail?: string;
+  ownerAffiliation?: string;
+}
+
+function getStoredResearcherProjects(): StoredResearcherProject[] {
+  try {
+    const raw = localStorage.getItem(PROJECTS_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        return parsed.filter((p) => p && p.title && p.status !== "ARCHIVED");
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return [];
+}
+
+function normalizeTextForSemanticMatch(text: string): string {
+  return (text || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^\w\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+const STOPWORDS = new Set([
+  "para", "com", "dos", "das", "nos", "nas", "uma", "uns", "umas", "por", "pelo", "pela",
+  "como", "mais", "menos", "entre", "sobre", "alta", "alto", "uso", "base", "meio", "tipo",
+  "que", "sao", "foi", "ser", "tem", "seu", "sua", "seus", "suas", "este", "esta", "isso",
+  "the", "and", "for", "with", "from", "that", "this", "are", "was", "were", "high", "low",
+]);
+
+function extractSemanticTokens(text: string): string[] {
+  return normalizeTextForSemanticMatch(text)
+    .split(" ")
+    .filter((t) => t.length >= 3 && !STOPWORDS.has(t));
+}
+
+/**
+ * Calcula o score de similaridade semântica calibrado na escala cosseno do BGE-M3 (0.35 - 0.78)
+ * para projetos submetidos por pesquisadores na plataforma caso o container ZeroGPU ainda esteja
+ * sincronizando ou operando em fallback.
+ */
+function computeResearcherProjectCosineScore(
+  proj: StoredResearcherProject,
+  query: string
+): { score_cosseno: number; matches: number } {
+  const qNorm = normalizeTextForSemanticMatch(query);
+  const qTokens = extractSemanticTokens(query);
+  if (qTokens.length === 0) {
+    return { score_cosseno: 0.45, matches: 0 };
+  }
+
+  const titleNorm = normalizeTextForSemanticMatch(proj.title || "");
+  const fieldNorm = normalizeTextForSemanticMatch(proj.researchField || "");
+  const kwNorm = normalizeTextForSemanticMatch(proj.keywords || "");
+  const descNorm = normalizeTextForSemanticMatch(proj.description || "");
+  const fullDocNorm = `${titleNorm} ${fieldNorm} ${kwNorm} ${descNorm}`;
+  const docTokens = extractSemanticTokens(fullDocNorm);
+
+  let weightedHits = 0;
+  let exactHits = 0;
+
+  for (const qt of qTokens) {
+    const stem = qt.length >= 5 ? qt.slice(0, Math.max(4, qt.length - 2)) : qt;
+
+    const inTitle = titleNorm.includes(qt) || (stem.length >= 4 && titleNorm.includes(stem));
+    const inKw = kwNorm.includes(qt) || (stem.length >= 4 && kwNorm.includes(stem));
+    const inField = fieldNorm.includes(qt) || (stem.length >= 4 && fieldNorm.includes(stem));
+    const inDesc = descNorm.includes(qt) || (stem.length >= 4 && descNorm.includes(stem));
+
+    if (inTitle || inKw || inField || inDesc) {
+      exactHits += 1;
+      let tokenWeight = 0;
+      if (inTitle) tokenWeight += 1.6;
+      if (inKw) tokenWeight += 1.4;
+      if (inField) tokenWeight += 1.2;
+      if (inDesc) tokenWeight += 1.0;
+      weightedHits += Math.min(2.2, tokenWeight);
+    }
+  }
+
+  // Checagem de bigramas / termos compostos
+  let bigramBonus = 0;
+  for (let i = 0; i < qTokens.length - 1; i++) {
+    const bg = `${qTokens[i]} ${qTokens[i + 1]}`;
+    if (bg.length >= 7 && fullDocNorm.includes(bg)) {
+      bigramBonus += 0.045;
+    }
+  }
+
+  // Substring direta de frase curta
+  if (qNorm.length >= 6 && (titleNorm.includes(qNorm) || kwNorm.includes(qNorm))) {
+    bigramBonus += 0.08;
+  }
+
+  if (exactHits === 0 && docTokens.length > 0) {
+    return { score_cosseno: 0.36, matches: 0 };
+  }
+
+  const coverage = exactHits / Math.max(1, Math.min(qTokens.length, 8));
+  const density = weightedHits / Math.max(1, Math.min(qTokens.length, 6) * 1.5);
+  const rawCosine = 0.48 + Math.min(0.28, coverage * 0.14 + density * 0.12 + bigramBonus);
+  const clamped = Math.max(0.36, Math.min(0.745, rawCosine));
+
+  return {
+    score_cosseno: parseFloat(clamped.toFixed(4)),
+    matches: exactHits,
+  };
+}
+
+function convertProjectToArticle(
+  proj: StoredResearcherProject,
+  score_cosseno: number
+): ScientificArticle {
+  const authorName = proj.ownerName || "Pesquisador The Bridge";
+  const affiliation = proj.ownerAffiliation || "ICT / Universidade Parceira";
+  const combinedAuthors = authorName.includes(";")
+    ? authorName
+    : `${authorName}; ${affiliation}`;
+  const email = proj.ownerEmail || "pesquisador@universidade.edu.br";
+
+  return {
+    id: proj.id,
+    titulo: proj.title,
+    autores: combinedAuthors,
+    email,
+    emails: [email],
+    sessao: "Projeto Submetido na Plataforma The Bridge",
+    codigo: `TB-${proj.id.slice(-6).toUpperCase()}`,
+    area: proj.researchField || "Pesquisa Aplicada & Inovação",
+    evento: "Plataforma The Bridge",
+    ano: 2026,
+    edicao: "Base de Pesquisadores The Bridge",
+    score_cosseno,
+    relevancia_pct: calculateRelevance(score_cosseno),
+    resumo: cleanScientificAbstract(proj.description),
+  };
+}
+
+/**
+ * Mescla projetos submetidos pelos pesquisadores da plataforma nos resultados de busca,
+ * preservando o score exato do BGE-M3 caso o Hugging Face Space já o tenha retornado,
+ * ou pontuando-o semanticamente caso contrário.
+ */
+function mergeResearcherProjectsIntoResults(
+  query: string,
+  baseArticles: ScientificArticle[],
+  topK: number = 10
+): ScientificArticle[] {
+  const researcherProjects = getStoredResearcherProjects();
+  if (researcherProjects.length === 0) {
+    return baseArticles.slice(0, Math.min(topK, 10));
+  }
+
+  const existingIds = new Set(baseArticles.map((a) => String(a.id)));
+  const merged: ScientificArticle[] = [...baseArticles];
+
+  for (const proj of researcherProjects) {
+    if (existingIds.has(String(proj.id))) {
+      // Já retornou diretamente do índice BGE-M3 do Hugging Face Space!
+      continue;
+    }
+
+    const { score_cosseno, matches } = computeResearcherProjectCosineScore(proj, query);
+    if (matches > 0) {
+      merged.push(convertProjectToArticle(proj, score_cosseno));
+    }
+  }
+
+  merged.sort((a, b) => b.score_cosseno - a.score_cosseno || b.relevancia_pct - a.relevancia_pct);
+  return merged.slice(0, Math.min(topK, 10));
+}
+
 function generateFallbackMatches(query: string, topK: number = 10): ScientificMatchResult {
   const queryTokens = (query || "")
     .toLowerCase()
@@ -212,14 +405,15 @@ function generateFallbackMatches(query: string, topK: number = 10): ScientificMa
   // Ordena prioritariamente pelos artigos com maior convergência temática
   scored.sort((a, b) => b.matches - a.matches || b.relevancia_pct - a.relevancia_pct);
 
-  const topArticles = scored.slice(0, Math.min(topK, 10)).map(({ matches: _, ...art }) => art);
+  const baseTop = scored.slice(0, Math.min(topK, 10)).map(({ matches: _, ...art }) => art);
+  const topArticles = mergeResearcherProjectsIntoResults(query, baseTop, topK);
 
   return {
     resposta: `Identificamos ${topArticles.length} projetos científicos de alta convergência com os requisitos da sua demanda na base integrada The Bridge.`,
     artigos: topArticles,
     estatisticas: {
       tempo_matchmaking_ms: 140,
-      total_base: 12531,
+      total_base: 12531 + getStoredResearcherProjects().length,
     },
   };
 }
@@ -346,6 +540,71 @@ function parseEventData(dataStr: string): ScientificMatchResult | null {
 }
 
 export const scientificMatchingService = {
+  /**
+   * Envia um ou mais projetos submetidos por pesquisadores para o endpoint 'indexar_projeto'
+   * no Hugging Face Space para que sofram embedding BAAI/bge-m3 e entrem na matriz vetorial em tempo real.
+   */
+  async indexProjectsInBge(projectsToSync?: StoredResearcherProject[]): Promise<boolean> {
+    const list = projectsToSync || getStoredResearcherProjects();
+    if (!list || list.length === 0) return false;
+
+    const hfUrl = env.hfMatchingUrl.replace(/\/+$/, "");
+    const token = env.hfToken.trim();
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    };
+
+    const payloadList = list.map((p) => {
+      const authorName = p.ownerName || "Pesquisador The Bridge";
+      const affiliation = p.ownerAffiliation || "ICT / Universidade Parceira";
+      return {
+        id: p.id,
+        titulo: p.title,
+        resumo: p.description,
+        area: p.researchField || "Pesquisa Aplicada & Inovação",
+        keywords: p.keywords || "",
+        autores: authorName.includes(";") ? authorName : `${authorName}; ${affiliation}`,
+        email: p.ownerEmail || "pesquisador@universidade.edu.br",
+      };
+    });
+
+    try {
+      const postRes = await fetch(`${hfUrl}/gradio_api/call/indexar_projeto`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          data: [JSON.stringify(payloadList)],
+        }),
+      });
+
+      if (!postRes.ok) {
+        return false;
+      }
+
+      const { event_id } = await postRes.json();
+      if (!event_id) return false;
+
+      const getRes = await fetch(`${hfUrl}/gradio_api/call/indexar_projeto/${event_id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (getRes.ok) {
+        await getRes.text();
+        try {
+          const sigs = payloadList.map((p) => `${p.id}:${p.titulo.length}:${p.resumo.length}`).join("|");
+          sessionStorage.setItem(INDEXED_PROJECTS_SIG_KEY, sigs);
+        } catch {
+          // ignore
+        }
+        return true;
+      }
+    } catch {
+      // Silencioso caso o Space esteja reiniciando; o merge semântico garante cobertura imediata
+    }
+    return false;
+  },
+
   async search(query: string, topK: number = 10): Promise<ScientificMatchResult> {
     const trimmed = (query || "").trim();
     if (!trimmed) {
@@ -354,6 +613,19 @@ export const scientificMatchingService = {
         artigos: [],
         estatisticas: { tempo_matchmaking_ms: 0, total_base: 12531 },
       };
+    }
+
+    // Garante que projetos de pesquisadores ainda não sincronizados nesta sessão sejam enviados ao BGE-M3
+    const storedProjects = getStoredResearcherProjects();
+    if (storedProjects.length > 0) {
+      const currentSig = storedProjects
+        .map((p) => `${p.id}:${(p.title || "").length}:${(p.description || "").length}`)
+        .join("|");
+      const lastSig = typeof sessionStorage !== "undefined" ? sessionStorage.getItem(INDEXED_PROJECTS_SIG_KEY) : null;
+      if (currentSig !== lastSig) {
+        // Dispara indexação BGE-M3 em paralelo sem bloquear caso o endpoint ainda não esteja publicado
+        this.indexProjectsInBge(storedProjects).catch(() => {});
+      }
     }
 
     // Camada 1: Tentar via Backend Proxy (100% seguro contra exposição de token no cliente)
@@ -368,13 +640,15 @@ export const scientificMatchingService = {
       if (backendRes.ok) {
         const data = (await backendRes.json()) as ScientificMatchResult;
         if (data && Array.isArray(data.artigos) && data.artigos.length > 0) {
+          const cleanedArticles = data.artigos.map((art) => ({
+            ...art,
+            relevancia_pct: calculateRelevance(art.score_cosseno),
+            resumo: cleanScientificAbstract(art.resumo),
+          }));
+          const finalArticles = mergeResearcherProjectsIntoResults(trimmed, cleanedArticles, topK);
           return {
             ...data,
-            artigos: data.artigos.map((art) => ({
-              ...art,
-              relevancia_pct: calculateRelevance(art.score_cosseno),
-              resumo: cleanScientificAbstract(art.resumo),
-            })),
+            artigos: finalArticles,
           };
         }
       }
@@ -526,7 +800,15 @@ export const scientificMatchingService = {
       }
 
       if (matchResult && matchResult.artigos && matchResult.artigos.length > 0) {
-        return matchResult;
+        const mergedArticles = mergeResearcherProjectsIntoResults(
+          trimmed,
+          matchResult.artigos,
+          topK
+        );
+        return {
+          ...matchResult,
+          artigos: mergedArticles,
+        };
       }
 
       return generateFallbackMatches(trimmed, topK);
@@ -536,3 +818,4 @@ export const scientificMatchingService = {
     }
   },
 };
+
