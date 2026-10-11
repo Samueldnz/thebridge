@@ -286,13 +286,19 @@ export function cleanScientificAbstract(rawText: string): string {
     }
   }
 
-  // 7. Tratar cortes abruptos no final do texto caso truncado no limite de caracteres do Space
+  // 7. Tratar cortes no final do texto sem exibir reticências (...)
+  text = text.replace(/\.{2,}$/, "").replace(/…$/, "").trim();
   if (text.length > 80 && !/[.!?]$/.test(text)) {
-    const lastSpace = text.lastIndexOf(" ");
-    if (lastSpace > text.length - 25) {
-      text = text.slice(0, lastSpace) + "...";
+    const lastPeriod = Math.max(text.lastIndexOf(". "), text.lastIndexOf("."));
+    if (lastPeriod > text.length * 0.45) {
+      text = text.slice(0, lastPeriod + 1).trim();
     } else {
-      text = text + "...";
+      const lastSpace = text.lastIndexOf(" ");
+      if (lastSpace > text.length - 25) {
+        text = text.slice(0, lastSpace).replace(/[,;:-]+$/, "").trim() + ".";
+      } else {
+        text = text.replace(/[,;:-]+$/, "").trim() + ".";
+      }
     }
   }
 

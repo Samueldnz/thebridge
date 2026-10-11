@@ -407,7 +407,7 @@ export function CompanyProfilePage() {
               </div>
               <div>
                 <h3 className="font-heading text-base font-bold text-text-primary">
-                  1. Dados da Organização (Pessoa Jurídica)
+                  Dados da Organização (Pessoa Jurídica)
                 </h3>
                 <p className="font-body text-xs text-text-secondary">
                   Informações cadastrais e fiscais da empresa demandante de tecnologia.
@@ -542,7 +542,7 @@ export function CompanyProfilePage() {
               </div>
               <div>
                 <h3 className="font-heading text-base font-bold text-text-primary">
-                  2. Representante Corporativo &amp; Ponto de Contato
+                  Representante Corporativo &amp; Ponto de Contato
                 </h3>
                 <p className="font-body text-xs text-text-secondary">
                   Profissional responsável por conduzir as conversas de matching e inovação aberta.
@@ -640,7 +640,7 @@ export function CompanyProfilePage() {
               </div>
               <div>
                 <h3 className="font-heading text-base font-bold text-text-primary">
-                  3. Presença Digital Corporativa &amp; Logo
+                  Presença Digital Corporativa &amp; Logo
                 </h3>
                 <p className="font-body text-xs text-text-secondary">
                   Canais institucionais para apresentação aos grupos de pesquisa e identificação visual da empresa.
@@ -712,7 +712,7 @@ export function CompanyProfilePage() {
               </div>
               <div>
                 <h3 className="font-heading text-base font-bold text-text-primary">
-                  4. Estratégia de Inovação Aberta &amp; Desafios Tecnológicos
+                  Estratégia de Inovação Aberta &amp; Desafios Tecnológicos
                 </h3>
                 <p className="font-body text-xs text-text-secondary">
                   Resumo institucional apresentado aos pesquisadores para contextualizar as demandas.

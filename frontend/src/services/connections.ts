@@ -82,8 +82,8 @@ export interface NotificationItem {
   targetRole?: "COMPANY" | "RESEARCHER" | "ADMIN" | "ALL";
 }
 
-const STORAGE_CONNECTIONS_GLOBAL_KEY = "thebridge_connections_v3_global";
-const STORAGE_NOTIFICATIONS_KEY = "thebridge_notifications_v3";
+const STORAGE_CONNECTIONS_GLOBAL_KEY = "thebridge_connections_v4_global";
+const STORAGE_NOTIFICATIONS_KEY = "thebridge_notifications_v4";
 
 /**
  * Contas autorizadas para visualização dos dados simulados de verificação e teste de funcionalidade.
@@ -295,11 +295,11 @@ const INITIAL_NOTIFICATIONS: NotificationItem[] = [
   },
   {
     id: "notif-init-2",
-    title: "Conexão Aceita! Assine o Termo de Responsabilidade (Success Fee)",
+    title: "Conexão Aceita! Assine o Termo de Responsabilidade",
     sender: "Compliance Jurídico The Bridge",
     category: "PROPOSTA",
     preview: "Ambas as partes demonstraram interesse! Assine o Termo de Responsabilidade para liberar os contatos...",
-    body: `Excelente notícia!\n\nO interesse de conexão referente ao projeto "Development of polymeric nanocarriers for controlled release of bioactive compounds" foi aceito!\n\nPróximo passo obrigatório:\nPara que a conexão seja formalizada e as informações diretas de contato (nomes, vínculos, e-mails e telefones) sejam liberadas para ambos os perfis, solicitamos que ambas as partes assinem digitalmente o Termo de Responsabilidade e Success Fee na página 'Minhas Conexões'.`,
+    body: `Excelente notícia!\n\nO interesse de conexão referente ao projeto "Development of polymeric nanocarriers for controlled release of bioactive compounds" foi aceito!\n\nPróximo passo obrigatório:\nPara que a conexão seja formalizada e as informações diretas de contato (nomes, vínculos, e-mails e telefones) sejam liberadas para ambos os perfis, solicitamos que ambas as partes assinem digitalmente o Termo de Responsabilidade na página 'Minhas Conexões'.`,
     date: "Ontem às 18:20",
     read: false,
     actionUrl: "/dashboard/conexoes",
@@ -307,13 +307,39 @@ const INITIAL_NOTIFICATIONS: NotificationItem[] = [
     targetRole: "ALL",
   },
   {
+    id: "notif-init-2-prev",
+    title: "Solicitação de conexão aprovada pela curadoria",
+    sender: "Curadoria The Bridge",
+    category: "CONEXAO",
+    preview: "O potencial estratégico da conexão para 'Development of polymeric nanocarriers...' foi validado.",
+    body: `A curadoria técnica da The Bridge analisou e aprovou o potencial da conexão referente ao projeto:\n"Development of polymeric nanocarriers for controlled release of bioactive compounds"\n\nA proposta foi encaminhada ao perfil pesquisador para aceite de interesse.`,
+    date: "Ontem às 14:10",
+    read: true,
+    actionUrl: "/dashboard/conexoes",
+    connectionId: "conn-stage-3",
+    targetRole: "ALL",
+  },
+  {
     id: "notif-init-3",
-    title: "🎉 Termo Assinado por Ambos! Contatos Desbloqueados",
+    title: "Termo Assinado por Ambos! Contatos Desbloqueados",
     sender: "The Bridge Matchmaking",
     category: "CONEXAO",
     preview: "A conexão para o projeto 'Magnetic nanocomposites for high-efficiency electric motors' foi concluída...",
-    body: `Parabéns! Ambas as partes assinaram o Termo de Responsabilidade e Success Fee referente ao projeto:\n"Magnetic nanocomposites for high-efficiency electric motors and thermal dissipation"\n\nOs dados completos de contato (Empresa: WEG Equipamentos Elétricos S.A. | Pesquisador: Prof. Dr. Fernando Álvares - UFSC) já estão integralmente desbloqueados em 'Minhas Conexões'.`,
-    date: "06 out 2026",
+    body: `Parabéns! Ambas as partes assinaram o Termo de Responsabilidade referente ao projeto:\n"Magnetic nanocomposites for high-efficiency electric motors and thermal dissipation"\n\nOs dados completos de contato (Empresa: WEG Equipamentos Elétricos S.A. | Pesquisador: Prof. Dr. Fernando Álvares - UFSC) já estão integralmente desbloqueados em 'Minhas Conexões'.`,
+    date: "06 out 2026 às 16:45",
+    read: true,
+    actionUrl: "/dashboard/conexoes",
+    connectionId: "conn-stage-4",
+    targetRole: "ALL",
+  },
+  {
+    id: "notif-init-3-prev",
+    title: "Conexão Aceita pelo Pesquisador — Termo Disponível",
+    sender: "Compliance Jurídico The Bridge",
+    category: "PROPOSTA",
+    preview: "O pesquisador aceitou a conexão para 'Magnetic nanocomposites...'. Termo liberado para assinatura.",
+    body: `O perfil pesquisador aceitou a proposta de aproximação para o projeto:\n"Magnetic nanocomposites for high-efficiency electric motors and thermal dissipation"\n\nO Termo de Responsabilidade foi disponibilizado para assinatura digital de ambas as partes.`,
+    date: "05 out 2026 às 11:30",
     read: true,
     actionUrl: "/dashboard/conexoes",
     connectionId: "conn-stage-4",
@@ -444,7 +470,7 @@ export const connectionsService = {
       opportunityTitle: data.opportunityTitle || "Demanda Tecnológica Corporativa",
       opportunityDescription:
         data.opportunityDescription ||
-        "Demanda corporativa submetida no motor de busca semântica vetorial The Bridge.",
+        "Demanda corporativa submetida na plataforma The Bridge.",
       opportunityKeywords: data.opportunityKeywords || "",
       opportunityMinTrl: data.opportunityMinTrl ?? 3,
       opportunityDesiredCrl: data.opportunityDesiredCrl ?? 4,
@@ -549,7 +575,7 @@ export const connectionsService = {
 
   /**
    * Etapa 3: O Perfil Pesquisador aceita ou recusa a conexão com o Perfil Empresa.
-   * Caso aceite: ambos são notificados que a conexão será feita e são solicitados a assinar o Termo de Responsabilidade (Success Fee).
+   * Caso aceite: ambos são notificados que a conexão será feita e são solicitados a assinar o Termo de Responsabilidade.
    */
   respondConnectionByResearcher(id: string, accept: boolean): ConnectionItem | null {
     const connections = this.getAllConnections();
@@ -580,13 +606,13 @@ export const connectionsService = {
     target.updatedAt = "Hoje";
     this.saveAllConnections(connections);
 
-    // Ambos os perfis são notificados que a conexão será feita e solicitados a assinar o Termo de Responsabilidade (Success Fee)
+    // Ambos os perfis são notificados que a conexão será feita e solicitados a assinar o Termo de Responsabilidade
     this.broadcastNotification({
-      title: `Conexão Aprovada! Assine o Termo de Responsabilidade (Success Fee)`,
+      title: `Conexão Aprovada! Assine o Termo de Responsabilidade`,
       sender: "Compliance & Jurídico The Bridge",
       category: "PROPOSTA",
       preview: `A conexão para o projeto "${target.articleTitle.slice(0, 40)}..." foi aceita! Assine o Termo para liberar os contatos.`,
-      body: `Excelente notícia!\n\nO perfil pesquisador aceitou a conexão referente ao projeto:\n"${target.articleTitle}"\n\nA conexão entre o Perfil Empresa e o Perfil Pesquisador será efetivada! Para concluirmos a aproximação e liberarmos as respectivas informações de contato (nomes, instituições, e-mails e telefones), solicitamos que AMBAS as partes assinem digitalmente o Termo de Responsabilidade e Success Fee na aba 'Minhas Conexões'.`,
+      body: `Excelente notícia!\n\nO perfil pesquisador aceitou a conexão referente ao projeto:\n"${target.articleTitle}"\n\nA conexão entre o Perfil Empresa e o Perfil Pesquisador será efetivada! Para concluirmos a aproximação e liberarmos as respectivas informações de contato (nomes, instituições, e-mails e telefones), solicitamos que AMBAS as partes assinem digitalmente o Termo de Responsabilidade na aba 'Minhas Conexões'.`,
       actionUrl: "/dashboard/conexoes",
       connectionId: target.id,
       targetRole: "ALL",
@@ -596,7 +622,7 @@ export const connectionsService = {
   },
 
   /**
-   * Etapa 4: Assinatura do Termo de Responsabilidade (Success Fee) pela Empresa ou pelo Pesquisador.
+   * Etapa 4: Assinatura do Termo de Responsabilidade pela Empresa ou pelo Pesquisador.
    * Quando AMBOS assinarem o termo, a conexão é efetivada ('CONECTADO') e ambos recebem as informações de contato!
    */
   signResponsibilityTerm(id: string, signerRole: "COMPANY" | "RESEARCHER"): ConnectionItem | null {
@@ -622,11 +648,11 @@ export const connectionsService = {
 
       // Notifica ambos os perfis com as respectivas informações de contato desbloqueadas!
       this.broadcastNotification({
-        title: `🎉 Conexão Efetivada! Termo Assinado por Ambos — Contatos Liberados`,
+        title: `Conexão Efetivada! Termo Assinado por Ambos — Contatos Liberados`,
         sender: "The Bridge Matchmaking",
         category: "CONEXAO",
         preview: `Termo de Responsabilidade concluído! Confira os dados de contato liberados para "${target.articleTitle.slice(0, 35)}...".`,
-        body: `Parabéns! Tanto o Perfil Empresa quanto o Perfil Pesquisador assinaram o Termo de Responsabilidade e Success Fee The Bridge.\n\nA conexão para o projeto "${target.articleTitle}" está oficialmente efetivada!\n\n🔓 DADOS DE CONTATO DESBLOQUEADOS:\n\n🏢 Dados da Empresa:\n• Razão Social / Nome: ${target.companyName}\n• Representante: ${target.companyContactName || "Gestor de Inovação"}\n• Área de Atuação: ${target.companySector}\n• E-mail Corporativo: ${target.companyEmail || "contato@empresa.com.br"}\n• Telefone: ${target.companyPhone || "(11) 3000-0000"}\n\n🎓 Dados do Pesquisador / Grupo de Pesquisa:\n• Autores / Responsável: ${target.researcherName}\n• Vínculo Institucional: ${target.researcherAffiliation || "ICT / Universidade"}\n• E-mail Acadêmico: ${target.researcherEmail || "pesquisador@universidade.edu.br"}\n• Telefone: ${target.researcherPhone || "(11) 98000-0000"}\n\nTodas essas informações também já estão visíveis sem censura na sua aba 'Minhas Conexões'.`,
+        body: `Parabéns! Tanto o Perfil Empresa quanto o Perfil Pesquisador assinaram o Termo de Responsabilidade The Bridge.\n\nA conexão para o projeto "${target.articleTitle}" está oficialmente efetivada!\n\nDADOS DE CONTATO DESBLOQUEADOS:\n\nDados da Empresa:\n• Razão Social / Nome: ${target.companyName}\n• Representante: ${target.companyContactName || "Gestor de Inovação"}\n• Área de Atuação: ${target.companySector}\n• E-mail Corporativo: ${target.companyEmail || "contato@empresa.com.br"}\n• Telefone: ${target.companyPhone || "(11) 3000-0000"}\n\nDados do Pesquisador / Grupo de Pesquisa:\n• Autores / Responsável: ${target.researcherName}\n• Vínculo Institucional: ${target.researcherAffiliation || "ICT / Universidade"}\n• E-mail Acadêmico: ${target.researcherEmail || "pesquisador@universidade.edu.br"}\n• Telefone: ${target.researcherPhone || "(11) 98000-0000"}\n\nTodas essas informações também já estão visíveis sem censura na sua aba 'Minhas Conexões'.`,
         actionUrl: "/dashboard/conexoes",
         connectionId: target.id,
         targetRole: "ALL",
@@ -642,7 +668,7 @@ export const connectionsService = {
         sender: "Compliance & Jurídico The Bridge",
         category: "PROPOSTA",
         preview: `Sua assinatura foi registrada. Aguardando assinatura do ${pendingLabel} para liberar os contatos.`,
-        body: `Registramos com sucesso a assinatura digital do ${signedLabel} no Termo de Responsabilidade (Success Fee) referente ao projeto:\n"${target.articleTitle}"\n\nAssim que o ${pendingLabel} também concluir a assinatura, a conexão será efetivada e os dados de contato de ambas as partes serão liberados imediatamente.`,
+        body: `Registramos com sucesso a assinatura digital do ${signedLabel} no Termo de Responsabilidade referente ao projeto:\n"${target.articleTitle}"\n\nAssim que o ${pendingLabel} também concluir a assinatura, a conexão será efetivada e os dados de contato de ambas as partes serão liberados imediatamente.`,
         actionUrl: "/dashboard/conexoes",
         connectionId: target.id,
         targetRole: "ALL",

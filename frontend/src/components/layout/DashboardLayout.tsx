@@ -231,34 +231,58 @@ export function DashboardLayout({
                           Nenhuma notificação no momento.
                         </div>
                       ) : (
-                        notifications.slice(0, 4).map((notif) => (
-                          <div
-                            key={notif.id}
-                            onClick={() => {
-                              connectionsService.markNotificationAsRead(notif.id);
-                              setNotificationsOpen(false);
-                              navigate(`/dashboard/notificacoes?id=${notif.id}`);
-                            }}
-                            className={`p-3.5 hover:bg-surface-secondary/70 transition-colors cursor-pointer text-left ${
-                              !notif.read ? "bg-emerald-50/50 font-semibold" : ""
-                            }`}
-                          >
-                            <div className="flex items-center justify-between gap-2 mb-1">
-                              <span className="font-heading text-xs font-bold text-text-primary truncate">
-                                {notif.sender}
-                              </span>
-                              <span className="text-[13px] font-mono text-text-secondary shrink-0">
-                                {notif.date}
-                              </span>
-                            </div>
-                            <p className="font-heading text-xs text-text-primary line-clamp-1">
-                              {notif.title}
-                            </p>
-                            <p className="font-body text-[13px] text-text-secondary line-clamp-1 mt-0.5 font-normal">
-                              {notif.preview}
-                            </p>
-                          </div>
-                        ))
+                        (() => {
+                          const map = new Map<string, typeof notifications>();
+                          for (const n of notifications) {
+                            const k = n.connectionId ? `match-${n.connectionId}` : `single-${n.id}`;
+                            const arr = map.get(k);
+                            if (arr) arr.push(n);
+                            else map.set(k, [n]);
+                          }
+                          return Array.from(map.entries())
+                            .slice(0, 4)
+                            .map(([threadId, group]) => {
+                              const notif = group[0];
+                              const hasUnread = group.some((g) => !g.read);
+                              return (
+                                <div
+                                  key={threadId}
+                                  onClick={() => {
+                                    for (const g of group) {
+                                      connectionsService.markNotificationAsRead(g.id);
+                                    }
+                                    setNotificationsOpen(false);
+                                    navigate(`/dashboard/notificacoes?id=${notif.id}`);
+                                  }}
+                                  className={`p-3.5 hover:bg-surface-secondary/70 transition-colors cursor-pointer text-left ${
+                                    hasUnread ? "bg-emerald-50/50 font-semibold" : ""
+                                  }`}
+                                >
+                                  <div className="flex items-center justify-between gap-2 mb-1">
+                                    <div className="flex items-center gap-1.5 min-w-0">
+                                      <span className="font-heading text-xs font-bold text-text-primary truncate">
+                                        {notif.sender}
+                                      </span>
+                                      {group.length > 1 && (
+                                        <span className="shrink-0 rounded-md bg-brand-green-dark/10 px-1.5 py-0.5 font-mono text-[13px] font-bold text-brand-green-dark">
+                                          {group.length}
+                                        </span>
+                                      )}
+                                    </div>
+                                    <span className="text-[13px] font-mono text-text-secondary shrink-0">
+                                      {notif.date}
+                                    </span>
+                                  </div>
+                                  <p className="font-heading text-xs text-text-primary line-clamp-1">
+                                    {notif.title}
+                                  </p>
+                                  <p className="font-body text-[13px] text-text-secondary line-clamp-1 mt-0.5 font-normal">
+                                    {notif.preview}
+                                  </p>
+                                </div>
+                              );
+                            });
+                        })()
                       )}
                     </div>
 

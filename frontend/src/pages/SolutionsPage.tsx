@@ -60,7 +60,7 @@ export function SolutionsPage() {
                     <Icon icon={Network} size={28} />
                   </div>
                   <h3 className="font-heading text-2xl font-bold text-text-primary">
-                    1. Conectar
+                    Conectar
                   </h3>
                   <p className="mt-4 font-body text-sm text-text-secondary leading-relaxed">
                     Aproximação baseada em inteligência semântica: cientistas submetem seus projetos, publicações e patentes, enquanto empresas cadastram demandas tecnológicas para ativar o matching automatizado de alta precisão.
@@ -68,7 +68,7 @@ export function SolutionsPage() {
                   <ul className="mt-6 space-y-2.5 font-body text-xs text-text-secondary">
                     <li className="flex items-center gap-2">
                       <Icon icon={CheckCircle2} size={14} className="text-brand-green-moss" />
-                      <span>Motor de busca semântica por vetores</span>
+                      <span>Motor de busca semântica de alta precisão</span>
                     </li>
                     <li className="flex items-center gap-2">
                       <Icon icon={CheckCircle2} size={14} className="text-brand-green-moss" />
@@ -85,7 +85,7 @@ export function SolutionsPage() {
                     <Icon icon={Target} size={28} />
                   </div>
                   <h3 className="font-heading text-2xl font-bold text-text-primary">
-                    2. Acelerar
+                    Acelerar
                   </h3>
                   <p className="mt-4 font-body text-sm text-text-secondary leading-relaxed">
                     Diagnóstico objetivo de maturidade científica e prontidão técnica (TRL). Alinhamento rigoroso entre as expectativas de investimento da empresa e os estágios reais de validação laboratorial da pesquisa.
@@ -110,7 +110,7 @@ export function SolutionsPage() {
                     <Icon icon={TrendingUp} size={28} />
                   </div>
                   <h3 className="font-heading text-2xl font-bold text-text-primary">
-                    3. Escalar
+                    Escalar
                   </h3>
                   <p className="mt-4 font-body text-sm text-text-secondary leading-relaxed">
                     Viabilização ágil de contratos de cooperação técnico-científica, co-desenvolvimento, licenciamento de propriedade intelectual e enquadramento em incentivos fiscais da Lei do Bem.

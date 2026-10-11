@@ -4,9 +4,6 @@ import {
   Award,
   BrainCircuit,
   Building2,
-  CheckCircle2,
-  ChevronDown,
-  ChevronUp,
   Filter,
   Info,
   MessageSquare,
@@ -95,7 +92,6 @@ export function MatchingResultsPage() {
 
   // UI Filters & Modals
   const [filterAffinity, setFilterAffinity] = useState<"ALL" | "HIGH" | "MEDIUM">("ALL");
-  const [expandedAbstractId, setExpandedAbstractId] = useState<string | null>(null);
   const [selectedArticleForAudit, setSelectedArticleForAudit] = useState<ScientificArticle | null>(null);
   const [selectedArticleForConnection, setSelectedArticleForConnection] = useState<ScientificArticle | null>(null);
   const [connectionMessage, setConnectionMessage] = useState<string>("");
@@ -105,7 +101,6 @@ export function MatchingResultsPage() {
   const [connectionSentSuccess, setConnectionSentSuccess] = useState<boolean>(false);
 
   // Cached / Saved Matches State
-  const [isFromCache, setIsFromCache] = useState(false);
   const [lastCalculatedAt, setLastCalculatedAt] = useState<string | null>(null);
   const [recalculating, setRecalculating] = useState(false);
 
@@ -122,7 +117,6 @@ export function MatchingResultsPage() {
       if (cached && cached.articles && cached.articles.length > 0) {
         setArticles(cached.articles);
         setLastCalculatedAt(cached.calculatedAt);
-        setIsFromCache(true);
         setHasSearched(true);
         setError(null);
         return;
@@ -154,7 +148,6 @@ export function MatchingResultsPage() {
       setArticles(returnedArticles);
       const nowIso = new Date().toISOString();
       setLastCalculatedAt(nowIso);
-      setIsFromCache(false);
 
       // Salva imediatamente os matches calculados para esta oportunidade
       const oppToSave = targetOpp || selectedOpportunity;
@@ -347,6 +340,26 @@ export function MatchingResultsPage() {
       }
     >
       <div className="space-y-6">
+        {/* Seletor da Demanda acima da caixa */}
+        {opportunities.length > 0 && (
+          <div className="rounded-2xl border border-border-subtle bg-surface-white p-4 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <label className="font-heading text-xs font-bold uppercase tracking-wider text-text-secondary shrink-0">
+              Demanda em Análise:
+            </label>
+            <select
+              value={selectedSubmissionId}
+              onChange={(e) => handleSelectOpportunity(e.target.value)}
+              className="flex-1 min-w-0 rounded-xl border border-border-subtle bg-surface-primary px-3.5 py-2.5 font-body text-xs text-text-primary focus:outline-none focus:ring-2 focus:ring-brand-green-moss/20 cursor-pointer truncate"
+            >
+              {opportunities.map((opp) => (
+                <option key={opp.id} value={opp.id} className="text-text-primary bg-surface-white">
+                  {opp.title}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
         {/* Project Desire Clean Card */}
         <div className="rounded-3xl border border-brand-green-moss/20 bg-gradient-to-br from-brand-green-dark via-[#0a3832] to-[#04201c] p-6 md:p-8 text-white shadow-xl relative overflow-hidden">
           <div className="relative z-10 space-y-4">
@@ -354,36 +367,22 @@ export function MatchingResultsPage() {
               <h2 className="font-display text-2xl md:text-3xl font-bold tracking-tight text-white">
                 Seu Desejo de Projeto
               </h2>
-
-              {/* Minimal Opportunity Selector if multiple demands exist */}
-              {opportunities.length > 1 && (
-                <div className="relative inline-block">
-                  <select
-                    value={selectedSubmissionId}
-                    onChange={(e) => handleSelectOpportunity(e.target.value)}
-                    className="appearance-none rounded-xl border border-white/20 bg-white/10 px-3 py-1.5 pr-8 text-xs font-semibold text-white focus:outline-none focus:border-emerald-400"
-                  >
-                    {opportunities.map((opp) => (
-                      <option key={opp.id} value={opp.id} className="text-text-primary bg-surface-white">
-                        {opp.title}
-                      </option>
-                    ))}
-                  </select>
-                  <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-white/70">
-                    <Icon icon={ChevronDown} size={14} />
-                  </div>
-                </div>
+              {lastCalculatedAt && (
+                <span className="rounded-xl bg-white/10 border border-white/15 px-3 py-1 font-mono text-[13px] text-white/90 w-fit">
+                  Calculado em {new Date(lastCalculatedAt).toLocaleDateString("pt-BR")} às{" "}
+                  {new Date(lastCalculatedAt).toLocaleTimeString("pt-BR", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </span>
               )}
             </div>
 
             {selectedOpportunity ? (
               <div className="space-y-3 pt-1">
-                <h3 className="font-heading text-lg font-bold text-emerald-300">
+                <h3 className="font-heading text-lg font-bold text-emerald-300 break-words whitespace-normal leading-snug">
                   {selectedOpportunity.title}
                 </h3>
-                <p className="font-body text-xs md:text-sm text-white/85 leading-relaxed">
-                  {selectedOpportunity.description}
-                </p>
                 <div className="flex flex-wrap items-center gap-2 pt-1 text-[13px]">
                   {selectedOpportunity.industrySector && (
                     <span className="rounded-md bg-white/15 px-2.5 py-0.5 font-medium text-white">
@@ -397,7 +396,12 @@ export function MatchingResultsPage() {
                     CRL {selectedOpportunity.desiredCrl}
                   </span>
                   <span className="rounded-md bg-amber-500/20 text-amber-300 px-2.5 py-0.5 font-medium">
-                    Patente: {selectedOpportunity.patentRequirement}
+                    Patente:{" "}
+                    {selectedOpportunity.patentRequirement === "REQUIRED"
+                      ? "Obrigatória"
+                      : selectedOpportunity.patentRequirement === "NOT_REQUIRED"
+                      ? "Dispensável"
+                      : "Aceita em Depósito"}
                   </span>
                   {selectedOpportunity.desiredTechnology && (
                     <span className="rounded-md bg-white/10 px-2.5 py-0.5 text-white/90">
@@ -421,34 +425,6 @@ export function MatchingResultsPage() {
             )}
           </div>
         </div>
-
-        {/* Banner de Status de Matches Salvos */}
-        {articles.length > 0 && !loading && (
-          <div className="rounded-2xl border border-border-subtle bg-surface-white p-3.5 shadow-xs flex items-center gap-2.5 text-xs animate-in fade-in duration-300">
-            <div
-              className={`flex h-8 w-8 items-center justify-center rounded-xl shrink-0 ${
-                isFromCache ? "bg-emerald-100 text-emerald-800" : "bg-blue-100 text-blue-800"
-              }`}
-            >
-              <Icon icon={isFromCache ? CheckCircle2 : Sparkles} size={16} />
-            </div>
-            <div>
-              <span className="font-heading font-bold text-text-primary block sm:inline">
-                {isFromCache ? "Matches salvos da última análise" : "Nova análise calculada e salva"}
-              </span>
-              {lastCalculatedAt && (
-                <span className="font-body text-text-secondary sm:ml-1.5 text-[13px]">
-                  (calculado em {new Date(lastCalculatedAt).toLocaleDateString("pt-BR")} às{" "}
-                  {new Date(lastCalculatedAt).toLocaleTimeString("pt-BR", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                  )
-                </span>
-              )}
-            </div>
-          </div>
-        )}
 
         {/* UNIFIED Matches & Filters Row */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-2xl border border-border-subtle bg-surface-white shadow-xs">
@@ -526,10 +502,10 @@ export function MatchingResultsPage() {
           <div className="py-20 text-center rounded-3xl border border-dashed border-border-subtle bg-surface-white">
             <Icon icon={RefreshCw} size={36} className="animate-spin text-brand-green-moss mx-auto mb-4" />
             <h4 className="font-heading text-base font-bold text-text-primary">
-              Calculando Matching nos 12.531 Vetores de Pesquisa...
+              Calculando Matching...
             </h4>
             <p className="mt-1 font-body text-xs text-text-secondary max-w-md mx-auto">
-              Projetando sua demanda com o modelo BGE-M3 e calibrando a relevância percentual pela fórmula matemática.
+              Analisando sua demanda e calibrando a relevância percentual pela fórmula matemática.
             </p>
           </div>
         ) : filteredArticles.length > 0 ? (
@@ -537,7 +513,6 @@ export function MatchingResultsPage() {
             {filteredArticles.map((art, idx) => {
               const isHigh = art.relevancia_pct >= 80;
               const isMed = art.relevancia_pct >= 50 && art.relevancia_pct < 80;
-              const isExpanded = expandedAbstractId === art.id;
               const cleanAbstract = getCleanAbstract(art.resumo);
 
               return (
@@ -553,7 +528,7 @@ export function MatchingResultsPage() {
                       <span className="rounded-full bg-brand-green-dark !text-white px-2.5 py-0.5 text-xs font-mono font-bold inline-block w-fit">
                         #{idx + 1}
                       </span>
-                      <h3 className="font-heading text-lg md:text-xl font-bold text-text-primary leading-snug">
+                      <h3 className="font-heading text-lg md:text-xl font-bold text-text-primary leading-snug break-words">
                         {art.titulo}
                       </h3>
                     </div>
@@ -602,28 +577,15 @@ export function MatchingResultsPage() {
                     </div>
                   </div>
 
-                  {/* Abstract Section - Starts right after "Resumo :" */}
+                  {/* Abstract Section - Full text without ellipsis truncation */}
                   {cleanAbstract && (
                     <div className="pt-2 pb-4">
                       <div className="flex items-center justify-between pb-1.5">
                         <span className="text-[13px] font-heading font-bold uppercase text-text-secondary">
                           Resumo da Pesquisa:
                         </span>
-                        <button
-                          type="button"
-                          onClick={() => setExpandedAbstractId(isExpanded ? null : art.id)}
-                          className="inline-flex items-center gap-1 text-xs font-semibold text-brand-green-moss hover:underline"
-                        >
-                          <Icon icon={isExpanded ? ChevronUp : ChevronDown} size={14} />
-                          {isExpanded ? "Recolher resumo" : "Ver resumo completo"}
-                        </button>
                       </div>
-                      <p
-                        className={[
-                          "font-body text-xs md:text-sm text-text-secondary leading-relaxed bg-surface-primary/60 p-4 rounded-2xl border border-border-subtle transition-all",
-                          isExpanded ? "" : "line-clamp-3",
-                        ].join(" ")}
-                      >
+                      <p className="font-body text-xs md:text-sm text-text-secondary leading-relaxed bg-surface-primary/60 p-4 rounded-2xl border border-border-subtle whitespace-pre-line">
                         {cleanAbstract}
                       </p>
                     </div>
@@ -696,7 +658,7 @@ export function MatchingResultsPage() {
 
             <div className="flex items-center gap-2 font-heading text-xs font-bold text-brand-green-moss uppercase">
               <Icon icon={BrainCircuit} size={16} />
-              Explicabilidade do Matchmaking Vetorial
+              Explicabilidade do Matchmaking
             </div>
 
             <h3 className="mt-1 font-display text-2xl font-bold text-text-primary">
@@ -719,7 +681,7 @@ export function MatchingResultsPage() {
 
                 <div className="space-y-1.5 pt-2 text-emerald-950">
                   <div className="flex justify-between py-1 border-b border-emerald-200/60">
-                    <span>Score Bruto de Cosseno (bge-m3):</span>
+                    <span>Score Bruto de Cosseno:</span>
                     <strong className="font-bold">{selectedArticleForAudit.score_cosseno.toFixed(4)}</strong>
                   </div>
                   <div className="flex justify-between py-1 border-b border-emerald-200/60">
@@ -747,7 +709,7 @@ export function MatchingResultsPage() {
               <div className="rounded-2xl border border-border-subtle bg-surface-secondary/40 p-4 text-xs text-text-secondary leading-relaxed space-y-1">
                 <p className="font-heading font-semibold text-text-primary">Interpretação Semântica:</p>
                 <p>
-                  O modelo vetorial de 1024 dimensões identifica correlação conceitual entre a demanda corporativa e os
+                  A análise semântica identifica correlação conceitual entre a demanda corporativa e os
                   materiais, métodos e resultados descritos no trabalho acadêmico. Scores próximos de 0.75+ representam
                   aderência de alto impacto industrial.
                 </p>
@@ -857,7 +819,7 @@ export function MatchingResultsPage() {
                 <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-3 text-[13px] text-emerald-950 font-body leading-relaxed flex items-start gap-2">
                   <Icon icon={Info} size={14} className="text-emerald-800 shrink-0 mt-0.5" />
                   <span>
-                    As informações de contato de ambas as partes só serão liberadas após aceite mútuo e assinatura do <strong>Termo de Responsabilidade (Success Fee)</strong>.
+                    As informações de contato de ambas as partes só serão liberadas após aceite mútuo e assinatura do <strong>Termo de Responsabilidade</strong>.
                   </span>
                 </div>
               </div>

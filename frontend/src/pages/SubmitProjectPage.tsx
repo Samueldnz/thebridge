@@ -328,7 +328,7 @@ export function SubmitProjectPage() {
               </div>
               <div>
                 <h2 className="font-heading font-bold text-lg text-text-primary">
-                  1. Informações Científicas do Projeto
+                  Informações Científicas do Projeto
                 </h2>
                 <p className="font-body text-xs text-text-secondary">
                   Descreva o escopo da pesquisa e a área de aplicação.
@@ -403,7 +403,7 @@ export function SubmitProjectPage() {
               </div>
               <div>
                 <h2 className="font-heading font-bold text-lg text-text-primary">
-                  2. Maturidade Tecnológica &amp; Comercial (TRL &amp; CRL)
+                  Maturidade Tecnológica &amp; Comercial (TRL &amp; CRL)
                 </h2>
                 <p className="font-body text-xs text-text-secondary">
                   Critérios objetivos para a calibragem algorítmica de matching (ponderação de 20% cada).
@@ -515,7 +515,7 @@ export function SubmitProjectPage() {
               </div>
               <div>
                 <h2 className="font-heading font-bold text-lg text-text-primary">
-                  3. Competências Científicas Associadas (Peso: 60%)
+                  Competências Científicas Associadas (Peso: 60%)
                 </h2>
                 <p className="font-body text-xs text-text-secondary">
                   Selecione as competências do seu grupo e atribua o nível de proficiência técnica (1 a 5).

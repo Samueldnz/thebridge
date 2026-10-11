@@ -13,9 +13,9 @@ import { Section } from "../ui/Section";
 const matchingFeatures = [
   {
     category: "Inteligência Artificial",
-    title: "Busca Semântica Vetorial de Alta Precisão",
+    title: "Busca Semântica de Alta Precisão",
     description:
-      "Modelos avançados de embeddings de linguagem analisam os desafios tecnológicos submetidos por empresas e identificam pesquisas científicas de alta compatibilidade com precisão conceitual.",
+      "Modelos avançados de inteligência artificial analisam os desafios tecnológicos submetidos por empresas e identificam pesquisas científicas de alta compatibilidade com precisão conceitual.",
     image: energyImage,
     alt: "Infraestrutura tecnológica e científica representando matching inteligente",
     link: "/matching",

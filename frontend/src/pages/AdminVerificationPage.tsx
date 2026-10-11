@@ -508,10 +508,10 @@ export function AdminVerificationPage() {
                   <span className="text-xs font-heading font-semibold text-text-secondary mr-1">Etapa do Funil:</span>
                   {[
                     { id: "TODOS", label: `Todas (${adminConnections.length})` },
-                    { id: "EM_ANALISE_ADMIN", label: `1. Para Aprovar Potencial (${countPendingAdminConns})` },
-                    { id: "AGUARDANDO_PESQUISADOR", label: "2. Com o Pesquisador" },
-                    { id: "AGUARDANDO_TERMO", label: "3. Aguardando Termo" },
-                    { id: "CONECTADO", label: "4. Conectadas" },
+                    { id: "EM_ANALISE_ADMIN", label: `Para Aprovar Potencial (${countPendingAdminConns})` },
+                    { id: "AGUARDANDO_PESQUISADOR", label: "Com o Pesquisador" },
+                    { id: "AGUARDANDO_TERMO", label: "Aguardando Termo" },
+                    { id: "CONECTADO", label: "Conectadas" },
                   ].map((tab) => (
                     <button
                       key={tab.id}

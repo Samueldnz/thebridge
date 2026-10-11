@@ -49,21 +49,21 @@ export function MatchingServicesPage() {
             </div>
 
             <div className="grid gap-8 md:grid-cols-3">
-              {/* Component 1: Busca Semântica Vetorial */}
+              {/* Component 1: Busca Semântica */}
               <div className="rounded-3xl border border-border-subtle bg-surface-white p-8 flex flex-col justify-between hover:shadow-md transition-shadow">
                 <div>
                   <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-green-moss/10 text-brand-green-moss mb-6">
                     <Icon icon={BrainCircuit} size={24} />
                   </div>
                   <h3 className="font-heading text-xl font-bold text-text-primary mb-2">
-                    Busca Semântica Vetorial
+                    Busca Semântica Contextual
                   </h3>
                   <p className="font-body text-sm text-text-secondary leading-relaxed">
-                    Modelos avançados de embeddings de linguagem traduzem os objetivos da demanda corporativa em coordenadas conceituais, comparando a essência do desafio tecnológico contra o acervo científico além de simples palavras-chave.
+                    Modelos avançados de inteligência artificial traduzem os objetivos da demanda corporativa em parâmetros conceituais, comparando a essência do desafio tecnológico contra o acervo científico além de simples palavras-chave.
                   </p>
                 </div>
                 <div className="mt-6 border-t border-border-subtle pt-4 font-mono text-xs text-text-muted">
-                  Embeddings densos de alta dimensão
+                  Análise semântica contextual profunda
                 </div>
               </div>
 

@@ -152,7 +152,7 @@ export function ConnectionsPage() {
         };
       case "AGUARDANDO_TERMO":
         return {
-          label: "Aguardando Assinatura do Termo (Success Fee)",
+          label: "Aguardando Assinatura do Termo",
           badgeClass: "bg-purple-100 text-purple-900 border-purple-300",
           icon: FileSignature,
         };
@@ -245,7 +245,7 @@ export function ConnectionsPage() {
             {[
               { id: "TODAS", label: "Todas" },
               { id: "PENDENTES", label: "Em Análise / Aguardando Resposta" },
-              { id: "TERMO", label: "Assinatura do Termo (Success Fee)" },
+              { id: "TERMO", label: "Assinatura do Termo" },
               { id: "CONECTADAS", label: "Conectadas (Contatos Liberados)" },
             ].map((tab) => (
               <button
@@ -494,7 +494,7 @@ export function ConnectionsPage() {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-purple-200 text-xs">
                         <div className="flex items-center justify-between rounded-xl bg-surface-white px-3.5 py-2.5 border border-purple-200">
                           <span className="font-heading font-semibold text-text-primary">
-                            1. Assinatura do Perfil Empresa:
+                            Assinatura do Perfil Empresa:
                           </span>
                           {item.companySignedTerm ? (
                             <span className="font-mono text-[13px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-md">
@@ -509,7 +509,7 @@ export function ConnectionsPage() {
 
                         <div className="flex items-center justify-between rounded-xl bg-surface-white px-3.5 py-2.5 border border-purple-200">
                           <span className="font-heading font-semibold text-text-primary">
-                            2. Assinatura do Perfil Pesquisador:
+                            Assinatura do Perfil Pesquisador:
                           </span>
                           {item.researcherSignedTerm ? (
                             <span className="font-mono text-[13px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-md">
@@ -711,7 +711,7 @@ export function ConnectionsPage() {
       )}
 
       {/* ===================================================================== */}
-      {/* MODAL DE ASSINATURA DO TERMO DE RESPONSABILIDADE (SUCCESS FEE)        */}
+      {/* MODAL DE ASSINATURA DO TERMO DE RESPONSABILIDADE                      */}
       {/* ===================================================================== */}
       {termModalConn && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
@@ -730,7 +730,7 @@ export function ConnectionsPage() {
                 Formalização Jurídica • The Bridge
               </div>
               <h3 className="font-display text-2xl font-bold text-text-primary">
-                Termo de Responsabilidade, Confidencialidade e Success Fee
+                Termo de Responsabilidade e Confidencialidade
               </h3>
               <p className="font-body text-xs text-text-secondary">
                 Assinatura digital como:{" "}
@@ -752,22 +752,22 @@ export function ConnectionsPage() {
             {/* Minuta Provisória do Termo (Documento em fase de elaboração jurídica definitiva) */}
             <div className="rounded-2xl border border-border-subtle bg-surface-white p-5 max-h-64 overflow-y-auto font-body text-xs text-text-secondary space-y-3 leading-relaxed shadow-inner">
               <p className="font-heading font-bold text-text-primary uppercase text-[13px]">
-                MINUTA PRELIMINAR DO TERMO DE RESPONSABILIDADE E INTERMEDIAÇÃO (SUCCESS FEE)
+                MINUTA PRELIMINAR DO TERMO DE RESPONSABILIDADE E INTERMEDIAÇÃO
               </p>
               <p>
-                <strong>1. OBJETO DA CONEXÃO:</strong> O presente instrumento regula a disponibilização recíproca das informações de identificação e contato entre o PERFIL EMPRESA e o PERFIL PESQUISADOR, intermediada após curadoria técnica pela plataforma <strong>THE BRIDGE</strong>.
+                <strong>OBJETO DA CONEXÃO:</strong> O presente instrumento regula a disponibilização recíproca das informações de identificação e contato entre o PERFIL EMPRESA e o PERFIL PESQUISADOR, intermediada após curadoria técnica pela plataforma <strong>THE BRIDGE</strong>.
               </p>
               <p>
-                <strong>2. CONFIDENCIALIDADE E PROPRIEDADE INTELECTUAL:</strong> As partes comprometem-se a manter absoluto sigilo sobre dados técnicos não públicos compartilhados a partir desta aproximação, respeitando a titularidade intelectual pré-existente dos autores e de suas respectivas Instituições Científicas e Tecnológicas (ICTs).
+                <strong>CONFIDENCIALIDADE E PROPRIEDADE INTELECTUAL:</strong> As partes comprometem-se a manter absoluto sigilo sobre dados técnicos não públicos compartilhados a partir desta aproximação, respeitando a titularidade intelectual pré-existente dos autores e de suas respectivas Instituições Científicas e Tecnológicas (ICTs).
               </p>
               <p>
-                <strong>3. COMPROMISSO DE REMUNERAÇÃO DE ÊXITO (SUCCESS FEE):</strong> As partes reconhecem que a prospecção, indexação semântica e aproximação qualificada foram realizadas pela plataforma <strong>THE BRIDGE</strong>. Na hipótese de celebração futura de contrato de pesquisa e desenvolvimento (P&amp;D), licenciamento, transferência de tecnologia, prestação de serviços técnicos ou parceria financeira decorrente desta conexão, aplica-se a cláusula de <em>Success Fee</em> nos termos contratuais da The Bridge.
+                <strong>COMPROMISSO DE INTERMEDIAÇÃO:</strong> As partes reconhecem que a prospecção, indexação semântica e aproximação qualificada foram realizadas pela plataforma <strong>THE BRIDGE</strong>. Na hipótese de celebração futura de contrato de pesquisa e desenvolvimento (P&amp;D), licenciamento, transferência de tecnologia, prestação de serviços técnicos ou parceria financeira decorrente desta conexão, aplicam-se os termos contratuais da The Bridge.
               </p>
               <p>
-                <strong>4. LIBERAÇÃO DE CONTATOS:</strong> As informações completas de contato de ambas as partes serão desbloqueadas automaticamente no painel assim que tanto o Perfil Empresa quanto o Perfil Pesquisador registrarem o aceite deste Termo.
+                <strong>LIBERAÇÃO DE CONTATOS:</strong> As informações completas de contato de ambas as partes serão desbloqueadas automaticamente no painel assim que tanto o Perfil Empresa quanto o Perfil Pesquisador registrarem o aceite deste Termo.
               </p>
               <p className="italic text-[13px] text-text-muted">
-                * Nota: Este documento é o modelo estrutural do sistema para validação de fluxo; a redação jurídica definitiva do contrato de Success Fee será inserida oportunamente.
+                * Nota: Este documento é o modelo estrutural do sistema para validação de fluxo; a redação jurídica definitiva do contrato será inserida oportunamente.
               </p>
             </div>
 
@@ -779,7 +779,7 @@ export function ConnectionsPage() {
                 className="mt-0.5 h-4 w-4 accent-purple-800 rounded cursor-pointer"
               />
               <span className="font-body text-xs text-text-primary leading-relaxed">
-                Declaro que li e concordo integralmente com o <strong>Termo de Responsabilidade e Success Fee</strong>, comprometendo-me a conduzir as tratativas em conformidade com as diretrizes da The Bridge.
+                Declaro que li e concordo integralmente com o <strong>Termo de Responsabilidade</strong>, comprometendo-me a conduzir as tratativas em conformidade com as diretrizes da The Bridge.
               </span>
             </label>
 

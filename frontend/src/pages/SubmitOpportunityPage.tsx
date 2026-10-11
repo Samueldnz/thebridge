@@ -133,12 +133,7 @@ export function SubmitOpportunityPage() {
     setError(null);
 
     if (!title.trim()) {
-      setError("Por favor, preencha o título do desafio ou demanda.");
-      return;
-    }
-
-    if (!description.trim() || description.length < 30) {
-      setError("A descrição da demanda corporativa deve conter pelo menos 30 caracteres.");
+      setError("Por favor, escreva sua demanda.");
       return;
     }
 
@@ -297,7 +292,7 @@ export function SubmitOpportunityPage() {
               </div>
               <div>
                 <h2 className="font-heading font-bold text-lg text-text-primary">
-                  1. Definição do Desafio / Demanda Tecnológica
+                  Informações da Demanda
                 </h2>
                 <p className="font-body text-xs text-text-secondary">
                   Identifique o problema ou a oportunidade que sua organização deseja solucionar com a academia e grupos de pesquisa.
@@ -308,7 +303,7 @@ export function SubmitOpportunityPage() {
             <div className="mt-6 space-y-6">
               <div>
                 <label className="block font-heading text-xs font-bold text-text-primary uppercase tracking-wide">
-                  Título da Demanda / Oportunidade *
+                  Escreva sua demanda
                 </label>
                 <input
                   type="text"
@@ -322,10 +317,9 @@ export function SubmitOpportunityPage() {
 
               <div>
                 <label className="block font-heading text-xs font-bold text-text-primary uppercase tracking-wide">
-                  Descrição do Desafio e Requisitos Técnicos *
+                  Descrição do Desafio e Requisitos Técnicos
                 </label>
                 <textarea
-                  required
                   rows={5}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
@@ -333,7 +327,7 @@ export function SubmitOpportunityPage() {
                   className="mt-2 w-full rounded-xl border border-border-subtle bg-surface-primary px-4 py-3 font-body text-sm text-text-primary transition-all focus:border-brand-green-moss focus:bg-surface-white focus:outline-none focus:ring-2 focus:ring-brand-green-moss/20"
                 />
                 <p className="mt-1.5 font-body text-[13px] text-text-secondary">
-                  Mínimo de 30 caracteres. Quanto mais clara a descrição técnica, maior a precisão semântica do algoritmo de IA.
+                  Quanto mais clara a descrição técnica, maior a precisão semântica da análise de compatibilidade.
                 </p>
               </div>
 
@@ -360,7 +354,7 @@ export function SubmitOpportunityPage() {
               </div>
               <div>
                 <h2 className="font-heading font-bold text-lg text-text-primary">
-                  2. Parâmetros de Maturidade (TRL / CRL) &amp; Propriedade Intelectual
+                  Parâmetros de Maturidade (TRL / CRL) &amp; Propriedade Intelectual
                 </h2>
                 <p className="font-body text-xs text-text-secondary">
                   Selecione os limiares de prontidão tecnológica e comercial da sua demanda por meio dos menus e botões expansíveis.

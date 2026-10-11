@@ -320,7 +320,7 @@ export function ResearcherProfilePage() {
               </div>
               <div>
                 <h3 className="font-heading text-base font-bold text-text-primary">
-                  1. Identificação Civil &amp; Contato Pessoal
+                  Identificação Civil &amp; Contato Pessoal
                 </h3>
                 <p className="font-body text-xs text-text-secondary">
                   Dados civis do pesquisador responsável pela submissão das tecnologias.
@@ -436,7 +436,7 @@ export function ResearcherProfilePage() {
               </div>
               <div>
                 <h3 className="font-heading text-base font-bold text-text-primary">
-                  2. Vínculo Científico &amp; Qualificação Acadêmica
+                  Vínculo Científico &amp; Qualificação Acadêmica
                 </h3>
                 <p className="font-body text-xs text-text-secondary">
                   Instituição acadêmica, grupo de pesquisa e titulação do pesquisador.
@@ -500,7 +500,7 @@ export function ResearcherProfilePage() {
               </div>
               <div>
                 <h3 className="font-heading text-base font-bold text-text-primary">
-                  3. Currículo Lattes &amp; Redes Científicas
+                  Currículo Lattes &amp; Redes Científicas
                 </h3>
                 <p className="font-body text-xs text-text-secondary">
                   Comprovação pública de publicações, artigos e trajetória científica.
@@ -548,7 +548,7 @@ export function ResearcherProfilePage() {
               </div>
               <div>
                 <h3 className="font-heading text-base font-bold text-text-primary">
-                  4. Linhas de Pesquisa &amp; Resumo Científico
+                  Linhas de Pesquisa &amp; Resumo Científico
                 </h3>
                 <p className="font-body text-xs text-text-secondary">
                   Apresentação detalhada da atuação científica para empresas interessadas em cooperação.
