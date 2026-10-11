@@ -192,38 +192,7 @@ export function ResearcherProfilePage() {
   };
 
   return (
-    <DashboardLayout
-      title="Perfil do Pesquisador (Pessoa Física)"
-      actions={
-        <div className="flex flex-wrap items-center gap-3">
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={handleSubmitForVerification}
-            disabled={submittingVerification}
-            size="sm"
-            className="border-emerald-600 text-emerald-800 hover:bg-emerald-50 text-xs font-bold shadow-xs cursor-pointer"
-          >
-            <Icon icon={ShieldCheck} size={15} className="text-emerald-700" />
-            {submittingVerification
-              ? "Submetendo..."
-              : verificationStatus === "EM_ANALISE"
-              ? "Perfil em Análise ⏳"
-              : "SUBMETER PERFIL PARA ANÁLISE DE VERACIDADE"}
-          </Button>
-
-          <Button
-            onClick={() => handleSave()}
-            disabled={saving}
-            size="sm"
-            className="bg-brand-green-dark text-brand-off-white font-bold"
-          >
-            <Icon icon={Save} size={15} />
-            {saving ? "Salvando..." : "SALVAR PERFIL"}
-          </Button>
-        </div>
-      }
-    >
+    <DashboardLayout title="Perfil do Pesquisador (Pessoa Física)">
       <div className="space-y-8">
         {/* Verification Success Alert */}
         {verificationSuccess && (
@@ -270,8 +239,6 @@ export function ResearcherProfilePage() {
           </div>
         )}
 
-
-
         {/* Request Success Alert */}
         {requestSuccessMessage && (
           <div className="rounded-2xl border border-emerald-300 bg-emerald-50 p-4 text-emerald-950 flex items-center justify-between shadow-xs animate-in fade-in duration-300">
@@ -300,29 +267,6 @@ export function ResearcherProfilePage() {
           savingProfile={saving}
           profileTabContent={
             <div className="space-y-6">
-              {/* Profile Type Badge & Request Link Banner */}
-              <div className="rounded-2xl border border-border-subtle bg-surface-white p-4 shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs">
-                <div className="flex items-center gap-2.5">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-100 text-emerald-800">
-                    <Icon icon={GraduationCap} size={16} />
-                  </div>
-                  <div>
-                    <span className="font-heading font-semibold text-text-secondary block text-[13px]">Tipo de Conta Atual:</span>
-                    <span className="font-heading text-xs font-bold text-text-primary">
-                      Pesquisador (Pessoa Física)
-                    </span>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setProfileTypeModalOpen(true)}
-                  className="rounded-xl border border-border-subtle bg-surface-primary px-3 py-1.5 font-heading text-xs font-bold text-brand-green-moss hover:bg-emerald-50 transition-colors cursor-pointer flex items-center gap-1.5"
-                >
-                  <Icon icon={ArrowRightLeft} size={13} />
-                  Solicitar mudança de tipo de perfil ↗
-                </button>
-              </div>
-
               {/* The Researcher Editing Form */}
               <form onSubmit={handleSave} className="space-y-6">
           {/* Section 1: Identificação Civil & Contato */}
@@ -372,18 +316,9 @@ export function ResearcherProfilePage() {
               </div>
 
               <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="block text-xs font-heading font-semibold text-text-primary">
-                    E-mail de Contato (Identificador)
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => setEmailModalOpen(true)}
-                    className="text-[13px] font-heading font-bold text-brand-green-moss hover:underline cursor-pointer"
-                  >
-                    Solicitar mudança de e-mail ↗
-                  </button>
-                </div>
+                <label className="block text-xs font-heading font-semibold text-text-primary mb-1">
+                  E-mail de Contato (Identificador)
+                </label>
                 <div className="relative">
                   <Icon icon={Mail} size={14} className="absolute left-3 top-3 text-text-secondary" />
                   <input
@@ -393,15 +328,8 @@ export function ResearcherProfilePage() {
                     className="w-full rounded-xl border border-border-subtle bg-surface-secondary pl-9 pr-3.5 py-2.5 text-xs text-text-secondary cursor-not-allowed"
                   />
                 </div>
-                <p className="mt-1 text-[13px] text-text-secondary flex items-center justify-between">
-                  <span>Identificador principal da conta no The Bridge.</span>
-                  <button
-                    type="button"
-                    onClick={() => setEmailModalOpen(true)}
-                    className="text-brand-green-moss hover:underline cursor-pointer font-medium"
-                  >
-                    Solicitar alteração de e-mail
-                  </button>
+                <p className="mt-1 text-[13px] text-text-secondary">
+                  Identificador principal da conta no The Bridge.
                 </p>
               </div>
 

@@ -1,19 +1,21 @@
 import { type ReactNode, useState, useEffect } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import {
   AlertTriangle,
   ArrowRightLeft,
   Bell,
+  Bot,
   Check,
   CheckCircle2,
   Clock,
   Coins,
   Cookie,
   CreditCard,
-  ExternalLink,
   FileText,
   KeyRound,
+  Layers,
   Mail,
+  Moon,
   PlusCircle,
   Receipt,
   RefreshCw,
@@ -21,8 +23,10 @@ import {
   Scale,
   ShieldCheck,
   Sparkles,
+  Sun,
   Ticket,
   Trash2,
+  Users,
   XCircle,
 } from "lucide-react";
 
@@ -36,6 +40,7 @@ export type ProfileSettingsTabId =
   | "pagamentos"
   | "seguranca"
   | "notificacoes"
+  | "acessibilidade"
   | "juridico";
 
 const VALID_TABS: ProfileSettingsTabId[] = [
@@ -44,6 +49,7 @@ const VALID_TABS: ProfileSettingsTabId[] = [
   "pagamentos",
   "seguranca",
   "notificacoes",
+  "acessibilidade",
   "juridico",
 ];
 
@@ -66,6 +72,83 @@ interface CreditPackage {
   badge?: string;
   description: string;
 }
+
+interface SubscriptionPlan {
+  id: "grafite" | "diamante" | "grafeno";
+  name: string;
+  subtitle: string;
+  priceBrl: string;
+  period: string;
+  badge?: string;
+  requestsQuota: string;
+  initialCredits: number;
+  monthlyCredits: number;
+  llmFeature: string;
+  curationFeature: string;
+  highlights: string[];
+}
+
+const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
+  {
+    id: "grafite",
+    name: "Plano Grafite",
+    subtitle: "Estrutura essencial para iniciar a prospecção tecnológica e validar oportunidades de P&D.",
+    priceBrl: "R$ 490,00",
+    period: "/ mês",
+    requestsQuota: "Até 3 solicitações / demandas ativas",
+    initialCredits: 2,
+    monthlyCredits: 2,
+    llmFeature: "Uso de LLM para melhorar e estruturar o texto de demanda (até 5 otimizações/mês)",
+    curationFeature: "Validação documental e homologação padrão de NDA pelo time de curadoria",
+    highlights: [
+      "Até 3 solicitações de projetos/demandas ativas simultaneamente",
+      "2 créditos iniciais de bônus na adesão + 2 créditos mensais de conexão",
+      "Assistente LLM integrado para aprimorar a clareza técnica do texto de demanda (5/mês)",
+      "Busca e recomendações automáticas com motor de matching semântico",
+      "Validação administrativa de Termo de Responsabilidade e Confidencialidade",
+    ],
+  },
+  {
+    id: "diamante",
+    name: "Plano Diamante",
+    subtitle: "Alta performance e inteligência assistida para organizações com portfólio ativo de inovação.",
+    priceBrl: "R$ 1.290,00",
+    period: "/ mês",
+    badge: "Mais Escolhido",
+    requestsQuota: "Até 10 solicitações / demandas ativas",
+    initialCredits: 5,
+    monthlyCredits: 5,
+    llmFeature: "LLM avançado para reescrever demandas, calibrar TRL e sugerir palavras-chave (25/mês)",
+    curationFeature: "Acesso ao Time de Curadoria para triagem técnica mensal de projetos potenciais",
+    highlights: [
+      "Até 10 solicitações de projetos/demandas ativas com prioridade de indexação",
+      "5 créditos iniciais de bônus na adesão + 5 créditos mensais cumulativos",
+      "Uso avançado de LLM para estruturar requisitos técnicos, TRL e escopo da demanda (25/mês)",
+      "Acesso ao nosso Time de Curadoria para triagem assistida de projetos compatíveis para a empresa",
+      "Relatórios detalhados de convergência técnica e aderência por match",
+    ],
+  },
+  {
+    id: "grafeno",
+    name: "Plano Grafeno",
+    subtitle: "A camada máxima da The Bridge: busca ativa dedicada pelo nosso time de curadoria e IA ilimitada.",
+    priceBrl: "R$ 2.890,00",
+    period: "/ mês",
+    badge: "Máxima Performance • VIP",
+    requestsQuota: "Solicitações e demandas ilimitadas",
+    initialCredits: 12,
+    monthlyCredits: 15,
+    llmFeature: "Uso ilimitado de LLM para refinar demandas complexas, editais e dossiês executivos",
+    curationFeature: "Scouting ativo: nosso time de curadoria faz a busca dedicada dos melhores projetos para sua empresa",
+    highlights: [
+      "Solicitações e demandas tecnológicas ilimitadas com destaque prioritário na rede",
+      "12 créditos iniciais de bônus na adesão + 15 créditos mensais cumulativos",
+      "Uso ilimitado de LLM para melhorar textos de demanda, traduzir desafios industriais e gerar sínteses",
+      "Acesso direto ao nosso Time de Curadoria para fazermos a busca ativa (scouting sob medida) de bons projetos e laboratórios potenciais para a empresa",
+      "Atendimento executivo dedicado para intermediação ágil com ICTs e NITs",
+    ],
+  },
+];
 
 const CREDIT_PACKAGES: CreditPackage[] = [
   {
@@ -152,8 +235,6 @@ export function ProfileSettingsView({
   verificationStatus,
   onOpenEmailModal,
   onOpenProfileTypeModal,
-  onSaveProfile,
-  savingProfile,
 }: ProfileSettingsViewProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const initialTab = (searchParams.get("tab") as ProfileSettingsTabId) || "perfil";
@@ -173,7 +254,7 @@ export function ProfileSettingsView({
     setSearchParams({ tab }, { replace: true });
   };
 
-  // Persistence keys per user
+  // Persistence keys per user (v2 defaults admin/account to no active subscription)
   const storagePrefix = `thebridge_billing_${(user?.email || "guest").toLowerCase().trim()}`;
 
   const [creditsBalance, setCreditsBalance] = useState<number>(() => {
@@ -182,25 +263,17 @@ export function ProfileSettingsView({
   });
 
   const [currentPlan, setCurrentPlan] = useState<string>(() => {
-    return (
-      localStorage.getItem(`${storagePrefix}_plan`) ||
-      user?.subscriptionPlan ||
-      (user?.couponCode || user?.subscriptionStatus === "FREE_TRIAL"
-        ? "Acesso Promocional Cortesia"
-        : isResearcher
-        ? "Plano Pesquisador & ICT"
-        : "Plano Corporativo Standard")
-    );
+    return localStorage.getItem(`${storagePrefix}_plan_v2`) || "Sem Assinatura Ativa";
   });
 
   const [subscriptionActive, setSubscriptionActive] = useState<boolean>(() => {
-    const saved = localStorage.getItem(`${storagePrefix}_sub_active`);
-    return saved !== null ? saved === "true" : true;
+    const saved = localStorage.getItem(`${storagePrefix}_sub_active_v2`);
+    return saved !== null ? saved === "true" : false;
   });
 
   const [autoRenew, setAutoRenew] = useState<boolean>(() => {
-    const saved = localStorage.getItem(`${storagePrefix}_auto_renew`);
-    return saved !== null ? saved === "true" : true;
+    const saved = localStorage.getItem(`${storagePrefix}_auto_renew_v2`);
+    return saved !== null ? saved === "true" : false;
   });
 
   const [transactions, setTransactions] = useState<CreditTransaction[]>(() => {
@@ -226,6 +299,8 @@ export function ProfileSettingsView({
   });
 
   const [selectedPkg, setSelectedPkg] = useState<CreditPackage | null>(null);
+  const [selectedPlanForCheckout, setSelectedPlanForCheckout] =
+    useState<SubscriptionPlan | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<"PIX" | "CARTAO" | "BOLETO">("PIX");
   const [purchasing, setPurchasing] = useState(false);
   const [purchaseToast, setPurchaseToast] = useState<string | null>(null);
@@ -239,6 +314,18 @@ export function ProfileSettingsView({
   const [refundReason, setRefundReason] = useState("");
   const [cancelSubModalOpen, setCancelSubModalOpen] = useState(false);
   const [cancelSubReason, setCancelSubReason] = useState("");
+
+  // Dark mode (Acessibilidade) state
+  const [darkMode, setDarkMode] = useState<boolean>(() => {
+    return localStorage.getItem("thebridge_dark_mode") === "true";
+  });
+
+  const handleToggleDarkMode = () => {
+    const next = !darkMode;
+    setDarkMode(next);
+    localStorage.setItem("thebridge_dark_mode", String(next));
+    document.documentElement.classList.toggle("tb-dark-mode", next);
+  };
 
   // Security & Account Deletion states
   const [passwordForm, setPasswordForm] = useState({
@@ -336,6 +423,51 @@ export function ProfileSettingsView({
     }, 600);
   };
 
+  const handleConfirmPlanSubscription = () => {
+    if (!selectedPlanForCheckout) return;
+    setPurchasing(true);
+    setTimeout(() => {
+      const bonusCredits =
+        selectedPlanForCheckout.initialCredits + selectedPlanForCheckout.monthlyCredits;
+      const nextBalance = creditsBalance + bonusCredits;
+      setCreditsBalance(nextBalance);
+      localStorage.setItem(`${storagePrefix}_credits`, String(nextBalance));
+
+      setCurrentPlan(selectedPlanForCheckout.name);
+      localStorage.setItem(`${storagePrefix}_plan_v2`, selectedPlanForCheckout.name);
+      setSubscriptionActive(true);
+      localStorage.setItem(`${storagePrefix}_sub_active_v2`, "true");
+      setAutoRenew(true);
+      localStorage.setItem(`${storagePrefix}_auto_renew_v2`, "true");
+
+      const newTx: CreditTransaction = {
+        id: `SUB-${Math.floor(1000 + Math.random() * 9000)}`,
+        date: new Date().toLocaleDateString("pt-BR"),
+        description: `Assinatura: ${selectedPlanForCheckout.name} (${selectedPlanForCheckout.initialCredits} iniciais + ${selectedPlanForCheckout.monthlyCredits} mensais)`,
+        creditsDelta: bonusCredits,
+        amountBrl: selectedPlanForCheckout.priceBrl,
+        status: "APROVADO",
+        method:
+          paymentMethod === "PIX"
+            ? "PIX Corporativo"
+            : paymentMethod === "CARTAO"
+            ? "Cartão de Crédito"
+            : "Boleto Faturado",
+      };
+
+      const nextTxs = [newTx, ...transactions];
+      setTransactions(nextTxs);
+      localStorage.setItem(`${storagePrefix}_txs`, JSON.stringify(nextTxs));
+
+      setPurchasing(false);
+      setPurchaseToast(
+        `${selectedPlanForCheckout.name} ativado com sucesso! +${bonusCredits} créditos de conexão foram adicionados ao seu saldo.`
+      );
+      setSelectedPlanForCheckout(null);
+      setTimeout(() => setPurchaseToast(null), 5500);
+    }, 600);
+  };
+
   const handleApplyCoupon = (e: React.FormEvent) => {
     e.preventDefault();
     const code = couponInput.trim().toUpperCase();
@@ -344,9 +476,9 @@ export function ProfileSettingsView({
     setCreditsBalance(nextBalance);
     localStorage.setItem(`${storagePrefix}_credits`, String(nextBalance));
     setCurrentPlan(`Plano Promocional (${code})`);
-    localStorage.setItem(`${storagePrefix}_plan`, `Plano Promocional (${code})`);
+    localStorage.setItem(`${storagePrefix}_plan_v2`, `Plano Promocional (${code})`);
     setSubscriptionActive(true);
-    localStorage.setItem(`${storagePrefix}_sub_active`, "true");
+    localStorage.setItem(`${storagePrefix}_sub_active_v2`, "true");
 
     const newTx: CreditTransaction = {
       id: `TX-${Math.floor(1000 + Math.random() * 9000)}`,
@@ -369,7 +501,7 @@ export function ProfileSettingsView({
   const handleToggleAutoRenew = () => {
     const next = !autoRenew;
     setAutoRenew(next);
-    localStorage.setItem(`${storagePrefix}_auto_renew`, String(next));
+    localStorage.setItem(`${storagePrefix}_auto_renew_v2`, String(next));
     setPurchaseToast(
       next
         ? "Renovação automática da assinatura ativada com sucesso."
@@ -410,23 +542,16 @@ export function ProfileSettingsView({
     e.preventDefault();
     setSubscriptionActive(false);
     setAutoRenew(false);
-    localStorage.setItem(`${storagePrefix}_sub_active`, "false");
-    localStorage.setItem(`${storagePrefix}_auto_renew`, "false");
+    setCurrentPlan("Sem Assinatura Ativa");
+    localStorage.setItem(`${storagePrefix}_plan_v2`, "Sem Assinatura Ativa");
+    localStorage.setItem(`${storagePrefix}_sub_active_v2`, "false");
+    localStorage.setItem(`${storagePrefix}_auto_renew_v2`, "false");
     setCancelSubModalOpen(false);
     setCancelSubReason("");
     setPurchaseToast(
-      "Assinatura cancelada. Seus recursos atuais permanecem ativos até o fim do ciclo vigente e seus créditos avulsos foram preservados."
+      "Assinatura cancelada. Sua conta voltou ao estado Sem Assinatura e seus créditos avulsos foram preservados."
     );
     setTimeout(() => setPurchaseToast(null), 6000);
-  };
-
-  const handleReactivateSubscription = () => {
-    setSubscriptionActive(true);
-    setAutoRenew(true);
-    localStorage.setItem(`${storagePrefix}_sub_active`, "true");
-    localStorage.setItem(`${storagePrefix}_auto_renew`, "true");
-    setPurchaseToast("Assinatura reativada com sucesso!");
-    setTimeout(() => setPurchaseToast(null), 4500);
   };
 
   const handleSavePassword = (e: React.FormEvent) => {
@@ -484,8 +609,9 @@ export function ProfileSettingsView({
   };
 
   const tierInfo = calculateProfileTier(user);
+  const activePlanObj = SUBSCRIPTION_PLANS.find((p) => p.name === currentPlan);
 
-  // Menu lateral sem ícones e sem badges de Bronze ou contagem de créditos
+  // Menu lateral sem ícones e sem badges
   const menuGroups = [
     {
       groupLabel: "Conta & Cadastro",
@@ -519,6 +645,10 @@ export function ProfileSettingsView({
         {
           id: "notificacoes" as ProfileSettingsTabId,
           label: "Notificações",
+        },
+        {
+          id: "acessibilidade" as ProfileSettingsTabId,
+          label: "Acessibilidade",
         },
         {
           id: "juridico" as ProfileSettingsTabId,
@@ -580,33 +710,22 @@ export function ProfileSettingsView({
         {/* TAB 1: PERFIL */}
         {activeTab === "perfil" && (
           <div className="space-y-6 animate-in fade-in duration-200">
-            <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-border-subtle">
-              <div>
-                <h2 className="font-heading text-xl font-bold text-text-primary">
-                  Perfil {isResearcher ? "Acadêmico & Científico" : "Corporativo"}
-                </h2>
-                <p className="font-body text-xs text-text-secondary mt-0.5">
-                  {isResearcher
-                    ? "Gerencie seus dados civis, vínculo com universidade/ICT, currículo Lattes e linhas de pesquisa."
-                    : "Gerencie os dados cadastrais da organização, CNPJ, ponto de contato executivo e diretrizes de P&D."}
-                </p>
-              </div>
-              <Button
-                type="button"
-                size="sm"
-                disabled={savingProfile}
-                onClick={onSaveProfile}
-                className="bg-brand-green-dark text-brand-off-white font-bold"
-              >
-                {savingProfile ? "Salvando..." : "Salvar Alterações"}
-              </Button>
+            <div className="pb-4 border-b border-border-subtle">
+              <h2 className="font-heading text-xl font-bold text-text-primary">
+                Perfil {isResearcher ? "Acadêmico & Científico" : "Corporativo"}
+              </h2>
+              <p className="font-body text-xs text-text-secondary mt-0.5">
+                {isResearcher
+                  ? "Gerencie seus dados civis, vínculo com universidade/ICT, currículo Lattes e linhas de pesquisa."
+                  : "Gerencie os dados cadastrais da organização, CNPJ, ponto de contato executivo e diretrizes de P&D."}
+              </p>
             </div>
 
             {profileTabContent}
           </div>
         )}
 
-        {/* TAB 2: VERIFICAÇÃO (Sem botão de submeter perfil e sem menção a Bronze/Prata/Ouro) */}
+        {/* TAB 2: VERIFICAÇÃO (Sem botão de submeter perfil) */}
         {activeTab === "verificacao" && (
           <div className="space-y-6 animate-in fade-in duration-200">
             <div className="pb-4 border-b border-border-subtle">
@@ -655,7 +774,7 @@ export function ProfileSettingsView({
               </div>
             </div>
 
-            {/* Índice de Completude Cadastral (Sem Bronze/Prata/Ouro) */}
+            {/* Índice de Completude Cadastral */}
             <div className="rounded-3xl border border-border-subtle bg-surface-white p-6 md:p-8 shadow-xs space-y-6">
               <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-border-subtle">
                 <div>
@@ -726,7 +845,7 @@ export function ProfileSettingsView({
                 Pagamentos, Assinatura &amp; Créditos de Conexão
               </h2>
               <p className="font-body text-xs text-text-secondary mt-0.5">
-                Gerencie o plano de assinatura da conta, renovação automática, créditos para desbloqueio de conexões, reembolsos e cancelamento.
+                Gerencie o plano de assinatura da conta (Grafite, Diamante ou Grafeno), renovação automática, créditos para desbloqueio de conexões, reembolsos e cancelamento.
               </p>
             </div>
 
@@ -748,57 +867,82 @@ export function ProfileSettingsView({
               </div>
             )}
 
-            {/* Top Summary Cards: Subscription Plan + Connection Credits Balance */}
-            <div className="grid gap-5 md:grid-cols-2">
+            {/* Top Summary Cards Stacked Vertically (One below the other for full horizontal width) */}
+            <div className="grid grid-cols-1 gap-5">
               {/* Card 1: Plano de Assinatura */}
-              <div className="rounded-3xl border border-border-subtle bg-surface-white p-6 shadow-xs flex flex-col justify-between space-y-5">
+              <div className="w-full rounded-3xl border border-border-subtle bg-surface-white p-6 md:p-7 shadow-xs flex flex-col justify-between space-y-5">
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between gap-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
                     <span
                       className={[
                         "inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-heading text-[13px] font-bold",
                         subscriptionActive
                           ? "bg-emerald-100 text-emerald-900"
-                          : "bg-amber-100 text-amber-900",
+                          : "bg-surface-primary text-text-secondary border border-border-subtle",
                       ].join(" ")}
                     >
                       <Icon icon={subscriptionActive ? CheckCircle2 : Clock} size={14} />
-                      {subscriptionActive ? "ASSINATURA ATIVA" : "CANCELAMENTO AGENDADO"}
+                      {subscriptionActive ? "ASSINATURA ATIVA" : "SEM ASSINATURA ATIVA"}
                     </span>
                     <span className="font-mono text-xs text-text-secondary">
-                      Cota: até 5 {isResearcher ? "projetos" : "demandas"} ativos
+                      {activePlanObj
+                        ? `Cota do plano: ${activePlanObj.requestsQuota}`
+                        : subscriptionActive
+                        ? "Acesso Promocional Ativo"
+                        : "Conta sem plano recorrente ativo"}
                     </span>
                   </div>
 
-                  <div>
-                    <p className="font-heading text-xs font-semibold text-text-secondary">
-                      Plano Atual da Conta
-                    </p>
-                    <h3 className="font-heading text-lg font-bold text-text-primary mt-0.5">
-                      {currentPlan}
-                    </h3>
+                  <div className="flex flex-wrap items-baseline justify-between gap-3">
+                    <div>
+                      <p className="font-heading text-xs font-semibold text-text-secondary">
+                        Plano Atual da Conta
+                      </p>
+                      <h3 className="font-heading text-lg md:text-xl font-bold text-text-primary mt-0.5">
+                        {currentPlan}
+                      </h3>
+                    </div>
+                    {!subscriptionActive && (
+                      <a
+                        href="#planos-assinatura"
+                        className="font-heading text-xs font-bold text-brand-green-moss hover:underline"
+                      >
+                        Ver Planos Grafite, Diamante e Grafeno ↓
+                      </a>
+                    )}
                   </div>
 
-                  <ul className="space-y-2 pt-1 text-xs font-body text-text-secondary">
-                    <li className="flex items-center gap-2">
-                      <Icon icon={Check} size={14} className="text-brand-green-moss shrink-0" />
-                      <span>Busca e recomendações de matches com inteligência semântica</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <Icon icon={Check} size={14} className="text-brand-green-moss shrink-0" />
-                      <span>Curadoria administrativa e validação de Termo de Confidencialidade</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <Icon icon={Check} size={14} className="text-brand-green-moss shrink-0" />
-                      <span>Suporte a submissão e recálculo dinâmico de compatibilidade</span>
-                    </li>
-                  </ul>
+                  {activePlanObj ? (
+                    <ul className="grid gap-2 sm:grid-cols-2 pt-1 text-xs font-body text-text-secondary">
+                      {activePlanObj.highlights.map((hl) => (
+                        <li key={hl} className="flex items-start gap-2">
+                          <Icon icon={Check} size={14} className="text-brand-green-moss shrink-0 mt-0.5" />
+                          <span>{hl}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : subscriptionActive ? (
+                    <ul className="space-y-2 pt-1 text-xs font-body text-text-secondary">
+                      <li className="flex items-center gap-2">
+                        <Icon icon={Check} size={14} className="text-brand-green-moss shrink-0" />
+                        <span>Busca e recomendações de matches com inteligência semântica</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Icon icon={Check} size={14} className="text-brand-green-moss shrink-0" />
+                        <span>Curadoria administrativa e validação de Termo de Confidencialidade</span>
+                      </li>
+                    </ul>
+                  ) : (
+                    <p className="font-body text-xs text-text-secondary leading-relaxed pt-1">
+                      Sua conta está atualmente sem assinatura ativa. Assine um dos planos abaixo (<strong>Grafite</strong>, <strong>Diamante</strong> ou <strong>Grafeno</strong>) para liberar cotas ampliadas de solicitações, créditos iniciais e mensais, assistente de IA (LLM) para otimização do texto de demanda e busca ativa de projetos pelo nosso time de curadoria.
+                    </p>
+                  )}
                 </div>
 
                 {/* Coupon form inside subscription card */}
                 <form
                   onSubmit={handleApplyCoupon}
-                  className="pt-4 border-t border-border-subtle flex items-center gap-2"
+                  className="pt-4 border-t border-border-subtle flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5"
                 >
                   <div className="relative flex-1">
                     <Icon
@@ -825,10 +969,10 @@ export function ProfileSettingsView({
                 </form>
               </div>
 
-              {/* Card 2: Saldo de Créditos para Desbloquear Conexões */}
-              <div className="rounded-3xl border border-brand-green-moss/30 bg-gradient-to-br from-surface-white via-surface-white to-emerald-50/50 p-6 shadow-xs flex flex-col justify-between space-y-5">
+              {/* Card 2: Saldo de Créditos para Desbloquear Conexões (Full horizontal width below Card 1) */}
+              <div className="w-full rounded-3xl border border-brand-green-moss/30 bg-gradient-to-br from-surface-white via-surface-white to-emerald-50/50 p-6 md:p-7 shadow-xs flex flex-col justify-between space-y-5">
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
                     <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-green-moss/15 px-3 py-1 font-heading text-[13px] font-bold text-brand-green-dark">
                       <Icon icon={Coins} size={14} />
                       CRÉDITOS DE CONEXÃO
@@ -847,12 +991,12 @@ export function ProfileSettingsView({
                     </span>
                   </div>
 
-                  <p className="font-body text-xs text-text-secondary leading-relaxed">
+                  <p className="font-body text-xs text-text-secondary leading-relaxed max-w-4xl">
                     Os créditos são utilizados exclusivamente quando ambas as partes aprovam o match e assinam o Termo de Responsabilidade para liberar os dados de contato diretos (e-mail, telefone, pesquisadores e razão social).
                   </p>
                 </div>
 
-                <div className="pt-4 border-t border-border-subtle flex items-center justify-between gap-3">
+                <div className="pt-4 border-t border-border-subtle flex flex-wrap items-center justify-between gap-3">
                   <span className="text-xs font-body text-text-secondary">
                     Créditos não expiram enquanto a conta estiver ativa.
                   </span>
@@ -860,9 +1004,168 @@ export function ProfileSettingsView({
                     href="#pacotes-creditos"
                     className="font-heading text-xs font-bold text-brand-green-moss hover:underline shrink-0"
                   >
-                    Comprar mais créditos ↓
+                    Comprar mais créditos avulsos ↓
                   </a>
                 </div>
+              </div>
+            </div>
+
+            {/* Section: Planos de Assinatura (Grafite, Diamante e Grafeno) */}
+            <div
+              id="planos-assinatura"
+              className="rounded-3xl border border-border-subtle bg-surface-white p-6 md:p-8 shadow-xs space-y-6"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-border-subtle">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-green-moss/10 text-brand-green-moss">
+                    <Icon icon={Layers} size={18} />
+                  </div>
+                  <div>
+                    <h3 className="font-heading text-base font-bold text-text-primary">
+                      Planos de Assinatura The Bridge (Grafite, Diamante &amp; Grafeno)
+                    </h3>
+                    <p className="font-body text-xs text-text-secondary">
+                      Compare os benefícios progressivos de solicitações oferecidas, créditos iniciais e mensais, otimização de demandas com LLM e acesso ao nosso Time de Curadoria.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid gap-5 lg:grid-cols-3">
+                {SUBSCRIPTION_PLANS.map((plan) => {
+                  const isCurrentPlan = subscriptionActive && currentPlan === plan.name;
+                  return (
+                    <div
+                      key={plan.id}
+                      className={[
+                        "relative rounded-3xl border p-6 flex flex-col justify-between transition-all",
+                        plan.id === "grafeno"
+                          ? "border-brand-green-dark bg-surface-primary/80 shadow-md"
+                          : plan.id === "diamante"
+                          ? "border-brand-green-moss bg-surface-primary/40 shadow-sm"
+                          : "border-border-subtle bg-surface-white hover:border-brand-green-moss/60",
+                      ].join(" ")}
+                    >
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between gap-2">
+                          <span
+                            className={[
+                              "inline-flex items-center gap-1 rounded-full px-3 py-0.5 font-heading text-[12px] font-bold uppercase tracking-wider",
+                              plan.id === "grafeno"
+                                ? "bg-brand-green-dark text-brand-off-white"
+                                : plan.id === "diamante"
+                                ? "bg-brand-green-moss/20 text-brand-green-dark"
+                                : "bg-surface-primary border border-border-subtle text-text-secondary",
+                            ].join(" ")}
+                          >
+                            {plan.badge || "Essencial"}
+                          </span>
+                          {isCurrentPlan && (
+                            <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 font-heading text-[12px] font-bold text-emerald-900">
+                              Plano Atual ✓
+                            </span>
+                          )}
+                        </div>
+
+                        <div>
+                          <h4 className="font-heading text-lg font-bold text-text-primary">
+                            {plan.name}
+                          </h4>
+                          <p className="font-body text-xs text-text-secondary mt-1 leading-relaxed">
+                            {plan.subtitle}
+                          </p>
+                        </div>
+
+                        <div className="flex items-baseline gap-1.5 pt-1 pb-3 border-b border-border-subtle">
+                          <span className="font-display text-2xl font-bold text-text-primary">
+                            {plan.priceBrl}
+                          </span>
+                          <span className="font-mono text-xs text-text-secondary">
+                            {plan.period}
+                          </span>
+                        </div>
+
+                        {/* Key Differentiators Box */}
+                        <div className="rounded-2xl border border-border-subtle bg-surface-white p-3.5 space-y-2.5 text-xs">
+                          <div className="flex items-start gap-2">
+                            <Icon
+                              icon={Coins}
+                              size={14}
+                              className="text-brand-green-moss shrink-0 mt-0.5"
+                            />
+                            <div>
+                              <span className="font-heading font-bold text-text-primary block">
+                                Créditos de Conexão:
+                              </span>
+                              <span className="font-body text-text-secondary">
+                                <strong>{plan.initialCredits} iniciais</strong> de adesão +{" "}
+                                <strong>{plan.monthlyCredits} mensais</strong>
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-start gap-2">
+                            <Icon
+                              icon={Bot}
+                              size={14}
+                              className="text-brand-green-moss shrink-0 mt-0.5"
+                            />
+                            <div>
+                              <span className="font-heading font-bold text-text-primary block">
+                                Assistente de IA (LLM):
+                              </span>
+                              <span className="font-body text-text-secondary">
+                                {plan.llmFeature}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-start gap-2">
+                            <Icon
+                              icon={Users}
+                              size={14}
+                              className="text-brand-green-moss shrink-0 mt-0.5"
+                            />
+                            <div>
+                              <span className="font-heading font-bold text-text-primary block">
+                                Time de Curadoria The Bridge:
+                              </span>
+                              <span className="font-body text-text-secondary">
+                                {plan.curationFeature}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <ul className="space-y-2 pt-1 text-xs font-body text-text-secondary">
+                          {plan.highlights.map((item) => (
+                            <li key={item} className="flex items-start gap-2">
+                              <Icon
+                                icon={Check}
+                                size={14}
+                                className="text-brand-green-moss shrink-0 mt-0.5"
+                              />
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      <div className="pt-5 mt-5 border-t border-border-subtle">
+                        <Button
+                          type="button"
+                          size="sm"
+                          disabled={isCurrentPlan}
+                          onClick={() => setSelectedPlanForCheckout(plan)}
+                          className="w-full justify-center bg-brand-green-dark text-brand-off-white font-bold text-xs cursor-pointer disabled:opacity-60"
+                        >
+                          <Icon icon={Sparkles} size={14} />
+                          {isCurrentPlan ? "Plano Ativo na Conta" : `Assinar ${plan.name}`}
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
@@ -893,26 +1196,29 @@ export function ProfileSettingsView({
                       <span
                         className={[
                           "rounded-full px-2 py-0.5 font-heading text-[13px] font-bold",
-                          autoRenew
+                          autoRenew && subscriptionActive
                             ? "bg-emerald-100 text-emerald-900"
                             : "bg-surface-white text-text-secondary border border-border-subtle",
                         ].join(" ")}
                       >
-                        {autoRenew ? "Ativada" : "Desativada"}
+                        {autoRenew && subscriptionActive ? "Ativada" : "Inativa"}
                       </span>
                     </div>
                     <p className="font-body text-xs text-text-secondary leading-relaxed">
-                      {autoRenew
-                        ? "Sua assinatura será renovada automaticamente ao final do ciclo vigente para evitar interrupção dos matches."
-                        : "A renovação automática está pausada. Nenhuma cobrança recorrente será lançada no próximo ciclo."}
+                      {subscriptionActive
+                        ? autoRenew
+                          ? "Sua assinatura será renovada automaticamente ao final do ciclo vigente para evitar interrupção dos matches."
+                          : "A renovação automática está pausada. Nenhuma cobrança recorrente será lançada no próximo ciclo."
+                        : "Sua conta não possui assinatura recorrente ativa no momento."}
                     </p>
                   </div>
                   <Button
                     type="button"
                     size="sm"
                     variant="secondary"
+                    disabled={!subscriptionActive}
                     onClick={handleToggleAutoRenew}
-                    className="w-full justify-center text-xs font-bold cursor-pointer"
+                    className="w-full justify-center text-xs font-bold cursor-pointer disabled:opacity-50"
                   >
                     <Icon icon={RefreshCw} size={14} />
                     {autoRenew ? "Desativar Renovação Automática" : "Ativar Renovação Automática"}
@@ -950,7 +1256,7 @@ export function ProfileSettingsView({
                     <p className="font-body text-xs text-text-secondary leading-relaxed">
                       {subscriptionActive
                         ? "Cancele a recorrência do seu plano sem multa. Seus créditos avulsos adquiridos continuam salvos na conta."
-                        : "Sua assinatura já se encontra com cancelamento programado para o fim do ciclo atual."}
+                        : "Nenhuma assinatura ativa para cancelar. Você pode escolher um dos planos acima quando desejar."}
                     </p>
                   </div>
                   {subscriptionActive ? (
@@ -965,15 +1271,12 @@ export function ProfileSettingsView({
                       Cancelar Assinatura
                     </Button>
                   ) : (
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={handleReactivateSubscription}
-                      className="w-full justify-center bg-brand-green-dark text-brand-off-white text-xs font-bold cursor-pointer"
+                    <a
+                      href="#planos-assinatura"
+                      className="inline-flex items-center justify-center rounded-xl border border-border-subtle bg-surface-white px-3 py-2 font-heading text-xs font-bold text-text-secondary hover:text-text-primary transition-colors"
                     >
-                      <Icon icon={CheckCircle2} size={14} />
-                      Reativar Assinatura
-                    </Button>
+                      Escolher um Plano ↑
+                    </a>
                   )}
                 </div>
               </div>
@@ -991,10 +1294,10 @@ export function ProfileSettingsView({
                   </div>
                   <div>
                     <h3 className="font-heading text-base font-bold text-text-primary">
-                      Adquirir Créditos para Desbloqueio de Conexões
+                      Adquirir Créditos Avulsos para Desbloqueio de Conexões
                     </h3>
                     <p className="font-body text-xs text-text-secondary">
-                      Escolha um pacote de créditos para liberar contatos diretos e salas de negociação tecnológica.
+                      Escolha um pacote de créditos extras para liberar contatos diretos e salas de negociação tecnológica.
                     </p>
                   </div>
                 </div>
@@ -1065,7 +1368,7 @@ export function ProfileSettingsView({
                     Extrato de Créditos &amp; Histórico de Pagamentos
                   </h3>
                   <p className="font-body text-xs text-text-secondary">
-                    Registro de aquisições de pacotes, bônus promocionais, reembolsos e desbloqueios realizados.
+                    Registro de aquisições de planos, pacotes, bônus promocionais, reembolsos e desbloqueios realizados.
                   </p>
                 </div>
               </div>
@@ -1118,6 +1421,95 @@ export function ProfileSettingsView({
                 </table>
               </div>
             </div>
+
+            {/* Modal de Checkout de Plano de Assinatura (Grafite, Diamante, Grafeno) */}
+            {selectedPlanForCheckout && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+                <div className="w-full max-w-lg rounded-3xl bg-surface-white p-6 md:p-8 shadow-xl border border-border-subtle space-y-5">
+                  <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
+                    <div>
+                      <h3 className="font-heading text-base font-bold text-text-primary">
+                        Confirmar Assinatura — {selectedPlanForCheckout.name}
+                      </h3>
+                      <p className="font-body text-xs text-text-secondary">
+                        {selectedPlanForCheckout.requestsQuota} • +{selectedPlanForCheckout.initialCredits} créditos iniciais + {selectedPlanForCheckout.monthlyCredits}/mês
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedPlanForCheckout(null)}
+                      className="rounded-lg p-1.5 text-text-secondary hover:bg-surface-secondary cursor-pointer"
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  <div className="rounded-2xl border border-border-subtle bg-surface-primary p-4 flex items-center justify-between">
+                    <div>
+                      <span className="font-heading text-xs font-semibold text-text-secondary block">
+                        Investimento mensal
+                      </span>
+                      <span className="font-display text-2xl font-bold text-text-primary">
+                        {selectedPlanForCheckout.priceBrl}
+                      </span>
+                    </div>
+                    <span className="rounded-xl bg-brand-green-moss/15 px-3 py-1.5 font-heading text-xs font-bold text-brand-green-dark">
+                      +{selectedPlanForCheckout.initialCredits + selectedPlanForCheckout.monthlyCredits} Créditos Liberados Hoje
+                    </span>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="block font-heading text-xs font-semibold text-text-primary">
+                      Forma de Pagamento
+                    </label>
+                    <div className="grid grid-cols-3 gap-2.5">
+                      {(
+                        [
+                          { id: "PIX", label: "PIX Instantâneo" },
+                          { id: "CARTAO", label: "Cartão Corporativo" },
+                          { id: "BOLETO", label: "Boleto / Fatura" },
+                        ] as const
+                      ).map((m) => (
+                        <button
+                          key={m.id}
+                          type="button"
+                          onClick={() => setPaymentMethod(m.id)}
+                          className={[
+                            "rounded-xl border px-3 py-2.5 font-heading text-xs font-semibold transition-all cursor-pointer",
+                            paymentMethod === m.id
+                              ? "border-brand-green-moss bg-brand-green-moss/10 text-brand-green-dark font-bold"
+                              : "border-border-subtle bg-surface-white text-text-secondary hover:bg-surface-primary",
+                          ].join(" ")}
+                        >
+                          {m.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-3 pt-2">
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => setSelectedPlanForCheckout(null)}
+                    >
+                      Cancelar
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      disabled={purchasing}
+                      onClick={handleConfirmPlanSubscription}
+                      className="bg-brand-green-dark text-brand-off-white font-bold"
+                    >
+                      <Icon icon={CheckCircle2} size={15} />
+                      {purchasing ? "Ativando..." : `Ativar ${selectedPlanForCheckout.name}`}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Modal de Checkout de Créditos */}
             {selectedPkg && (
@@ -1758,7 +2150,63 @@ export function ProfileSettingsView({
           </div>
         )}
 
-        {/* TAB 6: JURÍDICO (Termos de Uso e Serviço, Uso de Cookies, Políticas de Privacidade e LGPD + Regularidade Legal no Brasil) */}
+        {/* TAB 6: ACESSIBILIDADE (Modo Escuro: Verde Escuro #002025 e Creme #f4e8c8) */}
+        {activeTab === "acessibilidade" && (
+          <div className="space-y-6 animate-in fade-in duration-200">
+            <div className="pb-4 border-b border-border-subtle">
+              <h2 className="font-heading text-xl font-bold text-text-primary">
+                Acessibilidade &amp; Aparência Visual
+              </h2>
+              <p className="font-body text-xs text-text-secondary mt-0.5">
+                Ajuste o contraste e o modo de cores da interface para maior conforto de leitura.
+              </p>
+            </div>
+
+            <div className="rounded-3xl border border-border-subtle bg-surface-white p-6 md:p-8 shadow-xs space-y-6">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="flex items-start gap-3.5">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-brand-green-moss/15 text-brand-green-dark">
+                    <Icon icon={darkMode ? Moon : Sun} size={22} />
+                  </div>
+                  <div className="space-y-1 max-w-2xl">
+                    <div className="flex items-center gap-2.5">
+                      <h3 className="font-heading text-base font-bold text-text-primary">
+                        Modo Escuro (Dark Mode Institucional)
+                      </h3>
+                      <span
+                        className={[
+                          "rounded-full px-2.5 py-0.5 font-heading text-[12px] font-bold",
+                          darkMode
+                            ? "bg-emerald-100 text-emerald-900"
+                            : "bg-surface-primary border border-border-subtle text-text-secondary",
+                        ].join(" ")}
+                      >
+                        {darkMode ? "Ativado" : "Desativado"}
+                      </span>
+                    </div>
+                    <p className="font-body text-xs text-text-secondary leading-relaxed">
+                      Ao ativar o Modo Escuro, todas as superfícies brancas/claras da plataforma assumem a cor{" "}
+                      <strong>Verde Escuro (#002025)</strong> e todos os textos e elementos escuros assumem a cor{" "}
+                      <strong>Creme (#f4e8c8)</strong> oficiais da identidade The Bridge.
+                    </p>
+                  </div>
+                </div>
+
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={handleToggleDarkMode}
+                  className="bg-brand-green-dark text-brand-off-white font-bold text-xs cursor-pointer shrink-0"
+                >
+                  <Icon icon={darkMode ? Sun : Moon} size={15} />
+                  {darkMode ? "Desativar Modo Escuro" : "Ativar Modo Escuro"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 7: JURÍDICO (Termos de Uso e Serviço, Uso de Cookies, Políticas de Privacidade e LGPD + Regularidade Legal no Brasil) */}
         {activeTab === "juridico" && (
           <div className="space-y-6 animate-in fade-in duration-200">
             <div className="pb-4 border-b border-border-subtle">
@@ -1770,99 +2218,79 @@ export function ProfileSettingsView({
               </p>
             </div>
 
-            {/* Cards de Documentos Jurídicos & Links */}
+            {/* 3 Cards de Documentos Jurídicos — Inteiramente Clicáveis e sem botão Página Pública */}
             <div className="grid gap-4 md:grid-cols-3">
               {/* 1. Termos de Uso e Serviço */}
-              <div className="rounded-3xl border border-border-subtle bg-surface-white p-6 shadow-xs flex flex-col justify-between space-y-4">
+              <button
+                type="button"
+                onClick={() => setLegalDocModal("TERMOS")}
+                className="w-full text-left rounded-3xl border border-border-subtle bg-surface-white p-6 shadow-xs flex flex-col justify-between space-y-4 hover:border-brand-green-moss hover:shadow-md transition-all cursor-pointer group"
+              >
                 <div className="space-y-2">
                   <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-green-moss/10 text-brand-green-moss">
                     <Icon icon={FileText} size={18} />
                   </div>
-                  <h3 className="font-heading text-sm font-bold text-text-primary">
+                  <h3 className="font-heading text-sm font-bold text-text-primary group-hover:text-brand-green-moss transition-colors">
                     Termos de Uso e Serviço
                   </h3>
                   <p className="font-body text-xs text-text-secondary leading-relaxed">
                     Regras de utilização da plataforma, governança de submissões de projetos e demandas, confidencialidade e condições gerais de intermediação tecnológica.
                   </p>
                 </div>
-                <div className="pt-3 border-t border-border-subtle flex items-center justify-between gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setLegalDocModal("TERMOS")}
-                    className="font-heading text-xs font-bold text-brand-green-moss hover:underline cursor-pointer"
-                  >
+                <div className="pt-3 border-t border-border-subtle w-full flex items-center justify-center">
+                  <span className="font-heading text-xs font-bold text-brand-green-moss group-hover:underline">
                     Ler documento completo
-                  </button>
-                  <Link
-                    to="/termos"
-                    className="inline-flex items-center gap-1 font-heading text-xs font-semibold text-text-secondary hover:text-text-primary"
-                  >
-                    <span>Página pública</span>
-                    <Icon icon={ExternalLink} size={12} />
-                  </Link>
+                  </span>
                 </div>
-              </div>
+              </button>
 
               {/* 2. Políticas de Privacidade e LGPD */}
-              <div className="rounded-3xl border border-border-subtle bg-surface-white p-6 shadow-xs flex flex-col justify-between space-y-4">
+              <button
+                type="button"
+                onClick={() => setLegalDocModal("PRIVACIDADE")}
+                className="w-full text-left rounded-3xl border border-border-subtle bg-surface-white p-6 shadow-xs flex flex-col justify-between space-y-4 hover:border-brand-green-moss hover:shadow-md transition-all cursor-pointer group"
+              >
                 <div className="space-y-2">
                   <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-800">
                     <Icon icon={ShieldCheck} size={18} />
                   </div>
-                  <h3 className="font-heading text-sm font-bold text-text-primary">
+                  <h3 className="font-heading text-sm font-bold text-text-primary group-hover:text-brand-green-moss transition-colors">
                     Política de Privacidade e LGPD
                   </h3>
                   <p className="font-body text-xs text-text-secondary leading-relaxed">
                     Tratamento de dados pessoais e corporativos segundo a Lei nº 13.709/2018 (LGPD), sigilo pré-conexão, direitos do titular e contato do Encarregado (DPO).
                   </p>
                 </div>
-                <div className="pt-3 border-t border-border-subtle flex items-center justify-between gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setLegalDocModal("PRIVACIDADE")}
-                    className="font-heading text-xs font-bold text-brand-green-moss hover:underline cursor-pointer"
-                  >
+                <div className="pt-3 border-t border-border-subtle w-full flex items-center justify-center">
+                  <span className="font-heading text-xs font-bold text-brand-green-moss group-hover:underline">
                     Ler política de privacidade
-                  </button>
-                  <Link
-                    to="/privacidade"
-                    className="inline-flex items-center gap-1 font-heading text-xs font-semibold text-text-secondary hover:text-text-primary"
-                  >
-                    <span>Página pública</span>
-                    <Icon icon={ExternalLink} size={12} />
-                  </Link>
+                  </span>
                 </div>
-              </div>
+              </button>
 
               {/* 3. Política e Uso de Cookies */}
-              <div className="rounded-3xl border border-border-subtle bg-surface-white p-6 shadow-xs flex flex-col justify-between space-y-4">
+              <button
+                type="button"
+                onClick={() => setLegalDocModal("COOKIES")}
+                className="w-full text-left rounded-3xl border border-border-subtle bg-surface-white p-6 shadow-xs flex flex-col justify-between space-y-4 hover:border-brand-green-moss hover:shadow-md transition-all cursor-pointer group"
+              >
                 <div className="space-y-2">
                   <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-800">
                     <Icon icon={Cookie} size={18} />
                   </div>
-                  <h3 className="font-heading text-sm font-bold text-text-primary">
+                  <h3 className="font-heading text-sm font-bold text-text-primary group-hover:text-brand-green-moss transition-colors">
                     Política e Uso de Cookies
                   </h3>
                   <p className="font-body text-xs text-text-secondary leading-relaxed">
                     Transparência sobre o armazenamento local de sessão, autenticação segura, preferências de interface e métricas agregadas de desempenho.
                   </p>
                 </div>
-                <div className="pt-3 border-t border-border-subtle flex items-center justify-between gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setLegalDocModal("COOKIES")}
-                    className="font-heading text-xs font-bold text-brand-green-moss hover:underline cursor-pointer"
-                  >
+                <div className="pt-3 border-t border-border-subtle w-full flex items-center justify-center">
+                  <span className="font-heading text-xs font-bold text-brand-green-moss group-hover:underline">
                     Ver política de cookies
-                  </button>
-                  <a
-                    href="#gestao-cookies"
-                    className="font-heading text-xs font-semibold text-text-secondary hover:text-text-primary"
-                  >
-                    Configurar ↓
-                  </a>
+                  </span>
                 </div>
-              </div>
+              </button>
             </div>
 
             {/* Gestão de Consentimento de Cookies */}

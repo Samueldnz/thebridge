@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 
 import logo from "../../assets/brand/logo/TheBridge_Logo_Horizontal.svg";
-import { authService } from "../../services/auth";
+import { authService, calculateProfileTier } from "../../services/auth";
 import { connectionsService, type NotificationItem } from "../../services/connections";
 import { getCompanyLogoUrl } from "../../services/brasilApi";
 import { adminAuditService } from "../../services/adminAudit";
@@ -71,6 +71,7 @@ export function DashboardLayout({
   };
 
   const isResearcher = user?.profileType === "RESEARCHER";
+  const userTier = user?.tier || calculateProfileTier(user).tier;
   const effectiveLogo =
     user?.logoUrl ||
     (!isResearcher && user?.website ? getCompanyLogoUrl(user.website) : undefined);
@@ -302,11 +303,20 @@ export function DashboardLayout({
             {/* User Identity Chip - Clickable to Profile with Tier Border Avatar */}
             <Link
               to="/dashboard/perfil"
-              title="Clique para acessar seu perfil"
+              title={`Perfil ${userTier} • Clique para acessar seu perfil`}
               className="hidden md:flex items-center gap-2.5 rounded-full border border-border-subtle bg-surface-white pl-1.5 pr-3.5 py-1 text-xs hover:border-brand-green-moss hover:shadow-xs transition-all cursor-pointer group"
             >
-              {/* Circular Avatar */}
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-green-dark text-[13px] font-bold text-white transition-transform group-hover:scale-105 overflow-hidden border border-border-subtle shadow-2xs">
+              {/* Circular Avatar with Qualification Tier Border */}
+              <div
+                className={[
+                  "flex h-8 w-8 items-center justify-center rounded-full bg-brand-green-dark text-[13px] font-bold text-white transition-transform group-hover:scale-105 overflow-hidden",
+                  userTier === "OURO"
+                    ? "ring-2 ring-amber-400 border-2 border-amber-500 shadow-xs"
+                    : userTier === "PRATA"
+                    ? "ring-2 ring-slate-300 border-2 border-slate-400 shadow-xs"
+                    : "ring-2 ring-[#cd7f32] border-2 border-[#b87333] shadow-xs", // Bronze
+                ].join(" ")}
+              >
                 {effectiveLogo ? (
                   <img
                     src={effectiveLogo}
@@ -390,7 +400,16 @@ export function DashboardLayout({
                 onClick={() => setMobileMenuOpen(false)}
                 className="flex items-center gap-2.5 hover:opacity-80 transition-opacity"
               >
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-green-dark text-xs font-bold text-white overflow-hidden border border-border-subtle">
+                <div
+                  className={[
+                    "flex h-8 w-8 items-center justify-center rounded-full bg-brand-green-dark text-xs font-bold text-white overflow-hidden",
+                    userTier === "OURO"
+                      ? "ring-2 ring-amber-400 border-2 border-amber-500"
+                      : userTier === "PRATA"
+                      ? "ring-2 ring-slate-300 border-2 border-slate-400"
+                      : "ring-2 ring-[#cd7f32] border-2 border-[#b87333]",
+                  ].join(" ")}
+                >
                   {effectiveLogo ? (
                     <img
                       src={effectiveLogo}

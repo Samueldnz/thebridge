@@ -64,3 +64,167 @@ a {
   outline: 2px solid var(--color-state-focus);
   outline-offset: 3px;
 }
+
+/* ============================================================
+ * MODO ESCURO (ACESSIBILIDADE) — THE BRIDGE
+ * Tudo que é branco/claro assume o verde escuro (#002025)
+ * e tudo que é preto/escuro assume o creme (#f4e8c8) do site.
+ * ============================================================ */
+html.tb-dark-mode {
+  --color-surface-primary: #00181c;
+  --color-surface-secondary: #052c33;
+  --color-surface-white: #002025;
+  --color-surface-inverse: #f4e8c8;
+  --color-text-primary: #f4e8c8;
+  --color-text-secondary: #d8cbb0;
+  --color-border-subtle: rgba(244, 232, 200, 0.2);
+  --color-border-default: rgba(244, 232, 200, 0.35);
+  --color-border-strong: #f4e8c8;
+  color-scheme: dark;
+}
+
+html.tb-dark-mode,
+html.tb-dark-mode body {
+  background-color: #00181c !important;
+  color: #f4e8c8 !important;
+}
+
+html.tb-dark-mode .bg-\[\#F8F9FA\] {
+  background-color: #00181c !important;
+}
+
+html.tb-dark-mode .bg-surface-white,
+html.tb-dark-mode .bg-white {
+  background-color: #002025 !important;
+  color: #f4e8c8;
+}
+
+html.tb-dark-mode .bg-surface-primary,
+html.tb-dark-mode .bg-surface-primary\/95,
+html.tb-dark-mode .bg-surface-primary\/70,
+html.tb-dark-mode .bg-surface-primary\/60,
+html.tb-dark-mode .bg-surface-primary\/50,
+html.tb-dark-mode .bg-surface-primary\/40 {
+  background-color: #04292f !important;
+}
+
+html.tb-dark-mode .bg-surface-secondary,
+html.tb-dark-mode .bg-surface-secondary\/70 {
+  background-color: #07333b !important;
+}
+
+html.tb-dark-mode .from-surface-white {
+  --tw-gradient-from: #002025 !important;
+}
+
+html.tb-dark-mode .via-surface-white {
+  --tw-gradient-via: #002025 !important;
+}
+
+html.tb-dark-mode .to-emerald-50\/50 {
+  --tw-gradient-to: #052e35 !important;
+}
+
+html.tb-dark-mode .text-text-primary,
+html.tb-dark-mode .text-brand-green-dark,
+html.tb-dark-mode .text-black {
+  color: #f4e8c8 !important;
+}
+
+html.tb-dark-mode .text-text-secondary {
+  color: #d6c8ac !important;
+}
+
+html.tb-dark-mode .text-brand-green-moss {
+  color: #8ab88e !important;
+}
+
+html.tb-dark-mode .border-border-subtle {
+  border-color: rgba(244, 232, 200, 0.2) !important;
+}
+
+html.tb-dark-mode input,
+html.tb-dark-mode textarea,
+html.tb-dark-mode select {
+  background-color: #04292f !important;
+  color: #f4e8c8 !important;
+  border-color: rgba(244, 232, 200, 0.25) !important;
+}
+
+html.tb-dark-mode input::placeholder,
+html.tb-dark-mode textarea::placeholder {
+  color: rgba(244, 232, 200, 0.5) !important;
+}
+
+/* Botões e elementos que eram escuros (#002025) passam para a cor creme (#f4e8c8) com texto verde escuro */
+html.tb-dark-mode button.bg-brand-green-dark,
+html.tb-dark-mode a.bg-brand-green-dark {
+  background-color: #f4e8c8 !important;
+  color: #002025 !important;
+  border-color: #f4e8c8 !important;
+}
+
+html.tb-dark-mode button.bg-brand-green-dark *,
+html.tb-dark-mode a.bg-brand-green-dark * {
+  color: #002025 !important;
+}
+
+/* Ajuste suave de alertas e badges claros no modo escuro */
+html.tb-dark-mode .bg-emerald-50,
+html.tb-dark-mode .bg-emerald-50\/40,
+html.tb-dark-mode .bg-emerald-50\/50,
+html.tb-dark-mode .bg-emerald-50\/80,
+html.tb-dark-mode .bg-emerald-100 {
+  background-color: rgba(95, 129, 98, 0.25) !important;
+  color: #f4e8c8 !important;
+}
+
+html.tb-dark-mode .text-emerald-800,
+html.tb-dark-mode .text-emerald-900,
+html.tb-dark-mode .text-emerald-950 {
+  color: #a7d7ab !important;
+}
+
+html.tb-dark-mode .bg-amber-50,
+html.tb-dark-mode .bg-amber-50\/70,
+html.tb-dark-mode .bg-amber-50\/80,
+html.tb-dark-mode .bg-amber-100 {
+  background-color: rgba(244, 232, 200, 0.14) !important;
+  color: #f4e8c8 !important;
+}
+
+html.tb-dark-mode .text-amber-800,
+html.tb-dark-mode .text-amber-900,
+html.tb-dark-mode .text-amber-950 {
+  color: #f4e8c8 !important;
+}
+
+html.tb-dark-mode .bg-blue-50,
+html.tb-dark-mode .bg-blue-100,
+html.tb-dark-mode .bg-purple-50,
+html.tb-dark-mode .bg-purple-100 {
+  background-color: rgba(244, 232, 200, 0.12) !important;
+  color: #f4e8c8 !important;
+}
+
+html.tb-dark-mode .text-blue-800,
+html.tb-dark-mode .text-blue-900,
+html.tb-dark-mode .text-blue-950,
+html.tb-dark-mode .text-purple-800,
+html.tb-dark-mode .text-purple-900,
+html.tb-dark-mode .text-purple-950 {
+  color: #f4e8c8 !important;
+}
+
+html.tb-dark-mode .bg-red-50,
+html.tb-dark-mode .bg-red-100 {
+  background-color: rgba(220, 38, 38, 0.2) !important;
+  color: #fecaca !important;
+}
+
+html.tb-dark-mode .text-red-700,
+html.tb-dark-mode .text-red-800,
+html.tb-dark-mode .text-red-900,
+html.tb-dark-mode .text-red-950 {
+  color: #fca5a5 !important;
+}

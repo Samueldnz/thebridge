@@ -281,38 +281,7 @@ export function CompanyProfilePage() {
   };
 
   return (
-    <DashboardLayout
-      title="Perfil da Empresa (Pessoa Jurídica)"
-      actions={
-        <div className="flex flex-wrap items-center gap-3">
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={handleSubmitForVerification}
-            disabled={submittingVerification}
-            size="sm"
-            className="border-emerald-600 text-emerald-800 hover:bg-emerald-50 text-xs font-bold shadow-xs cursor-pointer"
-          >
-            <Icon icon={ShieldCheck} size={15} className="text-emerald-700" />
-            {submittingVerification
-              ? "Submetendo..."
-              : verificationStatus === "EM_ANALISE"
-              ? "Perfil em Análise ⏳"
-              : "SUBMETER PERFIL PARA ANÁLISE DE VERACIDADE"}
-          </Button>
-
-          <Button
-            onClick={() => handleSave()}
-            disabled={saving}
-            size="sm"
-            className="bg-brand-green-dark text-brand-off-white font-bold"
-          >
-            <Icon icon={Save} size={15} />
-            {saving ? "Salvando..." : "SALVAR PERFIL"}
-          </Button>
-        </div>
-      }
-    >
+    <DashboardLayout title="Perfil da Empresa (Pessoa Jurídica)">
       <div className="space-y-8">
         {/* Verification Success Alert */}
         {verificationSuccess && (
@@ -387,29 +356,6 @@ export function CompanyProfilePage() {
           savingProfile={saving}
           profileTabContent={
             <div className="space-y-6">
-              {/* Profile Type Badge & Request Link Banner */}
-              <div className="rounded-2xl border border-border-subtle bg-surface-white p-4 shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs">
-                <div className="flex items-center gap-2.5">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-100 text-emerald-800">
-                    <Icon icon={Building2} size={16} />
-                  </div>
-                  <div>
-                    <span className="font-heading font-semibold text-text-secondary block text-[13px]">Tipo de Conta Atual:</span>
-                    <span className="font-heading text-xs font-bold text-text-primary">
-                      Empresa (Pessoa Jurídica)
-                    </span>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setProfileTypeModalOpen(true)}
-                  className="rounded-xl border border-border-subtle bg-surface-primary px-3 py-1.5 font-heading text-xs font-bold text-brand-green-moss hover:bg-emerald-50 transition-colors cursor-pointer flex items-center gap-1.5"
-                >
-                  <Icon icon={ArrowRightLeft} size={13} />
-                  Solicitar mudança de tipo de perfil ↗
-                </button>
-              </div>
-
               {/* The Company Editing Form */}
               <form onSubmit={handleSave} className="space-y-6">
           {/* Section 1: Dados da Organização (Pessoa Jurídica) */}
@@ -592,18 +538,9 @@ export function CompanyProfilePage() {
               </div>
 
               <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="block text-xs font-heading font-semibold text-text-primary">
-                    E-mail Corporativo de Contato
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => setEmailModalOpen(true)}
-                    className="text-[13px] font-heading font-bold text-brand-green-moss hover:underline cursor-pointer"
-                  >
-                    Solicitar mudança de e-mail ↗
-                  </button>
-                </div>
+                <label className="block text-xs font-heading font-semibold text-text-primary mb-1">
+                  E-mail Corporativo de Contato
+                </label>
                 <div className="relative">
                   <Icon icon={Mail} size={14} className="absolute left-3 top-3 text-text-secondary" />
                   <input
@@ -613,15 +550,8 @@ export function CompanyProfilePage() {
                     className="w-full rounded-xl border border-border-subtle bg-surface-secondary pl-9 pr-3.5 py-2.5 text-xs text-text-secondary cursor-not-allowed"
                   />
                 </div>
-                <p className="mt-1 text-[13px] text-text-secondary flex items-center justify-between">
-                  <span>E-mail institucional fixo para login.</span>
-                  <button
-                    type="button"
-                    onClick={() => setEmailModalOpen(true)}
-                    className="text-brand-green-moss hover:underline font-semibold cursor-pointer"
-                  >
-                    Enviar solicitação de troca
-                  </button>
+                <p className="mt-1 text-[13px] text-text-secondary">
+                  E-mail institucional fixo para login.
                 </p>
               </div>
 
