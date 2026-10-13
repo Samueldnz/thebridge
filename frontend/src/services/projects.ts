@@ -13,20 +13,25 @@ export interface ProjectCompetenceItem {
   name?: string;
 }
 
+export interface ProjectDocumentItem {
+  id: string;
+  title: string;
+  linkOrDoi?: string;
+  type?: string;
+}
+
 export interface TechnicalDossier {
-  // 1. Pitch Executivo Não-Confidencial
   industryProblem?: string; // Dor da Indústria (Problema real que resolve no mercado)
   competitiveAdvantage?: string; // Diferencial Competitivo / Benchmark Quantitativo (ex: 30% mais eficiente, menor custo)
   partnershipGoals?: string[]; // Objetivos com a Parceria (Co-desenvolvimento, Licenciamento, Prova de conceito piloto, etc.)
 
-  // 2. Validação & Escala Laboratorial
   operatingConditions?: string; // Condições operacionais e escala de bancada comprovada
   scalabilityGaps?: string; // Gaps conhecidos para a escala piloto / industrial
   estimatedBudget?: string; // Faixa de orçamento estimado para a fase piloto/industrial
   estimatedTimelineMonths?: string; // Prazo estimado até protótipo/piloto
   evidenceLinks?: string; // Links/referências de laudos de ensaio, relatórios descaracterizados ou artigos
+  documents?: ProjectDocumentItem[]; // Lista dinâmica de documentos e artigos do projeto
 
-  // 3. Propriedade Intelectual & Compliance
   ownershipType?: "UNIVERSIDADE" | "NIT" | "INDEPENDENTE" | "LABORATORIO_PRIVADO" | "EMPRESA_SPINOFF"; // Titularidade da tecnologia
   patentClaimsSummary?: string; // Reivindicações da patente (sem o número confidencial)
   priorFunding?: string; // Fomento prévio (FAPESP, CNPq, Finep, Embrapii, Nenhum)

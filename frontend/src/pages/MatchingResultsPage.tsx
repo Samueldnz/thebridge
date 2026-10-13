@@ -833,13 +833,13 @@ export function MatchingResultsPage() {
                 </div>
               </div>
 
-              {/* 3 Blocos de Conteúdo */}
+              {/* Blocos de Conteúdo */}
               <div className="space-y-6">
-                {/* Bloco 1: Pitch Executivo & Proposta de Valor */}
+                {/* Bloco: Pitch Executivo & Proposta de Valor */}
                 <div className="rounded-2xl border border-border-subtle bg-surface-primary/40 p-5 space-y-4">
                   <h4 className="font-heading text-xs font-bold text-text-primary uppercase tracking-wide flex items-center gap-2">
                     <Icon icon={FileText} size={15} className="text-brand-green-moss" />
-                    1. Pitch Executivo & Dores de Mercado
+                    Pitch Executivo e Dores de Mercado
                   </h4>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -873,7 +873,7 @@ export function MatchingResultsPage() {
                             key={gIdx}
                             className="rounded-lg bg-brand-green-dark text-white px-2.5 py-1 text-xs font-heading font-semibold shadow-xs"
                           >
-                            ✓ {goal}
+                            {goal}
                           </span>
                         ))}
                       </div>
@@ -881,11 +881,11 @@ export function MatchingResultsPage() {
                   )}
                 </div>
 
-                {/* Bloco 2: Escala & Viabilidade Laboratorial */}
+                {/* Bloco: Escala & Viabilidade Laboratorial */}
                 <div className="rounded-2xl border border-border-subtle bg-surface-primary/40 p-5 space-y-4">
                   <h4 className="font-heading text-xs font-bold text-text-primary uppercase tracking-wide flex items-center gap-2">
                     <Icon icon={Building2} size={15} className="text-brand-green-moss" />
-                    2. Validação Experimental & Viabilidade de Escala
+                    Validação Experimental e Viabilidade de Escala
                   </h4>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -946,23 +946,43 @@ export function MatchingResultsPage() {
                     </div>
                   </div>
 
-                  {dossier.evidenceLinks && (
+                  {dossier.documents && dossier.documents.length > 0 ? (
+                    <div className="bg-surface-white rounded-xl p-3.5 border border-border-subtle text-xs text-text-secondary shadow-xs space-y-2">
+                      <span className="font-heading font-bold text-text-primary uppercase text-[11px] block">
+                        Artigos e Documentos Vinculados:
+                      </span>
+                      <div className="space-y-1.5">
+                        {dossier.documents.map((doc, dIdx) => (
+                          <div key={dIdx} className="p-2 rounded-lg bg-surface-primary border border-border-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                            <span className="font-heading font-semibold text-text-primary text-xs">
+                              {doc.title} {doc.type ? `(${doc.type})` : ""}
+                            </span>
+                            {doc.linkOrDoi && (
+                              <span className="font-mono text-[11px] text-brand-green-dark">
+                                {doc.linkOrDoi}
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : dossier.evidenceLinks ? (
                     <div className="bg-surface-white rounded-xl p-3.5 border border-border-subtle text-xs text-text-secondary shadow-xs">
                       <span className="font-heading font-bold text-text-primary uppercase text-[11px] block mb-1">
-                        Evidências Técnicas & Publicações Referenciadas:
+                        Evidências Técnicas e Publicações Referenciadas:
                       </span>
                       <p className="font-mono text-[12px] text-text-primary">
                         {dossier.evidenceLinks}
                       </p>
                     </div>
-                  )}
+                  ) : null}
                 </div>
 
-                {/* Bloco 3: Propriedade Intelectual & Governança */}
+                {/* Bloco: Propriedade Intelectual & Governança */}
                 <div className="rounded-2xl border border-border-subtle bg-surface-primary/40 p-5 space-y-4">
                   <h4 className="font-heading text-xs font-bold text-text-primary uppercase tracking-wide flex items-center gap-2">
                     <Icon icon={Scale} size={15} className="text-brand-green-moss" />
-                    3. Propriedade Intelectual & Governança
+                    Propriedade Intelectual e Governança
                   </h4>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -989,7 +1009,7 @@ export function MatchingResultsPage() {
                             ? "bg-amber-100 text-amber-900 border border-amber-300"
                             : "bg-emerald-100 text-emerald-900 border border-emerald-300",
                         ].join(" ")}>
-                          {dossier.hasExclusiveCommitment ? "Possui Pré-Acordo" : "✓ Sem Vínculos de Exclusividade"}
+                          {dossier.hasExclusiveCommitment ? "Possui Pré-Acordo" : "Sem Vínculos de Exclusividade"}
                         </span>
                       </div>
                       <p className="text-[11px] text-text-secondary">
