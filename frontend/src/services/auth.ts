@@ -1,4 +1,5 @@
 import { env } from "../config/env";
+import { auditLogService } from "./auditLogService";
 
 export type ProfileType = "COMPANY" | "RESEARCHER";
 export type ProfileTier = "BRONZE" | "PRATA" | "OURO";
@@ -442,6 +443,21 @@ export const authService = {
       }
 
       this.setSession(data.accessToken, user, remember);
+      try {
+        auditLogService.recordAction({
+          userId: user.id,
+          userEmail: user.email,
+          userName: user.name,
+          userRole: user.profileType,
+          action: "AUTH_LOGIN",
+          details: {
+            authTimestamp: new Date().toISOString(),
+            rememberSession: remember,
+          },
+        });
+      } catch {
+        // storage fallback
+      }
       return { accessToken: data.accessToken, user };
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -577,6 +593,21 @@ export const authService = {
       });
     } catch {
       // Offline fallback
+    }
+
+    try {
+      auditLogService.recordAction({
+        userId: updatedUser.id,
+        userEmail: updatedUser.email,
+        userName: updatedUser.name,
+        userRole: updatedUser.profileType,
+        action: "PROFILE_UPDATE",
+        details: {
+          updatedFields: Object.keys(fields),
+        },
+      });
+    } catch {
+      // storage fallback
     }
 
     return updatedUser;

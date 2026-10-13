@@ -145,6 +145,9 @@ model User {
   projects      Project[]     @relation("ProjectOwner")
   opportunities Opportunity[] @relation("OpportunityOwner")
 
+  // Audit Logs (Trilha de Auditoria Imutável - LGPD / Marco Civil)
+  auditLogs AuditLog[] @relation("UserAuditLogs")
+
   @@index([profileType])
   @@index([status])
 }
@@ -565,3 +568,32 @@ model Match {
   @@index([projectId, score])
   @@index([status])
 }
+
+// ============================================================
+// AUDIT LOG (TRILHA DE AUDITORIA IMUTÁVEL - LGPD & MARCO CIVIL)
+// ============================================================
+
+model AuditLog {
+  id           String   @id @default(uuid()) @db.Char(36)
+  userId       String   @db.Char(36)
+  userEmail    String   @db.VarChar(191)
+  userName     String   @db.VarChar(150)
+  userRole     String   @db.VarChar(50)
+  action       String   @db.VarChar(100)
+  resourceType String   @db.VarChar(50)
+  resourceId   String?  @db.VarChar(100)
+  metadata     Json?
+  ipAddress    String?  @db.VarChar(45)
+  userAgent    String?  @db.VarChar(500)
+  severity     String   @default("INFO") @db.VarChar(20)
+  status       String   @default("SUCCESS") @db.VarChar(20)
+  createdAt    DateTime @default(now())
+
+  // Relação com o perfil do usuário garantindo integridade referencial
+  user User @relation("UserAuditLogs", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
+

@@ -21,6 +21,13 @@ import {
   XCircle,
   ArrowRight,
   UserX,
+  Activity,
+  Copy,
+  Check,
+  Download,
+  FileText,
+  Clock,
+  Shield,
 } from "lucide-react";
 
 import { DashboardLayout } from "../components/layout/DashboardLayout";
@@ -37,6 +44,7 @@ import {
   type ConnectionItem,
 } from "../services/connections";
 import { discordWebhookService } from "../services/discordWebhook";
+import { auditLogService, type AuditLogEntry } from "../services/auditLogService";
 
 export function AdminVerificationPage() {
   const currentUser = authService.getStoredUser();
@@ -44,7 +52,7 @@ export function AdminVerificationPage() {
 
   // Aba ativa do Painel de Admin
   const [activeAdminTab, setActiveAdminTab] = useState<
-    "MATCHES" | "AUDITORIA" | "SOLICITACOES"
+    "MATCHES" | "AUDITORIA" | "SOLICITACOES" | "LOGS_AUDITORIA"
   >("MATCHES");
 
   // ========================================================
@@ -110,6 +118,21 @@ export function AdminVerificationPage() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [testingDiscord, setTestingDiscord] = useState(false);
 
+  // ========================================================
+  // ESTADOS - TRILHA DE AUDITORIA & LOGS IMUTÁVEIS
+  // ========================================================
+  const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>(() =>
+    auditLogService.getAllLogs()
+  );
+  const [selectedAuditLogId, setSelectedAuditLogId] = useState<string>(() => {
+    const list = auditLogService.getAllLogs();
+    return list.length > 0 ? list[0].id : "";
+  });
+  const [auditLogSearch, setAuditLogSearch] = useState<string>("");
+  const [auditLogActionFilter, setAuditLogActionFilter] = useState<string>("TODOS");
+  const [auditLogSeverityFilter, setAuditLogSeverityFilter] = useState<string>("TODOS");
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 4500);
@@ -120,7 +143,16 @@ export function AdminVerificationPage() {
     setVerifications(adminAuditService.getRequests());
     setUserRequests(adminAuditService.getUserRequests());
     setAdminEmailsList(adminAuditService.getAdminEmails());
+    setAuditLogs(auditLogService.getAllLogs());
     showToast("Dados do painel sincronizados com sucesso.");
+  };
+
+  const handleCopyId = (id: string) => {
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(id);
+    }
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
   };
 
   const handleApproveConnectionPotential = (conn: ConnectionItem) => {
@@ -351,6 +383,37 @@ export function AdminVerificationPage() {
     null;
   const countPendingAdminConns = adminConnections.filter((c) => c.status === "EM_ANALISE_ADMIN").length;
 
+  // Filtragem de Logs de Auditoria
+  const filteredAuditLogs = auditLogs.filter((log) => {
+    if (auditLogActionFilter !== "TODOS" && log.action !== auditLogActionFilter) return false;
+    if (auditLogSeverityFilter !== "TODOS" && log.severity !== auditLogSeverityFilter) return false;
+    if (auditLogSearch.trim()) {
+      const term = auditLogSearch.toLowerCase().trim();
+      return (
+        log.userId.toLowerCase().includes(term) ||
+        log.userEmail.toLowerCase().includes(term) ||
+        log.userName.toLowerCase().includes(term) ||
+        log.action.toLowerCase().includes(term) ||
+        log.actionLabel.toLowerCase().includes(term) ||
+        log.id.toLowerCase().includes(term)
+      );
+    }
+    return true;
+  });
+
+  const selectedAuditLog =
+    filteredAuditLogs.find((l) => l.id === selectedAuditLogId) ||
+    filteredAuditLogs[0] ||
+    null;
+
+  const handleExportAuditLogs = () => {
+    auditLogService.exportToCSV(
+      filteredAuditLogs,
+      `thebridge_auditoria_${new Date().toISOString().slice(0, 10)}.csv`
+    );
+    showToast("Trilha de auditoria exportada em formato CSV com sucesso!");
+  };
+
   // Caso o usuário não seja admin, exibe tela de bloqueio
   if (!isAuthorized) {
     return (
@@ -492,6 +555,28 @@ export function AdminVerificationPage() {
               }`}
             >
               {countPendingUserReq}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveAdminTab("LOGS_AUDITORIA")}
+            className={`flex-1 min-w-[200px] flex items-center justify-center gap-2 rounded-xl px-3.5 py-3 font-heading text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+              activeAdminTab === "LOGS_AUDITORIA"
+                ? "bg-brand-green-dark text-white shadow-sm"
+                : "text-text-secondary hover:bg-surface-primary hover:text-text-primary"
+            }`}
+          >
+            <Icon icon={Activity} size={15} />
+            <span>LOGS & AUDITORIA</span>
+            <span
+              className={`rounded-full px-2 py-0.5 text-[13px] font-mono font-bold ${
+                activeAdminTab === "LOGS_AUDITORIA"
+                  ? "bg-purple-200 text-purple-950"
+                  : "bg-purple-100 text-purple-900"
+              }`}
+            >
+              {auditLogs.length}
             </span>
           </button>
         </div>
@@ -1653,6 +1738,347 @@ export function AdminVerificationPage() {
             </div>
           </div>
         </div>
+        )}
+
+        {/* ======================================================================== */}
+        {/* ABA 4: LOGS & TRILHA DE AUDITORIA IMUTÁVEL (LGPD / ISO 27001)           */}
+        {/* ======================================================================== */}
+        {activeAdminTab === "LOGS_AUDITORIA" && (
+          <div className="space-y-6 animate-in fade-in duration-200">
+            {/* Banner de Conformidade e Política de ID Único Imutável */}
+            <div className="rounded-3xl border border-purple-200 bg-gradient-to-br from-purple-50/80 via-surface-white to-purple-50/30 p-6 md:p-8 shadow-xs">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="space-y-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-purple-700 text-white shadow-xs">
+                      <Icon icon={Shield} size={16} />
+                    </div>
+                    <h2 className="font-heading text-lg font-bold text-text-primary">
+                      Trilha de Auditoria & Registro de Atividades Imutáveis
+                    </h2>
+                    <span className="rounded-full bg-purple-100 px-2.5 py-0.5 text-[13px] font-mono font-bold text-purple-900 border border-purple-300">
+                      Append-Only WORM
+                    </span>
+                    <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[13px] font-mono font-bold text-emerald-900 border border-emerald-300">
+                      LGPD Art. 18 / Marco Civil Art. 15
+                    </span>
+                  </div>
+                  <p className="font-body text-xs text-text-secondary leading-relaxed max-w-4xl">
+                    Cada usuário da plataforma possui um <strong>ID Único Imutável (UUID v4)</strong> gerado no momento do cadastro.
+                    Todas as ações críticas (login, aceite formal de termos, criação de projetos, demandas, alterações cadastrais e termos) são carimbadas com 
+                    data, hora precisa, IP e User-Agent. Este registro é inviolável para fins de auditoria externa e conformidade legal.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2.5 shrink-0">
+                  <Button
+                    type="button"
+                    onClick={handleExportAuditLogs}
+                    className="bg-purple-800 hover:bg-purple-900 text-white text-xs font-bold shadow-xs cursor-pointer"
+                  >
+                    <Icon icon={Download} size={14} />
+                    Exportar Trilha (.CSV)
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Container Principal dos Logs: Filtros + Master/Detail */}
+            <div className="bg-surface-white rounded-3xl border border-border-subtle shadow-xs overflow-hidden min-h-[680px] flex flex-col">
+              {/* Barra Superior de Filtros */}
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle px-5 py-4 bg-surface-primary">
+                {/* Campo de Busca por ID Imutável / Email / Nome */}
+                <div className="relative min-w-[280px] flex-1 max-w-md">
+                  <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-text-muted">
+                    <Icon icon={Search} size={15} />
+                  </span>
+                  <input
+                    type="text"
+                    placeholder="Buscar por ID Imutável (UUID), e-mail ou ação..."
+                    value={auditLogSearch}
+                    onChange={(e) => setAuditLogSearch(e.target.value)}
+                    className="w-full rounded-xl border border-border-subtle bg-surface-white py-2 pl-9 pr-3 text-xs text-text-primary placeholder:text-text-muted focus:border-brand-green-moss focus:outline-none focus:ring-1 focus:ring-brand-green-moss"
+                  />
+                  {auditLogSearch && (
+                    <button
+                      onClick={() => setAuditLogSearch("")}
+                      className="absolute inset-y-0 right-0 flex items-center pr-3 text-text-muted hover:text-text-primary"
+                    >
+                      <Icon icon={X} size={13} />
+                    </button>
+                  )}
+                </div>
+
+                {/* Filtros Dropdown */}
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <div className="flex items-center gap-1.5 text-xs text-text-secondary">
+                    <span className="font-semibold">Ação:</span>
+                    <select
+                      value={auditLogActionFilter}
+                      onChange={(e) => setAuditLogActionFilter(e.target.value)}
+                      className="rounded-xl border border-border-subtle bg-surface-white px-2.5 py-1.5 text-xs text-text-primary focus:border-brand-green-moss focus:outline-none"
+                    >
+                      <option value="TODOS">Todas as Ações ({auditLogs.length})</option>
+                      <option value="AUTH_REGISTER">Cadastro de Conta</option>
+                      <option value="AUTH_LOGIN">Login de Sessão</option>
+                      <option value="PROFILE_UPDATE">Atualização de Perfil</option>
+                      <option value="PROFILE_SUBMIT_AUDIT">Submissão para Auditoria</option>
+                      <option value="TERMS_ACCEPTED">Aceite de Termos & LGPD</option>
+                      <option value="PROJECT_CREATE">Criação de Projeto</option>
+                      <option value="OPPORTUNITY_CREATE">Demanda Tecnológica</option>
+                      <option value="CONNECTION_REQUEST">Solicitação de Conexão</option>
+                      <option value="SUBSCRIPTION_CHANGE">Assinatura / Plano</option>
+                      <option value="ACCOUNT_DELETION_REQUESTED">Exclusão Solicitada</option>
+                    </select>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 text-xs text-text-secondary">
+                    <span className="font-semibold">Severidade:</span>
+                    <select
+                      value={auditLogSeverityFilter}
+                      onChange={(e) => setAuditLogSeverityFilter(e.target.value)}
+                      className="rounded-xl border border-border-subtle bg-surface-white px-2.5 py-1.5 text-xs text-text-primary focus:border-brand-green-moss focus:outline-none"
+                    >
+                      <option value="TODOS">Todas</option>
+                      <option value="INFO">Informativo (INFO)</option>
+                      <option value="SECURITY">Segurança (SECURITY)</option>
+                      <option value="WARNING">Alerta (WARNING)</option>
+                      <option value="CRITICAL">Crítico (CRITICAL)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Grid Master/Detail: Lista à esquerda e Inspetor à direita */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 flex-1">
+                {/* Coluna da Esquerda: Lista de Registros */}
+                <div className="lg:col-span-5 border-b lg:border-b-0 lg:border-r border-border-subtle max-h-[720px] overflow-y-auto divide-y divide-border-subtle">
+                  {filteredAuditLogs.length === 0 ? (
+                    <div className="p-12 text-center text-text-secondary space-y-2">
+                      <Icon icon={Inbox} size={32} className="mx-auto text-text-muted" />
+                      <p className="font-heading text-sm font-semibold">Nenhum evento registrado</p>
+                      <p className="text-xs">Altere os filtros de pesquisa para visualizar outros registros da trilha.</p>
+                    </div>
+                  ) : (
+                    filteredAuditLogs.map((log) => {
+                      const isSelected = selectedAuditLog?.id === log.id;
+                      const sevBadgeClass =
+                        log.severity === "CRITICAL"
+                          ? "bg-rose-100 text-rose-800 border-rose-300"
+                          : log.severity === "SECURITY"
+                          ? "bg-purple-100 text-purple-800 border-purple-300"
+                          : log.severity === "WARNING"
+                          ? "bg-amber-100 text-amber-800 border-amber-300"
+                          : "bg-blue-100 text-blue-800 border-blue-200";
+
+                      return (
+                        <div
+                          key={log.id}
+                          onClick={() => setSelectedAuditLogId(log.id)}
+                          className={`p-4 cursor-pointer transition-all text-left ${
+                            isSelected
+                              ? "bg-brand-cream/40 border-l-4 border-l-purple-700"
+                              : "hover:bg-surface-primary"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-mono text-[13px] text-text-muted flex items-center gap-1">
+                              <Icon icon={Clock} size={11} />
+                              {log.formattedDate}
+                            </span>
+                            <span className={`rounded-full px-2 py-0.5 text-[13px] font-mono font-bold border ${sevBadgeClass}`}>
+                              {log.severity}
+                            </span>
+                          </div>
+
+                          <div className="mt-1.5">
+                            <p className="font-heading text-xs font-bold text-text-primary line-clamp-1">
+                              {log.actionLabel}
+                            </p>
+                            <p className="font-body text-xs text-text-secondary mt-0.5 line-clamp-1">
+                              {log.userName} • <span className="font-mono">{log.userEmail}</span>
+                            </p>
+                          </div>
+
+                          {/* ID Único Imutável Badge */}
+                          <div className="mt-2.5 flex items-center justify-between pt-2 border-t border-border-subtle/60 text-[13px]">
+                            <div className="flex items-center gap-1 font-mono text-purple-900 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200 max-w-[240px] truncate">
+                              <span className="text-[10px] uppercase font-bold text-purple-600">ID:</span>
+                              <span className="truncate">{log.userId}</span>
+                            </div>
+                            <span className="font-mono text-text-muted uppercase text-[10px] font-semibold">
+                              {log.resourceType}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+
+                {/* Coluna da Direita: Inspetor de Detalhes do Log Selecionado */}
+                <div className="lg:col-span-7 p-6 md:p-8 max-h-[720px] overflow-y-auto">
+                  {selectedAuditLog ? (
+                    <div className="space-y-6">
+                      {/* Top Header do Registro */}
+                      <div className="flex flex-wrap items-start justify-between gap-3 pb-4 border-b border-border-subtle">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-xs font-bold text-purple-900 bg-purple-100 px-2.5 py-0.5 rounded-full border border-purple-300">
+                              {selectedAuditLog.action}
+                            </span>
+                            <span className="text-xs text-text-muted font-mono">
+                              Log ID: {selectedAuditLog.id}
+                            </span>
+                          </div>
+                          <h3 className="font-heading text-lg font-bold text-text-primary mt-2">
+                            {selectedAuditLog.actionLabel}
+                          </h3>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleCopyId(selectedAuditLog.userId)}
+                            className="flex items-center gap-1 rounded-xl border border-border-subtle bg-surface-white px-3 py-1.5 text-xs font-bold text-text-primary hover:border-purple-600 hover:text-purple-700 transition-colors shadow-xs cursor-pointer"
+                          >
+                            <Icon icon={copiedId === selectedAuditLog.userId ? Check : Copy} size={13} className={copiedId === selectedAuditLog.userId ? "text-emerald-600" : ""} />
+                            <span>{copiedId === selectedAuditLog.userId ? "ID Copiado!" : "Copiar ID do Usuário"}</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Card do ID Único Imutável */}
+                      <div className="rounded-2xl border-2 border-purple-200 bg-purple-50/50 p-4 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="font-heading text-xs font-bold uppercase tracking-wider text-purple-900 flex items-center gap-1.5">
+                            <Icon icon={Shield} size={14} className="text-purple-700" />
+                            ID Único Imutável do Perfil (Chave Primária Legal)
+                          </span>
+                          <span className="rounded bg-purple-200 px-1.5 py-0.5 font-mono text-[10px] font-bold text-purple-950">
+                            UUID v4 Inviolável
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between gap-2 bg-surface-white rounded-xl border border-purple-200 p-2.5">
+                          <span className="font-mono text-xs font-bold text-purple-950 select-all break-all">
+                            {selectedAuditLog.userId}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleCopyId(selectedAuditLog.userId)}
+                            title="Copiar ID Imutável"
+                            className="p-1 text-purple-700 hover:text-purple-950 rounded hover:bg-purple-100 cursor-pointer"
+                          >
+                            <Icon icon={copiedId === selectedAuditLog.userId ? Check : Copy} size={15} />
+                          </button>
+                        </div>
+                        <p className="font-body text-[13px] text-purple-900/80 leading-tight">
+                          Mesmo que o usuário altere o endereço de e-mail institucional, razão social, CNPJ ou status,
+                          este identificador permanece perene em todas as transações da base de dados.
+                        </p>
+                      </div>
+
+                      {/* Grid de Informações de Contexto */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
+                        <div className="rounded-2xl border border-border-subtle bg-surface-primary/40 p-3.5">
+                          <span className="text-[13px] font-semibold uppercase text-text-muted block mb-1">
+                            Usuário Envolvido
+                          </span>
+                          <p className="font-heading font-bold text-text-primary text-sm">
+                            {selectedAuditLog.userName}
+                          </p>
+                          <p className="font-mono text-text-secondary mt-0.5">
+                            {selectedAuditLog.userEmail}
+                          </p>
+                          <span className="inline-block mt-2 rounded bg-surface-secondary px-2 py-0.5 font-mono text-[10px] font-bold text-text-primary uppercase">
+                            Papel: {selectedAuditLog.userRole}
+                          </span>
+                        </div>
+
+                        <div className="rounded-2xl border border-border-subtle bg-surface-primary/40 p-3.5">
+                          <span className="text-[13px] font-semibold uppercase text-text-muted block mb-1">
+                            Carimbo de Data e Hora
+                          </span>
+                          <p className="font-mono font-bold text-text-primary text-sm">
+                            {selectedAuditLog.formattedDate}
+                          </p>
+                          <p className="font-mono text-[13px] text-text-muted mt-0.5 break-all">
+                            ISO UTC: {selectedAuditLog.timestamp}
+                          </p>
+                          <span className="inline-block mt-2 rounded bg-emerald-100 text-emerald-900 px-2 py-0.5 font-mono text-[10px] font-bold">
+                            Status: {selectedAuditLog.status}
+                          </span>
+                        </div>
+
+                        <div className="rounded-2xl border border-border-subtle bg-surface-primary/40 p-3.5">
+                          <span className="text-[13px] font-semibold uppercase text-text-muted block mb-1">
+                            Endereço IP (Marco Civil Art. 15)
+                          </span>
+                          <p className="font-mono font-bold text-text-primary text-sm">
+                            {selectedAuditLog.ipAddress}
+                          </p>
+                          <p className="text-[13px] text-text-secondary mt-0.5">
+                            Recurso: <span className="font-bold">{selectedAuditLog.resourceType}</span>
+                            {selectedAuditLog.resourceId && ` (ID: ${selectedAuditLog.resourceId})`}
+                          </p>
+                        </div>
+
+                        <div className="rounded-2xl border border-border-subtle bg-surface-primary/40 p-3.5">
+                          <span className="text-[13px] font-semibold uppercase text-text-muted block mb-1">
+                            Ambiente / Dispositivo (User-Agent)
+                          </span>
+                          <p className="font-mono text-[13px] text-text-primary leading-tight break-all line-clamp-3">
+                            {selectedAuditLog.userAgent}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Visualizador do Payload JSON de Metadados */}
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="font-heading text-xs font-bold uppercase tracking-wider text-text-secondary flex items-center gap-1.5">
+                            <Icon icon={FileText} size={14} className="text-brand-green-moss" />
+                            Metadados Detalhados do Evento (JSON)
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              navigator.clipboard?.writeText(JSON.stringify(selectedAuditLog.details || {}, null, 2));
+                              showToast("Payload JSON copiado com sucesso!");
+                            }}
+                            className="text-xs font-bold text-brand-green-moss hover:underline cursor-pointer"
+                          >
+                            Copiar JSON
+                          </button>
+                        </div>
+
+                        <pre className="rounded-2xl border border-border-subtle bg-[#1e1e1e] p-4 text-[13px] font-mono text-emerald-400 overflow-x-auto leading-relaxed max-h-56">
+                          {JSON.stringify(selectedAuditLog.details || {}, null, 2)}
+                        </pre>
+                      </div>
+
+                      {/* Aviso de Fé Pública / Auditoria */}
+                      <div className="rounded-2xl border border-border-subtle bg-surface-primary/60 p-3.5 text-xs text-text-secondary space-y-1">
+                        <p className="font-heading font-bold text-text-primary flex items-center gap-1.5">
+                          <Icon icon={CheckCircle2} size={14} className="text-emerald-600" />
+                          Conformidade Legal Assegurada
+                        </p>
+                        <p className="leading-relaxed">
+                          Este registro faz parte da trilha contínua de auditoria do sistema The Bridge. O identificador único 
+                          garante que, mediante solicitação formal do titular (LGPD) ou ordem judicial, toda a linha temporal de 
+                          atividades possa ser exportada e auditada sem possibilidade de ambiguidade com outros perfis.
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-12 text-center text-text-secondary">
+                      <p className="text-xs">Selecione um evento à esquerda para inspecionar os detalhes de auditoria.</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
         )}
 
         {/* ======================================================== */}
