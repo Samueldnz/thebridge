@@ -10,7 +10,6 @@ import {
   Mail,
 } from "lucide-react";
 
-import authHeroImage from "../assets/brand/photography/Untitled-6.jpg";
 import logo from "../assets/brand/logo/TheBridge_Logo_Horizontal.svg";
 import { Button } from "../components/ui/Button";
 import { Icon } from "../components/ui/Icon";
@@ -85,79 +84,9 @@ export function LoginPage() {
         </div>
       </header>
 
-      {/* Main Content Grid */}
-      <main className="flex-1 flex items-center justify-center p-4 md:p-8 lg:p-12">
-        <div className="mx-auto grid w-full max-w-6xl overflow-hidden rounded-3xl border border-border-subtle bg-surface-primary shadow-xl lg:grid-cols-12">
-          {/* Editorial Banner - Left Column */}
-          <div className="relative hidden bg-brand-green-dark p-10 text-brand-off-white lg:col-span-5 lg:flex lg:flex-col lg:justify-between">
-            {/* Background image with overlay */}
-            <div className="absolute inset-0">
-              <img
-                src={authHeroImage}
-                alt=""
-                aria-hidden="true"
-                className="h-full w-full object-cover opacity-25"
-              />
-              <div
-                aria-hidden="true"
-                className="absolute inset-0 bg-gradient-to-t from-brand-green-dark via-brand-green-dark/80 to-brand-green-dark/60"
-              />
-            </div>
-
-            {/* Top Logo spanning across the width of the column */}
-            <div className="relative z-10 flex items-center">
-              <Link
-                to="/"
-                aria-label="The Bridge - Início"
-                className="inline-block w-full max-w-[280px] sm:max-w-[340px]"
-              >
-                <img
-                  src={logo}
-                  alt="The Bridge"
-                  className="w-full h-auto brightness-0 invert drop-shadow"
-                />
-              </Link>
-            </div>
-
-            {/* Middle Quote */}
-            <div className="relative z-10 my-auto py-8">
-              <h2 className="font-display text-3xl font-bold leading-snug tracking-tight text-brand-off-white md:text-4xl">
-                O elo que faltava entre pesquisa científica e mercado.
-              </h2>
-              <p className="mt-4 font-body text-sm leading-relaxed text-brand-off-white/80">
-                Conecte-se com projetos acadêmicos, parcerias de P&amp;D e demandas de tecnologia através do nosso motor de inteligência de compatibilidade.
-              </p>
-
-              <div className="mt-8 space-y-3 font-body text-xs text-brand-off-white/90">
-                <div className="flex items-center gap-2.5">
-                  <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-green-moss text-brand-off-white">
-                    <Icon icon={CheckCircle2} size={13} />
-                  </div>
-                  <span>Taxonomia de competências com pesos inteligentes</span>
-                </div>
-                <div className="flex items-center gap-2.5">
-                  <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-green-moss text-brand-off-white">
-                    <Icon icon={CheckCircle2} size={13} />
-                  </div>
-                  <span>Maturidade tecnológica calibrada em TRL e CRL</span>
-                </div>
-                <div className="flex items-center gap-2.5">
-                  <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-green-moss text-brand-off-white">
-                    <Icon icon={CheckCircle2} size={13} />
-                  </div>
-                  <span>Ecossistema com pesquisadores, empresas e laboratórios</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Bottom info */}
-            <div className="relative z-10 border-t border-brand-off-white/10 pt-4 font-body text-xs text-brand-off-white/60">
-              The Bridge © 2026 • Transformando ciência em impacto real.
-            </div>
-          </div>
-
-          {/* Form Area - Right Column */}
-          <div className="flex flex-col justify-center p-6 md:p-10 lg:col-span-7 lg:p-12">
+      {/* Main Content Area */}
+      <main className="flex-1 flex items-center justify-center p-4 py-8 md:p-10 lg:py-14">
+        <div className="mx-auto w-full max-w-xl rounded-3xl border border-border-subtle bg-surface-primary p-6 sm:p-10 md:p-12 shadow-xl">
             {/* Feedback Alerts */}
             {errorMessage && (
               <div
@@ -289,7 +218,7 @@ export function LoginPage() {
               </div>
 
               {/* Link to Register */}
-              <div className="pt-4 border-t border-border-subtle text-center space-y-2">
+              <div className="pt-4 border-t border-border-subtle text-center">
                 <p className="font-body text-xs text-text-secondary">
                   Ainda não possui uma conta?{" "}
                   <Link
@@ -299,17 +228,8 @@ export function LoginPage() {
                     Cadastre-se gratuitamente
                   </Link>
                 </p>
-                <div>
-                  <Link
-                    to="/cadastro"
-                    className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-[13px] font-medium text-amber-900 hover:bg-amber-100 transition-colors shadow-2xs"
-                  >
-                    <span>🎟️ Possui um cupom promocional ou de parceiro? Insira no cadastro para resgatar →</span>
-                  </Link>
-                </div>
               </div>
             </form>
-          </div>
         </div>
       </main>
     </div>
