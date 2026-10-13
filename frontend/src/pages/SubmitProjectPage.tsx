@@ -3,11 +3,15 @@ import { useNavigate, useParams, Link } from "react-router-dom";
 import {
   ArrowLeft,
   BrainCircuit,
+  Building2,
   CheckCircle2,
+  FileText,
   FolderGit2,
   Info,
   Lightbulb,
+  Lock,
   Plus,
+  Scale,
   ShieldAlert,
   ShieldCheck,
   Sparkles,
@@ -63,6 +67,20 @@ export function SubmitProjectPage() {
   const [crl, setCrl] = useState(3);
   const [patentStatus, setPatentStatus] = useState<PatentStatus>("PENDING");
 
+  // Dossier State (Qualitativo / Não entra no cálculo do score)
+  const [industryProblem, setIndustryProblem] = useState("");
+  const [competitiveAdvantage, setCompetitiveAdvantage] = useState("");
+  const [partnershipGoals, setPartnershipGoals] = useState<string[]>([]);
+  const [operatingConditions, setOperatingConditions] = useState("");
+  const [scalabilityGaps, setScalabilityGaps] = useState("");
+  const [estimatedBudget, setEstimatedBudget] = useState("");
+  const [estimatedTimelineMonths, setEstimatedTimelineMonths] = useState("");
+  const [evidenceLinks, setEvidenceLinks] = useState("");
+  const [ownershipType, setOwnershipType] = useState<"UNIVERSIDADE" | "NIT" | "INDEPENDENTE" | "LABORATORIO_PRIVADO" | "EMPRESA_SPINOFF">("UNIVERSIDADE");
+  const [patentClaimsSummary, setPatentClaimsSummary] = useState("");
+  const [priorFunding, setPriorFunding] = useState("");
+  const [hasExclusiveCommitment, setHasExclusiveCommitment] = useState(false);
+
   // Competences State
   const [allCompetences, setAllCompetences] = useState<CompetenceItem[]>([]);
   const [selectedCompetences, setSelectedCompetences] = useState<
@@ -116,12 +134,33 @@ export function SubmitProjectPage() {
               name: c.name || c.competenceId,
             }))
           );
+
+          if (p.dossier) {
+            setIndustryProblem(p.dossier.industryProblem || "");
+            setCompetitiveAdvantage(p.dossier.competitiveAdvantage || "");
+            setPartnershipGoals(p.dossier.partnershipGoals || []);
+            setOperatingConditions(p.dossier.operatingConditions || "");
+            setScalabilityGaps(p.dossier.scalabilityGaps || "");
+            setEstimatedBudget(p.dossier.estimatedBudget || "");
+            setEstimatedTimelineMonths(p.dossier.estimatedTimelineMonths || "");
+            setEvidenceLinks(p.dossier.evidenceLinks || "");
+            setOwnershipType(p.dossier.ownershipType || "UNIVERSIDADE");
+            setPatentClaimsSummary(p.dossier.patentClaimsSummary || "");
+            setPriorFunding(p.dossier.priorFunding || "");
+            setHasExclusiveCommitment(Boolean(p.dossier.hasExclusiveCommitment));
+          }
         } else {
           setError("Projeto não encontrado para edição.");
         }
       });
     }
   }, [id, isEditing, user]);
+
+  const togglePartnershipGoal = (goal: string) => {
+    setPartnershipGoals((prev) =>
+      prev.includes(goal) ? prev.filter((g) => g !== goal) : [...prev, goal]
+    );
+  };
 
   const handleAddCompetence = () => {
     if (!tempCompId) return;
@@ -171,6 +210,21 @@ export function SubmitProjectPage() {
     try {
       setLoading(true);
 
+      const dossierData = {
+        industryProblem: industryProblem.trim() || undefined,
+        competitiveAdvantage: competitiveAdvantage.trim() || undefined,
+        partnershipGoals: partnershipGoals.length > 0 ? partnershipGoals : undefined,
+        operatingConditions: operatingConditions.trim() || undefined,
+        scalabilityGaps: scalabilityGaps.trim() || undefined,
+        estimatedBudget: estimatedBudget.trim() || undefined,
+        estimatedTimelineMonths: estimatedTimelineMonths.trim() || undefined,
+        evidenceLinks: evidenceLinks.trim() || undefined,
+        ownershipType,
+        patentClaimsSummary: patentClaimsSummary.trim() || undefined,
+        priorFunding: priorFunding.trim() || undefined,
+        hasExclusiveCommitment,
+      };
+
       if (isEditing && id) {
         // Edit existing project
         const updated = await projectsService.updateProject(id, {
@@ -186,6 +240,7 @@ export function SubmitProjectPage() {
             level: c.level,
             name: c.name,
           })),
+          dossier: dossierData,
         });
 
         // Trigger rematch
@@ -207,6 +262,7 @@ export function SubmitProjectPage() {
             level: c.level,
             name: c.name,
           })),
+          dossier: dossierData,
         });
 
         // Trigger rematch
@@ -627,6 +683,271 @@ export function SubmitProjectPage() {
                     <Icon icon={Plus} size={14} />
                     Adicionar
                   </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 4: Dossiê Técnico Blindado & Teaser Corporativo */}
+          <div className="rounded-3xl border border-emerald-300 bg-surface-white p-6 md:p-8 shadow-xs">
+            <div className="flex items-start justify-between gap-4 pb-6 border-b border-border-subtle">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-800">
+                  <Icon icon={ShieldCheck} size={22} />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="font-heading font-bold text-lg text-text-primary">
+                      Dossiê Técnico Blindado & Teaser Industrial
+                    </h2>
+                    <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-bold text-emerald-800 border border-emerald-200">
+                      Opcional Recomendado
+                    </span>
+                  </div>
+                  <p className="font-body text-xs text-text-secondary mt-0.5">
+                    Forneça evidências e dados técnicos para que a indústria avalie o projeto com máxima segurança antes de solicitar conexão.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Banner de Blindagem e Isenção de Cálculo de Score */}
+            <div className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 text-xs text-emerald-950 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+              <div className="flex items-start gap-2.5">
+                <Icon icon={Lock} size={18} className="text-emerald-700 shrink-0 mt-0.5" />
+                <div className="space-y-0.5">
+                  <p className="font-heading font-bold text-emerald-900">
+                    Protocolo de Proteção Anti-Desintermediação & Integridade Algorítmica
+                  </p>
+                  <p className="text-emerald-800 leading-relaxed">
+                    Nomes de pesquisadores, ICT de origem e números de protocolo INPI <strong>permanecem confidenciais</strong> para a empresa até a assinatura do Termo oficial. 
+                    <span className="font-semibold text-emerald-950"> Nota: Os campos deste dossiê são estritamente informativos e NÃO alteram o cálculo numérico do Score de Matching.</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 space-y-8">
+              {/* Bloco 1: Pitch & Proposta de Valor */}
+              <div className="space-y-4">
+                <h3 className="font-heading text-sm font-bold uppercase tracking-wider text-text-secondary flex items-center gap-2">
+                  <Icon icon={FileText} size={15} className="text-brand-green-moss" />
+                  1. Pitch Executivo Não-Confidencial
+                </h3>
+
+                <div>
+                  <label className="block font-heading text-xs font-bold text-text-primary uppercase tracking-wide">
+                    Dor / Problema da Indústria Resolvido
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={industryProblem}
+                    onChange={(e) => setIndustryProblem(e.target.value)}
+                    placeholder="Ex: A degradação térmica em baterias de íon-lítio limita a vida útil a 500 ciclos, gerando paradas não planejadas e custos elevados de substituição para frotas elétricas..."
+                    className="mt-2 w-full rounded-xl border border-border-subtle bg-surface-primary px-4 py-3 font-body text-sm text-text-primary transition-all focus:border-brand-green-moss focus:bg-surface-white focus:outline-none focus:ring-2 focus:ring-brand-green-moss/20"
+                  />
+                  <p className="mt-1 text-[11px] text-text-secondary">
+                    Qual gargalo operacional, perda de rendimento ou custo industrial sua tecnologia elimina?
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block font-heading text-xs font-bold text-text-primary uppercase tracking-wide">
+                    Diferencial Competitivo & Benchmarks Quantitativos
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={competitiveAdvantage}
+                    onChange={(e) => setCompetitiveAdvantage(e.target.value)}
+                    placeholder="Ex: Redução de 34% na geração de calor sob regime de recarga rápida (3C); condutividade térmica 3,2x superior às pastas de cobre comerciais; síntese sem solventes halogenados..."
+                    className="mt-2 w-full rounded-xl border border-border-subtle bg-surface-primary px-4 py-3 font-body text-sm text-text-primary transition-all focus:border-brand-green-moss focus:bg-surface-white focus:outline-none focus:ring-2 focus:ring-brand-green-moss/20"
+                  />
+                  <p className="mt-1 text-[11px] text-text-secondary">
+                    Mencione métricas concretas, % de eficiência ou comparativos com as soluções comerciais existentes.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block font-heading text-xs font-bold text-text-primary uppercase tracking-wide mb-2">
+                    Modalidades de Parceria Almejadas
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      "Licenciamento de Tecnologia / Patente",
+                      "Co-desenvolvimento & P&D Conjunto",
+                      "Prova de Conceito / Piloto Industrial",
+                      "Aporte / Investimento em Spin-off",
+                      "Validação Regulatória & Homologação",
+                      "Prestação de Serviços Tecnológicos",
+                    ].map((goal) => {
+                      const isSelected = partnershipGoals.includes(goal);
+                      return (
+                        <button
+                          key={goal}
+                          type="button"
+                          onClick={() => togglePartnershipGoal(goal)}
+                          className={[
+                            "px-3 py-1.5 rounded-xl font-heading text-xs font-semibold border transition-all cursor-pointer",
+                            isSelected
+                              ? "bg-brand-green-dark text-white border-brand-green-dark shadow-xs"
+                              : "bg-surface-primary text-text-secondary border-border-subtle hover:bg-surface-secondary",
+                          ].join(" ")}
+                        >
+                          {isSelected ? "✓ " : "+ "}
+                          {goal}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              {/* Bloco 2: Validação & Escala */}
+              <div className="space-y-4 pt-6 border-t border-border-subtle">
+                <h3 className="font-heading text-sm font-bold uppercase tracking-wider text-text-secondary flex items-center gap-2">
+                  <Icon icon={Building2} size={15} className="text-brand-green-moss" />
+                  2. Escala Laboratorial & Viabilidade Produtiva
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block font-heading text-xs font-bold text-text-primary uppercase tracking-wide">
+                      Condições Operacionais & Escala Atual
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={operatingConditions}
+                      onChange={(e) => setOperatingConditions(e.target.value)}
+                      placeholder="Ex: Bateladas validadas de 200g em escala de laboratório (25 °C, 1 atm); pureza de 99,2% comprovada por espectrometria de massas..."
+                      className="mt-2 w-full rounded-xl border border-border-subtle bg-surface-primary px-4 py-2.5 font-body text-xs text-text-primary transition-all focus:border-brand-green-moss focus:bg-surface-white focus:outline-none focus:ring-2 focus:ring-brand-green-moss/20"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-heading text-xs font-bold text-text-primary uppercase tracking-wide">
+                      Desafios / Gaps para Escala Piloto
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={scalabilityGaps}
+                      onChange={(e) => setScalabilityGaps(e.target.value)}
+                      placeholder="Ex: Adaptação da síntese para processo em fluxo contínuo; necessidade de biorreator piloto de 50L e estabilização de shelf-life..."
+                      className="mt-2 w-full rounded-xl border border-border-subtle bg-surface-primary px-4 py-2.5 font-body text-xs text-text-primary transition-all focus:border-brand-green-moss focus:bg-surface-white focus:outline-none focus:ring-2 focus:ring-brand-green-moss/20"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block font-heading text-xs font-bold text-text-primary uppercase tracking-wide">
+                      Orçamento Estimado (Fase Piloto)
+                    </label>
+                    <input
+                      type="text"
+                      value={estimatedBudget}
+                      onChange={(e) => setEstimatedBudget(e.target.value)}
+                      placeholder="Ex: R$ 150.000 a R$ 350.000"
+                      className="mt-2 w-full rounded-xl border border-border-subtle bg-surface-primary px-4 py-2.5 font-body text-xs text-text-primary transition-all focus:border-brand-green-moss focus:bg-surface-white focus:outline-none focus:ring-2 focus:ring-brand-green-moss/20"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-heading text-xs font-bold text-text-primary uppercase tracking-wide">
+                      Prazo Estimado até Piloto
+                    </label>
+                    <input
+                      type="text"
+                      value={estimatedTimelineMonths}
+                      onChange={(e) => setEstimatedTimelineMonths(e.target.value)}
+                      placeholder="Ex: 6 a 12 meses"
+                      className="mt-2 w-full rounded-xl border border-border-subtle bg-surface-primary px-4 py-2.5 font-body text-xs text-text-primary transition-all focus:border-brand-green-moss focus:bg-surface-white focus:outline-none focus:ring-2 focus:ring-brand-green-moss/20"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-heading text-xs font-bold text-text-primary uppercase tracking-wide">
+                      Fomento Público Prévio Recebido
+                    </label>
+                    <input
+                      type="text"
+                      value={priorFunding}
+                      onChange={(e) => setPriorFunding(e.target.value)}
+                      placeholder="Ex: FAPESP PIPE, Finep, Embrapii, CNPq"
+                      className="mt-2 w-full rounded-xl border border-border-subtle bg-surface-primary px-4 py-2.5 font-body text-xs text-text-primary transition-all focus:border-brand-green-moss focus:bg-surface-white focus:outline-none focus:ring-2 focus:ring-brand-green-moss/20"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-heading text-xs font-bold text-text-primary uppercase tracking-wide">
+                    Evidências & Laudos Descaracterizados (DOIs / Links Públicos)
+                  </label>
+                  <input
+                    type="text"
+                    value={evidenceLinks}
+                    onChange={(e) => setEvidenceLinks(e.target.value)}
+                    placeholder="Ex: Artigo publicado em Nature Materials (DOI: 10.1038/...) | Relatório de Ensaio de Bancada disponível sob NDA"
+                    className="mt-2 w-full rounded-xl border border-border-subtle bg-surface-primary px-4 py-2.5 font-body text-xs text-text-primary transition-all focus:border-brand-green-moss focus:bg-surface-white focus:outline-none focus:ring-2 focus:ring-brand-green-moss/20"
+                  />
+                  <p className="mt-1 text-[11px] text-text-secondary">
+                    Insira referências a papers revisados por pares ou cite relatórios técnicos disponíveis para due diligence pós-conexão.
+                  </p>
+                </div>
+              </div>
+
+              {/* Bloco 3: PI & Governança */}
+              <div className="space-y-4 pt-6 border-t border-border-subtle">
+                <h3 className="font-heading text-sm font-bold uppercase tracking-wider text-text-secondary flex items-center gap-2">
+                  <Icon icon={Scale} size={15} className="text-brand-green-moss" />
+                  3. Propriedade Intelectual & Governança
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block font-heading text-xs font-bold text-text-primary uppercase tracking-wide">
+                      Estrutura de Titularidade da Tecnologia
+                    </label>
+                    <select
+                      value={ownershipType}
+                      onChange={(e) => setOwnershipType(e.target.value as any)}
+                      className="mt-2 w-full rounded-xl border border-border-subtle bg-surface-white px-4 py-2.5 font-body text-xs text-text-primary focus:outline-none focus:ring-2 focus:ring-brand-green-moss/20"
+                    >
+                      <option value="UNIVERSIDADE">Universidade Pública / ICT Estadual ou Federal</option>
+                      <option value="NIT">Núcleo de Inovação Tecnológica (NIT) Institucional</option>
+                      <option value="INDEPENDENTE">Pesquisador Independente / Titularidade Própria</option>
+                      <option value="LABORATORIO_PRIVADO">Instituto de Pesquisa / Laboratório Privado</option>
+                      <option value="EMPRESA_SPINOFF">Empresa Spin-off / Deep Tech Constituída</option>
+                    </select>
+                  </div>
+
+                  <div className="flex items-center gap-3 pt-6">
+                    <input
+                      id="exclusive-check"
+                      type="checkbox"
+                      checked={hasExclusiveCommitment}
+                      onChange={(e) => setHasExclusiveCommitment(e.target.checked)}
+                      className="h-4 w-4 rounded border-border-subtle text-brand-green-dark focus:ring-brand-green-moss"
+                    />
+                    <label htmlFor="exclusive-check" className="font-body text-xs text-text-primary cursor-pointer select-none">
+                      Existe compromisso prévio de exclusividade comercial ou opção de compra com alguma empresa?
+                    </label>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-heading text-xs font-bold text-text-primary uppercase tracking-wide">
+                    Resumo das Reivindicações Técnicas Protegidas (Sem Nº de Depósito)
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={patentClaimsSummary}
+                    onChange={(e) => setPatentClaimsSummary(e.target.value)}
+                    placeholder="Ex: Reivindicação de processo de esfoliação contínua por cavitação assistida e formulação de resina termoplástica composta com teores entre 0,5% e 3% em peso..."
+                    className="mt-2 w-full rounded-xl border border-border-subtle bg-surface-primary px-4 py-2.5 font-body text-xs text-text-primary transition-all focus:border-brand-green-moss focus:bg-surface-white focus:outline-none focus:ring-2 focus:ring-brand-green-moss/20"
+                  />
+                  <p className="mt-1 text-[11px] text-text-secondary">
+                    Descreva o escopo técnico protegido. Não insira o número do protocolo do INPI neste formulário para manter a blindagem.
+                  </p>
                 </div>
               </div>
             </div>

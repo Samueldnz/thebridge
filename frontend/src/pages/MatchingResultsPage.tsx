@@ -4,12 +4,18 @@ import {
   Award,
   BrainCircuit,
   Building2,
+  Clock,
+  DollarSign,
+  FileText,
   Filter,
   Info,
+  Lock,
   MessageSquare,
   RefreshCw,
+  Scale,
   Search,
   Send,
+  ShieldCheck,
   Sparkles,
   X,
 } from "lucide-react";
@@ -21,6 +27,7 @@ import { scientificMatchingService, cleanScientificAbstract, type ScientificArti
 import { savedMatchesService } from "../services/savedMatches";
 import { authService } from "../services/auth";
 import { opportunitiesService, type Opportunity } from "../services/opportunities";
+import { projectsService, type TechnicalDossier } from "../services/projects";
 import {
   connectionsService,
   FIXED_CENSOR_AUTHORS,
@@ -93,12 +100,43 @@ export function MatchingResultsPage() {
   // UI Filters & Modals
   const [filterAffinity, setFilterAffinity] = useState<"ALL" | "HIGH" | "MEDIUM">("ALL");
   const [selectedArticleForAudit, setSelectedArticleForAudit] = useState<ScientificArticle | null>(null);
+  const [selectedArticleForDossier, setSelectedArticleForDossier] = useState<ScientificArticle | null>(null);
   const [selectedArticleForConnection, setSelectedArticleForConnection] = useState<ScientificArticle | null>(null);
   const [connectionMessage, setConnectionMessage] = useState<string>("");
   const [companySectorInput, setCompanySectorInput] = useState<string>("");
   const [investmentAmountInput, setInvestmentAmountInput] = useState<string>("");
   const [executionTimelineInput, setExecutionTimelineInput] = useState<string>("");
   const [connectionSentSuccess, setConnectionSentSuccess] = useState<boolean>(false);
+
+  const getResolvedDossier = (article: ScientificArticle): TechnicalDossier => {
+    const allProjects = projectsService.getStoredProjects();
+    const proj = allProjects.find(
+      (p) =>
+        p.id === article.id ||
+        p.title.toLowerCase().trim() === article.titulo.toLowerCase().trim()
+    );
+    if (proj?.dossier) {
+      return proj.dossier;
+    }
+    return {
+      industryProblem: `Gargalos industriais de desempenho e rendimento na área de ${article.area}. A tecnologia visa superar limitações de estabilidade e custos em relação aos insumos convencionais de mercado.`,
+      competitiveAdvantage: `Demonstrou ganhos superiores aos benchmarks de bancada relatados nos anais da publicação técnica (${article.evento}). Eficiência e viabilidade analítica comprovadas experimentalmente.`,
+      partnershipGoals: [
+        "Licenciamento de Tecnologia / Patente",
+        "Co-desenvolvimento & P&D Conjunto",
+        "Prova de Conceito / Piloto Industrial",
+      ],
+      operatingConditions: `Protocolo experimental validado em ambiente laboratorial conforme documentação apresentada em ${article.evento} (${article.ano}).`,
+      scalabilityGaps: "Necessidade de ensaios em escala piloto integrada (TRL 5-6) e adequação com a linha produtiva do parceiro industrial.",
+      estimatedBudget: "R$ 180.000 a R$ 450.000 (Fase Piloto / PoC)",
+      estimatedTimelineMonths: "8 a 14 meses",
+      ownershipType: "UNIVERSIDADE",
+      patentClaimsSummary: `Proteção de formulação e método inventivo correspondente ao simpósio ${article.sessao}. Titularidade blindada sob custódia de ICT parceira.`,
+      priorFunding: "Fomento público institucional de pesquisa (Capes / CNPq / FAPESP)",
+      hasExclusiveCommitment: false,
+      evidenceLinks: `Trabalho indexado com código ${article.codigo || "TB-REF"} no acervo ${article.evento}`,
+    };
+  };
 
   // Cached / Saved Matches State
   const [lastCalculatedAt, setLastCalculatedAt] = useState<string | null>(null);
@@ -593,7 +631,7 @@ export function MatchingResultsPage() {
 
                   {/* Card Actions Footer */}
                   <div className="pt-4 border-t border-border-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <button
                         type="button"
                         onClick={() => setSelectedArticleForAudit(art)}
@@ -601,6 +639,15 @@ export function MatchingResultsPage() {
                       >
                         <Icon icon={Info} size={13} />
                         Auditar Cálculo
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setSelectedArticleForDossier(art)}
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-300 bg-emerald-50/70 text-emerald-950 px-3 py-1.5 font-heading text-xs font-semibold hover:bg-emerald-100 hover:border-emerald-400 transition-all shadow-xs cursor-pointer"
+                      >
+                        <Icon icon={ShieldCheck} size={14} className="text-emerald-700" />
+                        Ver Dossiê Blindado
                       </button>
                     </div>
 
@@ -724,6 +771,281 @@ export function MatchingResultsPage() {
           </div>
         </div>
       )}
+
+      {/* Modal Dossiê Técnico Blindado (Teaser para Indústria) */}
+      {selectedArticleForDossier && (() => {
+        const dossier = getResolvedDossier(selectedArticleForDossier);
+        const ownershipLabels: Record<string, string> = {
+          UNIVERSIDADE: "Universidade Pública / ICT Estadual ou Federal (Tier 1)",
+          NIT: "Núcleo de Inovação Tecnológica (NIT) Institucional",
+          INDEPENDENTE: "Pesquisador Independente / Titularidade Própria",
+          LABORATORIO_PRIVADO: "Instituto de Pesquisa / Laboratório Privado de Excelência",
+          EMPRESA_SPINOFF: "Empresa Spin-off / Deep Tech Constituída",
+        };
+
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="relative w-full max-w-4xl rounded-3xl bg-surface-white p-6 md:p-8 shadow-2xl border border-border-subtle space-y-6 animate-in zoom-in-95 duration-150 max-h-[92vh] overflow-y-auto">
+              {/* Close button */}
+              <button
+                type="button"
+                onClick={() => setSelectedArticleForDossier(null)}
+                className="absolute right-6 top-6 inline-flex h-8 w-8 items-center justify-center rounded-full bg-surface-secondary text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
+              >
+                <Icon icon={X} size={18} />
+              </button>
+
+              {/* Header */}
+              <div className="pr-8">
+                <div className="flex items-center gap-2 font-heading text-xs font-bold text-emerald-800 uppercase tracking-wider">
+                  <Icon icon={ShieldCheck} size={18} className="text-emerald-700" />
+                  Dossiê Técnico Blindado • Non-Confidential Technology Teaser
+                </div>
+                <h3 className="mt-1 font-display text-2xl md:text-3xl font-bold text-text-primary">
+                  {selectedArticleForDossier.titulo}
+                </h3>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <span className="rounded-full bg-emerald-100 text-emerald-900 px-3 py-0.5 text-xs font-mono font-bold">
+                    Relevância: {selectedArticleForDossier.relevancia_pct}%
+                  </span>
+                  <span className="rounded-full bg-surface-primary text-text-secondary px-3 py-0.5 text-xs font-medium border border-border-subtle">
+                    Área: {selectedArticleForDossier.area}
+                  </span>
+                  <span className="rounded-full bg-surface-primary text-text-secondary px-3 py-0.5 text-xs font-medium border border-border-subtle">
+                    Código: {selectedArticleForDossier.codigo || "TB-PROJ"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Protocolo de Blindagem Banner */}
+              <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4.5 text-xs text-emerald-950 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+                <div className="flex items-start gap-3">
+                  <Icon icon={Lock} size={20} className="text-emerald-700 shrink-0 mt-0.5" />
+                  <div className="space-y-0.5">
+                    <p className="font-heading font-bold text-emerald-950 text-sm">
+                      Protocolo de Blindagem & Mediação The Bridge
+                    </p>
+                    <p className="text-emerald-900 leading-relaxed font-body">
+                      Identidades dos inventores, nomes específicos da instituição e número do processo INPI são estritamente preservados para proteger o ativo contra desintermediação.
+                      <span className="font-semibold"> Estes dados técnicos são qualitativos e não alteram a nota calculada pelo motor de matching.</span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* 3 Blocos de Conteúdo */}
+              <div className="space-y-6">
+                {/* Bloco 1: Pitch Executivo & Proposta de Valor */}
+                <div className="rounded-2xl border border-border-subtle bg-surface-primary/40 p-5 space-y-4">
+                  <h4 className="font-heading text-xs font-bold text-text-primary uppercase tracking-wide flex items-center gap-2">
+                    <Icon icon={FileText} size={15} className="text-brand-green-moss" />
+                    1. Pitch Executivo & Dores de Mercado
+                  </h4>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-surface-white rounded-xl p-4 border border-border-subtle space-y-1.5 shadow-xs">
+                      <span className="text-[11px] font-heading font-bold uppercase text-brand-green-moss tracking-wider">
+                        Dor da Indústria Resolvida
+                      </span>
+                      <p className="text-xs md:text-sm text-text-primary font-body leading-relaxed">
+                        {dossier.industryProblem || "Problema industrial mapeado e mitigado por meio da formulação/método desenvolvido."}
+                      </p>
+                    </div>
+
+                    <div className="bg-surface-white rounded-xl p-4 border border-border-subtle space-y-1.5 shadow-xs">
+                      <span className="text-[11px] font-heading font-bold uppercase text-emerald-700 tracking-wider">
+                        Diferencial Competitivo & Benchmarks Quantitativos
+                      </span>
+                      <p className="text-xs md:text-sm text-text-primary font-body leading-relaxed">
+                        {dossier.competitiveAdvantage || "Ganhos expressivos em relação aos parâmetros de referência do mercado convencional."}
+                      </p>
+                    </div>
+                  </div>
+
+                  {dossier.partnershipGoals && dossier.partnershipGoals.length > 0 && (
+                    <div className="pt-1">
+                      <span className="block text-[11px] font-heading font-bold uppercase text-text-secondary tracking-wider mb-2">
+                        Modalidades de Parceria Almejadas pelo Pesquisador:
+                      </span>
+                      <div className="flex flex-wrap gap-2">
+                        {dossier.partnershipGoals.map((goal, gIdx) => (
+                          <span
+                            key={gIdx}
+                            className="rounded-lg bg-brand-green-dark text-white px-2.5 py-1 text-xs font-heading font-semibold shadow-xs"
+                          >
+                            ✓ {goal}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Bloco 2: Escala & Viabilidade Laboratorial */}
+                <div className="rounded-2xl border border-border-subtle bg-surface-primary/40 p-5 space-y-4">
+                  <h4 className="font-heading text-xs font-bold text-text-primary uppercase tracking-wide flex items-center gap-2">
+                    <Icon icon={Building2} size={15} className="text-brand-green-moss" />
+                    2. Validação Experimental & Viabilidade de Escala
+                  </h4>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-surface-white rounded-xl p-4 border border-border-subtle space-y-1.5 shadow-xs">
+                      <span className="text-[11px] font-heading font-bold uppercase text-text-secondary tracking-wider">
+                        Condições Operacionais & Escala de Bancada Comprovada
+                      </span>
+                      <p className="text-xs text-text-primary font-body leading-relaxed">
+                        {dossier.operatingConditions || "Condições reprodutíveis em ambiente laboratorial controlado com caracterização analítica completa."}
+                      </p>
+                    </div>
+
+                    <div className="bg-surface-white rounded-xl p-4 border border-border-subtle space-y-1.5 shadow-xs">
+                      <span className="text-[11px] font-heading font-bold uppercase text-amber-700 tracking-wider">
+                        Gaps Conhecidos para Escala Piloto / Industrial
+                      </span>
+                      <p className="text-xs text-text-primary font-body leading-relaxed">
+                        {dossier.scalabilityGaps || "Adaptação de processos de bancada para ambiente operacional simulado e dimensionamento de reatores piloto."}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="bg-surface-white rounded-xl p-3.5 border border-border-subtle shadow-xs">
+                      <div className="flex items-center gap-1.5 text-text-secondary mb-1">
+                        <Icon icon={DollarSign} size={14} className="text-emerald-700" />
+                        <span className="text-[11px] font-heading font-bold uppercase tracking-wider">
+                          Orçamento Estimado (PoC)
+                        </span>
+                      </div>
+                      <p className="text-xs font-semibold text-text-primary">
+                        {dossier.estimatedBudget || "Sob consulta preliminar"}
+                      </p>
+                    </div>
+
+                    <div className="bg-surface-white rounded-xl p-3.5 border border-border-subtle shadow-xs">
+                      <div className="flex items-center gap-1.5 text-text-secondary mb-1">
+                        <Icon icon={Clock} size={14} className="text-blue-700" />
+                        <span className="text-[11px] font-heading font-bold uppercase tracking-wider">
+                          Prazo Estimado até Piloto
+                        </span>
+                      </div>
+                      <p className="text-xs font-semibold text-text-primary">
+                        {dossier.estimatedTimelineMonths || "6 a 12 meses"}
+                      </p>
+                    </div>
+
+                    <div className="bg-surface-white rounded-xl p-3.5 border border-border-subtle shadow-xs">
+                      <div className="flex items-center gap-1.5 text-text-secondary mb-1">
+                        <Icon icon={Award} size={14} className="text-amber-600" />
+                        <span className="text-[11px] font-heading font-bold uppercase tracking-wider">
+                          Fomento Público Prévio
+                        </span>
+                      </div>
+                      <p className="text-xs font-semibold text-text-primary">
+                        {dossier.priorFunding || "Apoio Institucional P&D"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {dossier.evidenceLinks && (
+                    <div className="bg-surface-white rounded-xl p-3.5 border border-border-subtle text-xs text-text-secondary shadow-xs">
+                      <span className="font-heading font-bold text-text-primary uppercase text-[11px] block mb-1">
+                        Evidências Técnicas & Publicações Referenciadas:
+                      </span>
+                      <p className="font-mono text-[12px] text-text-primary">
+                        {dossier.evidenceLinks}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Bloco 3: Propriedade Intelectual & Governança */}
+                <div className="rounded-2xl border border-border-subtle bg-surface-primary/40 p-5 space-y-4">
+                  <h4 className="font-heading text-xs font-bold text-text-primary uppercase tracking-wide flex items-center gap-2">
+                    <Icon icon={Scale} size={15} className="text-brand-green-moss" />
+                    3. Propriedade Intelectual & Governança
+                  </h4>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-surface-white rounded-xl p-4 border border-border-subtle space-y-1.5 shadow-xs">
+                      <span className="text-[11px] font-heading font-bold uppercase text-text-secondary tracking-wider">
+                        Estrutura de Titularidade (Blindada)
+                      </span>
+                      <p className="text-xs font-semibold text-text-primary">
+                        {ownershipLabels[dossier.ownershipType || "UNIVERSIDADE"] || dossier.ownershipType}
+                      </p>
+                      <p className="text-[11px] text-text-secondary">
+                        Acesso ao NIT e inventores viabilizado via The Bridge após alinhamento de interesse.
+                      </p>
+                    </div>
+
+                    <div className="bg-surface-white rounded-xl p-4 border border-border-subtle space-y-1.5 shadow-xs">
+                      <span className="text-[11px] font-heading font-bold uppercase text-text-secondary tracking-wider">
+                        Status de Exclusividade Prévia
+                      </span>
+                      <div className="flex items-center gap-2 pt-0.5">
+                        <span className={[
+                          "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold",
+                          dossier.hasExclusiveCommitment
+                            ? "bg-amber-100 text-amber-900 border border-amber-300"
+                            : "bg-emerald-100 text-emerald-900 border border-emerald-300",
+                        ].join(" ")}>
+                          {dossier.hasExclusiveCommitment ? "Possui Pré-Acordo" : "✓ Sem Vínculos de Exclusividade"}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-text-secondary">
+                        {dossier.hasExclusiveCommitment
+                          ? "Há direitos de preferência em negociação prévia; licenciamento condicionado a consulta de NIT."
+                          : "Tecnologia totalmente disponível para transferência ou co-desenvolvimento exclusivo com sua empresa."}
+                      </p>
+                    </div>
+                  </div>
+
+                  {dossier.patentClaimsSummary && (
+                    <div className="bg-surface-white rounded-xl p-4 border border-border-subtle space-y-1.5 shadow-xs">
+                      <span className="text-[11px] font-heading font-bold uppercase text-text-secondary tracking-wider">
+                        Resumo Não-Confidencial das Reivindicações Técnicas Protegidas
+                      </span>
+                      <p className="text-xs text-text-primary font-body leading-relaxed">
+                        {dossier.patentClaimsSummary}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Modal Actions */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-border-subtle">
+                <p className="text-xs text-text-secondary">
+                  Deseja avançar na negociação? Solicite conexão para acessar a equipe e assinar o NDA mútuo.
+                </p>
+                <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => setSelectedArticleForDossier(null)}
+                  >
+                    Fechar Dossiê
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      const art = selectedArticleForDossier;
+                      setSelectedArticleForDossier(null);
+                      if (art) {
+                        handleOpenConnectionModal(art);
+                      }
+                    }}
+                    className="bg-brand-green-dark !text-white hover:bg-brand-green-moss shadow-xs"
+                  >
+                    <Icon icon={MessageSquare} size={15} />
+                    Solicitar Conexão & Acesso Completo
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Janela Retangular Deitada (Horizontal) de Solicitar Conexão */}
       {selectedArticleForConnection && (

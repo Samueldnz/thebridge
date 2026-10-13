@@ -13,6 +13,26 @@ export interface ProjectCompetenceItem {
   name?: string;
 }
 
+export interface TechnicalDossier {
+  // 1. Pitch Executivo Não-Confidencial
+  industryProblem?: string; // Dor da Indústria (Problema real que resolve no mercado)
+  competitiveAdvantage?: string; // Diferencial Competitivo / Benchmark Quantitativo (ex: 30% mais eficiente, menor custo)
+  partnershipGoals?: string[]; // Objetivos com a Parceria (Co-desenvolvimento, Licenciamento, Prova de conceito piloto, etc.)
+
+  // 2. Validação & Escala Laboratorial
+  operatingConditions?: string; // Condições operacionais e escala de bancada comprovada
+  scalabilityGaps?: string; // Gaps conhecidos para a escala piloto / industrial
+  estimatedBudget?: string; // Faixa de orçamento estimado para a fase piloto/industrial
+  estimatedTimelineMonths?: string; // Prazo estimado até protótipo/piloto
+  evidenceLinks?: string; // Links/referências de laudos de ensaio, relatórios descaracterizados ou artigos
+
+  // 3. Propriedade Intelectual & Compliance
+  ownershipType?: "UNIVERSIDADE" | "NIT" | "INDEPENDENTE" | "LABORATORIO_PRIVADO" | "EMPRESA_SPINOFF"; // Titularidade da tecnologia
+  patentClaimsSummary?: string; // Reivindicações da patente (sem o número confidencial)
+  priorFunding?: string; // Fomento prévio (FAPESP, CNPq, Finep, Embrapii, Nenhum)
+  hasExclusiveCommitment?: boolean; // Há exclusividade com terceiros?
+}
+
 export interface Project {
   id: string;
   ownerId?: string;
@@ -29,6 +49,7 @@ export interface Project {
   ownerName?: string;
   ownerEmail?: string;
   ownerAffiliation?: string;
+  dossier?: TechnicalDossier;
 }
 
 export interface CreateProjectPayload {
@@ -41,6 +62,7 @@ export interface CreateProjectPayload {
   patentStatus: PatentStatus;
   status?: ProjectStatus;
   competences: { competenceId: string; level: number; name?: string }[];
+  dossier?: TechnicalDossier;
 }
 
 const STORAGE_KEY = "thebridge_demo_projects";
@@ -67,6 +89,24 @@ const defaultInitialProjects: Project[] = [
       { competenceId: "comp-pharma", level: 4, name: "Farmacologia & Formulação de Medicamentos" },
       { competenceId: "comp-biotech", level: 4, name: "Biotecnologia & Engenharia Genética" },
     ],
+    dossier: {
+      industryProblem: "Baixa seletividade de quimioterápicos convencionais gera alta toxicidade sistêmica, danos cardiovasculares severos e obriga a interrupção prematura de tratamentos oncológicos.",
+      competitiveAdvantage: "Aumento de 3,4x na meia-vida sérica do princípio ativo e redução de 65% na toxicidade cardíaca em modelos pré-clínicos in vivo vs. doxorrubicina comercial livre.",
+      partnershipGoals: [
+        "Co-desenvolvimento conjunto (P&D)",
+        "Licenciamento de tecnologia / royalties",
+        "Desenvolvimento de protótipo industrial piloto",
+      ],
+      operatingConditions: "Bateladas laboratoriais de 250ml com taxa de encapsulamento de 88% e estabilidade coloidal comprovada por 12 meses a 4°C em ambiente estéril.",
+      scalabilityGaps: "Necessidade de adaptação do processo de nanoemulsificação para microfluídica contínua de alta vazão e ensaios toxicológicos em ambiente BPL para registro Anvisa.",
+      estimatedBudget: "R$ 180.000 a R$ 350.000 (reagentes, insumos para batelada piloto de 5L e 1 bolsista pós-doc)",
+      estimatedTimelineMonths: "12 a 18 meses",
+      evidenceLinks: "Artigo indexado no Journal of Controlled Release (2025) e laudos de espectrometria e difração de raios-X disponíveis sob NDA.",
+      ownershipType: "UNIVERSIDADE",
+      patentClaimsSummary: "Composição de nanocarreador lipídico-polimérico funcionalizado, método de síntese em batelada contínua e aplicação em fármacos citotóxicos.",
+      priorFunding: "FAPESP (Auxílio à Pesquisa Regular) e Bolsa Produtividade CNPq",
+      hasExclusiveCommitment: false,
+    },
   },
   {
     id: "proj-solargreen-02",
@@ -88,6 +128,23 @@ const defaultInitialProjects: Project[] = [
       { competenceId: "comp-energy", level: 5, name: "Energias Renováveis & Armazenamento" },
       { competenceId: "comp-materials", level: 5, name: "Nanotecnologia & Novos Materiais" },
     ],
+    dossier: {
+      industryProblem: "Células solares de perovskita sofrem degradação fotoquímica acelerada sob umidade relativa acima de 50% e estresse térmico prolongado (>65°C), inviabilizando módulos comerciais tradicionais.",
+      competitiveAdvantage: "Estabilidade comprovada superior a 2.000 horas sob radiação contínua com retenção de 94% da eficiência original e conversão fotoelétrica recorde de 27,4%.",
+      partnershipGoals: [
+        "Co-desenvolvimento conjunto (P&D)",
+        "Desenvolvimento de protótipo industrial piloto",
+      ],
+      operatingConditions: "Células de 5x5 cm² fabricadas em atmosfera de nitrogênio e testadas sob simulador solar classe AAA com calibração rastreável.",
+      scalabilityGaps: "Deposição em substratos maiores (módulos 30x30 cm²) por técnica roll-to-roll e desenvolvimento de encapsulamento polimérico anti-uv de baixo custo.",
+      estimatedBudget: "R$ 250.000 a R$ 500.000 para validação de protótipo em escala piloto",
+      estimatedTimelineMonths: "6 a 12 meses",
+      evidenceLinks: "Estudo publicado em periódico internacional Q1 de Materiais e ensaios de degradação acelerada em câmara climática.",
+      ownershipType: "UNIVERSIDADE",
+      patentClaimsSummary: "Formulação de aditivo iônico estabilizador de fase perovskita e processo de dopagem por banho químico sequencial.",
+      priorFunding: "Finep e CNPq",
+      hasExclusiveCommitment: false,
+    },
   },
   {
     id: "proj-bioinsumo-03",
@@ -109,6 +166,24 @@ const defaultInitialProjects: Project[] = [
       { competenceId: "comp-agritech", level: 5, name: "Agricultura de Precisão & Bioinsumos" },
       { competenceId: "comp-biotech", level: 5, name: "Biotecnologia & Engenharia Genética" },
     ],
+    dossier: {
+      industryProblem: "Custo astronômico e volatilidade cambial na importação de adubos químicos nitrogenados, associados a perdas por lixiviação e emissão de óxido nitroso no solo.",
+      competitiveAdvantage: "Substituição biológica de até 40% da adubação nitrogenada com ganho médio de 4 sacas/ha em milho safrinha e custo de insumo até 50% menor por hectare.",
+      partnershipGoals: [
+        "Licenciamento de tecnologia / royalties",
+        "Prestação de serviços analíticos especializados",
+        "Validação em talhões industriais piloto",
+      ],
+      operatingConditions: "Fermentação em biorreator de 20 litros com viabilidade celular mínima de 1x10⁹ UFC/mL mantida estável por 180 dias em temperatura ambiente.",
+      scalabilityGaps: "Registro oficial no MAPA (Ministério da Agricultura e Pecuária) e escalonamento para tanques fermentadores de 2.000 litros.",
+      estimatedBudget: "R$ 120.000 a R$ 220.000 para testes agronômicos oficiais em 3 estados",
+      estimatedTimelineMonths: "6 a 12 meses",
+      evidenceLinks: "Relatórios agronômicos de 2 safras experimentais e laudo de contagem microbiológica e pureza de cepas.",
+      ownershipType: "NIT",
+      patentClaimsSummary: "Consórcio simbiótico de cepas bacterianas específicas, veículo protetor biopolimérico e processo de fermentação aeróbica.",
+      priorFunding: "Embrapii e Embrapa",
+      hasExclusiveCommitment: false,
+    },
   },
 ];
 
@@ -230,6 +305,7 @@ export const projectsService = {
         currentUser?.university ||
         currentUser?.department ||
         "ICT / Universidade",
+      dossier: payload.dossier,
     };
 
     const currentList = this.getStoredProjects();
@@ -326,6 +402,7 @@ export const projectsService = {
                 name: c.name || defaultCompetences.find((dc) => dc.id === c.competenceId)?.name || c.competenceId,
               }))
             : existing.competences,
+        dossier: payload.dossier !== undefined ? payload.dossier : existing.dossier,
       };
       currentList[index] = updatedProject;
       this.saveStoredProjects([...currentList]);
